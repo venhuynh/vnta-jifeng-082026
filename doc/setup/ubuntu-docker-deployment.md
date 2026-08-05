@@ -31,6 +31,7 @@ Tài liệu này chốt quy trình deploy image-only cho JIFENG HRM theo đúng 
 - `deploy/ubuntu/scripts/bootstrap-ubuntu.sh`
 - `deploy/ubuntu/scripts/deploy-release.sh`
 - `deploy/ubuntu/scripts/backup-db.sh`
+- `deploy/ubuntu/scripts/reset-hrm-business-data.sh`
 - `deploy/ubuntu/scripts/rollback-release.sh`
 - `deploy/ubuntu/scripts/verify-no-source.sh`
 
@@ -341,6 +342,46 @@ File backup mặc định sẽ nằm trong:
 ```text
 /opt/vnta/shared/backups/
 ```
+
+### 6.1. Reset toàn bộ dữ liệu nghiệp vụ, giữ user đăng nhập
+
+Chỉ thực hiện trong maintenance window. Cả `hrm-web` và `adms-gateway` phải
+dừng trước, vì ADMS tự mở listener và có thể ghi/tạo lại dữ liệu ngay khi nhận
+payload từ máy chấm công.
+
+```bash
+cd /opt/vnta/current
+docker compose \
+  -f docker-compose.production.yml \
+  --env-file /opt/vnta/shared/env/.env.production \
+  stop hrm-web adms-gateway
+
+cd /opt/vnta/releases/<release-name>
+./scripts/reset-hrm-business-data.sh \
+  /opt/vnta/shared/env/.env.production \
+  --confirm-reset
+```
+
+Script tạo custom-format backup, xác minh archive trước khi xóa, rồi chạy một
+transaction để:
+
+1. Giữ toàn bộ bảng ASP.NET Core Identity (`AspNetUsers`, roles, claims,
+   logins, tokens) và `__EFMigrationsHistory`.
+2. Đặt `AspNetUsers.EmployeeId` về `NULL`, tạm tháo FK tới `employees` và khôi
+   phục lại nguyên trạng sau khi reset.
+3. `TRUNCATE ... RESTART IDENTITY` mọi bảng dữ liệu ứng dụng thuộc schema
+   `public` và `audit`, không dùng `CASCADE`.
+4. Kiểm tra các bảng bị reset không còn dòng dữ liệu trước khi commit.
+
+Tài khoản cũ vẫn đăng nhập và giữ phân quyền, nhưng không còn liên kết với nhân
+viên cũ. Hiện không có UI/API để gắn lại tài khoản có sẵn; cần có kế hoạch
+quản trị dữ liệu trước khi tạo tài khoản mới trùng username. Chạy script bằng
+DB owner hoặc role có quyền `ALTER`/`TRUNCATE`; runtime role của ứng dụng có
+thể không có các quyền này.
+
+Nếu database cần giữ trống để nhập Phòng ban trước, chỉ khởi động `hrm-web` sau
+reset; chưa khởi động lại `adms-gateway` cho đến khi sẵn sàng nhận dữ liệu từ
+thiết bị.
 
 ## 7. Deploy Release
 

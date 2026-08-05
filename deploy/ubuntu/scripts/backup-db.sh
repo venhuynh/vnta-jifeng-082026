@@ -14,7 +14,7 @@ set +a
 
 BACKUP_DIR="${BACKUP_DIR:-/opt/vnta/shared/backups}"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
-BACKUP_NAME="${COMPOSE_PROJECT_NAME:-vnta}-${TIMESTAMP}.dump"
+BACKUP_NAME="${BACKUP_NAME:-${COMPOSE_PROJECT_NAME:-vnta}-${TIMESTAMP}.dump}"
 
 mkdir -p "$BACKUP_DIR"
 

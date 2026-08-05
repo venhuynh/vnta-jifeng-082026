@@ -102,6 +102,61 @@ internal sealed class ProjectImplementationProgressSessionState
             ])
     ];
 
+    private static IReadOnlyList<ProjectImplementationMilestone> CreatePhaseThreeMilestones() =>
+    [
+        CreateMilestone(
+            "3.1",
+            "Quản lý bảng lương cơ bản",
+            new DateOnly(2026, 9, 28),
+            [
+                "Quản lý được bảng lương cơ bản và áp dụng quy tắc lương cơ bản của khách hàng vào hệ thống"
+            ],
+            [
+                "Cung cấp bảng lương cơ bản và các quy tắc tính lương cơ bản ngày, lương cơ bản giờ"
+            ]),
+        CreateMilestone(
+            "3.2",
+            "Quản lý phụ cấp",
+            new DateOnly(2026, 10, 5),
+            [
+                "Quản lý được bảng phụ cấp tổng hợp và các bảng phụ cấp con",
+                "Kết xuất kết quả bảng phụ cấp và đối soát với kết quả của công ty"
+            ],
+            [
+                "Tổng hợp",
+                "Trách nhiệm",
+                "Thâm niên",
+                "Chuyên cần",
+                "Cơm",
+                "Độc hại",
+                "Các bảng phụ cấp khác theo quy định của công ty",
+                "Đối soát với bảng kết quả của ứng dụng trong 2 tháng trước"
+            ],
+            "Cung cấp đầy đủ các quy tắc tính phụ cấp trong công ty bao gồm"),
+        CreateMilestone(
+            "3.3",
+            "Quản lý khấu trừ",
+            new DateOnly(2026, 10, 12),
+            [
+                "Quản lý được bảng khấu trừ tổng hợp và các bảng khấu trừ con",
+                "Kết xuất kết quả bảng khấu trừ và đối soát với kết quả của công ty"
+            ],
+            [
+                "Cung cấp đầy đủ các quy tắc tính khấu trừ khi tính lương cho nhân viên trong công ty",
+                "Đối soát với bảng kết quả của ứng dụng trong 2 tháng trước"
+            ]),
+        CreateMilestone(
+            "3.4",
+            "Tính lương cho 3 tháng trước liền kề",
+            new DateOnly(2026, 10, 19),
+            [
+                "Chạy tính lương cho 3 tháng trước và đảm bảo kết quả khớp với cách tính của khách hàng"
+            ],
+            [
+                "Đối soát các điều kiện tính lương = Tổng lương cơ bản + Tổng phụ cấp – Tổng khấu trừ"
+            ])
+    ];
+
     private static IReadOnlyList<ProjectImplementationPhase> CreateDefaultPhases() =>
     [
         new(
@@ -133,9 +188,13 @@ internal sealed class ProjectImplementationProgressSessionState
             3,
             "Tính lương.",
             4,
-            null,
-            [],
-            []),
+            new DateOnly(2026, 9, 28),
+            CreatePhaseThreeMilestones(),
+            [
+                "Ứng dụng WebApp tính lương đúng theo quy tắc được mô tả.",
+                "Chốt lương và xuất bảng lương theo yêu cầu của khách hàng.",
+                "Kết quả tính lương tháng của 3 tháng trước phải đúng với kết quả của công ty."
+            ]),
         new(
             Guid.Parse("bdfd29f2-a8dc-4c83-a08d-e9024f2389f6"),
             4,

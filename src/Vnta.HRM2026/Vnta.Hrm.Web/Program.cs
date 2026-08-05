@@ -16,6 +16,7 @@ using Vnta.Hrm.Application.Common.Security;
 using Vnta.Hrm.Application.PhuCap.PhuCapDocHai;
 using Vnta.Hrm.Web.Audit;
 using Vnta.Hrm.Web.Client.Audit;
+using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Persistence;
 using Vnta.Hrm.Web.Client.Services.Adms;
 using Vnta.Hrm.Web.Client.Services.Api;
 using Vnta.Hrm.Web.Client.Services.Api.NhanSu.ChiTietNhanVien;
@@ -34,6 +35,7 @@ using Vnta.Hrm.Web.Security;
 using Vnta.Hrm.Web.Services;
 using Vnta.Hrm.Web.Services.NhanSu.ChiTietNhanVien;
 using Vnta.Hrm.Web.Services.NhanSu.NhanVien;
+using Vnta.Hrm.Web.Services.TienDoTrienKhai;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -173,6 +175,7 @@ try
     });
 
     builder.Services.AddAppServices();
+    builder.Services.AddSingleton<IProjectImplementationProgressStore, JsonFileProjectImplementationProgressStore>();
     builder.Services.Configure<AdmsGatewayMonitorOptions>(builder.Configuration.GetSection("AdmsGateway"));
     builder.Services.AddSingleton<IAdmsMonitorEventPublisher, AdmsMonitorEventPublisher>();
 

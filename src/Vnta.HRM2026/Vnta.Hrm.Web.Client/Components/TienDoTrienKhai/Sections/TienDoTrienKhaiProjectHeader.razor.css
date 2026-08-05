@@ -1,0 +1,144 @@
+.implementation-progress-project-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(21rem, 29rem);
+    gap: clamp(1.25rem, 3vw, 3rem);
+    align-items: end;
+    padding: clamp(1.25rem, 2.4vw, 2rem);
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 1rem;
+    background:
+        radial-gradient(circle at 96% 6%, color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 14%, transparent), transparent 28rem),
+        linear-gradient(135deg, color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 5%, var(--dxds-color-surface-neutral-default-rest)), var(--dxds-color-surface-neutral-default-rest));
+    box-shadow: 0 0.65rem 1.8rem color-mix(in srgb, #0f172a 7%, transparent);
+}
+
+.implementation-progress-project-title-block {
+    min-width: 0;
+}
+
+.implementation-progress-project-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--dxds-color-content-info-default-rest, #2563eb);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.implementation-progress-project-kicker-mark {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 0.18rem;
+    background: currentColor;
+    box-shadow: 0.82rem 0 0 color-mix(in srgb, currentColor 68%, transparent), 1.64rem 0 0 color-mix(in srgb, currentColor 35%, transparent);
+}
+
+.implementation-progress-project-header h1 {
+    margin: 0.75rem 0 0;
+    color: var(--dxds-color-content-neutral-default-rest, #172033);
+    font-size: clamp(1.55rem, 2.1vw, 2.2rem);
+    font-weight: 760;
+    letter-spacing: -0.035em;
+    line-height: 1.15;
+}
+
+.implementation-progress-project-header p {
+    max-width: 43rem;
+    margin: 0.7rem 0 0;
+    color: var(--dxds-color-content-neutral-subtle-rest, #64748b);
+    font-size: 0.95rem;
+    line-height: 1.55;
+}
+
+.implementation-progress-project-header-side {
+    display: grid;
+    gap: 1rem;
+}
+
+.implementation-progress-project-local-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 22%, transparent);
+    border-radius: 0.65rem;
+    color: var(--dxds-color-content-neutral-subtle-rest, #526070);
+    background: color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 6%, transparent);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.implementation-progress-project-local-note-icon {
+    display: inline-grid;
+    flex: 0 0 auto;
+    width: 1.1rem;
+    height: 1.1rem;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--dxds-color-surface-neutral-default-rest, #fff);
+    background: var(--dxds-color-content-info-default-rest, #2563eb);
+    font-family: Georgia, serif;
+    font-size: 0.76rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.implementation-progress-project-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.implementation-progress-project-metrics > div {
+    min-width: 0;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 88%, transparent);
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 92%, white);
+}
+
+.implementation-progress-project-metrics dt {
+    color: var(--dxds-color-content-neutral-subtle-rest, #64748b);
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+}
+
+.implementation-progress-project-metrics dd {
+    margin: 0.28rem 0 0;
+    color: var(--dxds-color-content-neutral-default-rest, #172033);
+    font-size: 1.65rem;
+    font-weight: 780;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.04em;
+    line-height: 1;
+}
+
+.implementation-progress-project-metrics span {
+    display: block;
+    margin-top: 0.28rem;
+    color: var(--dxds-color-content-neutral-subtle-rest, #64748b);
+    font-size: 0.76rem;
+}
+
+@media (max-width: 900px) {
+    .implementation-progress-project-header {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 540px) {
+    .implementation-progress-project-header {
+        padding: 1.1rem;
+        border-radius: 0.75rem;
+    }
+
+    .implementation-progress-project-metrics {
+        gap: 0.55rem;
+    }
+}

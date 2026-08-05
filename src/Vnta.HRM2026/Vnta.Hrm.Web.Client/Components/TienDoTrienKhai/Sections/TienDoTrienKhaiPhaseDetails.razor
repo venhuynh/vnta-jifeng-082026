@@ -1,0 +1,159 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Models
+
+<section class="implementation-progress-phase-details" aria-labelledby="@DetailsTitleId">
+    <header class="implementation-progress-phase-details-header">
+        <div>
+            <p>Chi tiết thực hiện</p>
+            <h4 id="@DetailsTitleId">Giai đoạn @Phase.Sequence · @TaskCount công việc</h4>
+        </div>
+        <div class="implementation-progress-phase-details-meta">
+            @if(Phase.StartDate is { } startDate)
+            {
+                <span>Bắt đầu <strong>@FormatDate(startDate)</strong></span>
+            }
+            <span><strong>@Phase.DetailedDurationWeeks/@Phase.DurationWeeks</strong> tuần đã mô tả</span>
+            @if(!string.IsNullOrWhiteSpace(SaveError))
+            {
+                <span class="implementation-progress-persistence-status implementation-progress-persistence-status-error" role="alert">@SaveError</span>
+            }
+            else if(LastSavedAt is { } savedAt)
+            {
+                <span class="implementation-progress-persistence-status implementation-progress-persistence-status-saved" role="status">Đã lưu @FormatSavedAt(savedAt)</span>
+            }
+        </div>
+    </header>
+
+    <div class="implementation-progress-detail-grid-host">
+        <DxGrid Data="@Tasks"
+                KeyFieldName="@nameof(ProjectImplementationTask.Id)"
+                CssClass="implementation-progress-detail-grid"
+                PagerVisible="false"
+                ShowAllRows="true"
+                ShowGroupPanel="false"
+                AutoExpandAllGroupRows="true"
+                EditMode="GridEditMode.EditRow"
+                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                TextWrapEnabled="true"
+                FocusedRowEnabled="true"
+                HighlightRowOnHover="true"
+                EditModelSaving="OnEditModelSaving">
+            <Columns>
+                <DxGridCommandColumn Width="5.25rem"
+                                     NewButtonVisible="false"
+                                     DeleteButtonVisible="false"
+                                     TextAlignment="GridTextAlignment.Center" />
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.MilestoneGroup)"
+                                  Caption="Mốc (nhóm)"
+                                  GroupIndex="0"
+                                  ReadOnly="true"
+                                  Width="16rem"
+                                  MinWidth="240" />
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.WorkItem)"
+                                  Caption="Nội dung công việc chi tiết"
+                                  MinWidth="320">
+                    <CellDisplayTemplate>
+                        @{ var task = (ProjectImplementationTask)context.DataItem; }
+                        <span class="implementation-progress-detail-work-item">@task.WorkItem</span>
+                    </CellDisplayTemplate>
+                </DxGridDataColumn>
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.Owner)"
+                                  Caption="Phụ trách"
+                                  Width="8.75rem"
+                                  MinWidth="132"
+                                  TextAlignment="GridTextAlignment.Center">
+                    <CellDisplayTemplate>
+                        @{ var task = (ProjectImplementationTask)context.DataItem; }
+                        <span class="@GetOwnerCssClass(task.Owner)">@GetOwnerLabel(task.Owner)</span>
+                    </CellDisplayTemplate>
+                    <EditSettings>
+                        <DxComboBoxSettings Data="@OwnerOptions"
+                                            ValueFieldName="Value"
+                                            TextFieldName="Text" />
+                    </EditSettings>
+                </DxGridDataColumn>
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.StartDate)"
+                                  Caption="Từ ngày"
+                                  DisplayFormat="dd/MM/yyyy"
+                                  Width="8.5rem"
+                                  MinWidth="128"
+                                  TextAlignment="GridTextAlignment.Center" />
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.EndDate)"
+                                  Caption="Đến ngày"
+                                  DisplayFormat="dd/MM/yyyy"
+                                  Width="8.5rem"
+                                  MinWidth="128"
+                                  TextAlignment="GridTextAlignment.Center" />
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.Status)"
+                                  Caption="Tình trạng"
+                                  Width="10rem"
+                                  MinWidth="152">
+                    <CellDisplayTemplate>
+                        @{ var task = (ProjectImplementationTask)context.DataItem; }
+                        <span class="@GetStatusCssClass(task.Status)">
+                            <span class="implementation-progress-detail-status-dot" aria-hidden="true"></span>
+                            @GetStatusLabel(task.Status)
+                        </span>
+                    </CellDisplayTemplate>
+                    <EditSettings>
+                        <DxComboBoxSettings Data="@StatusOptions"
+                                            ValueFieldName="Value"
+                                            TextFieldName="Text" />
+                    </EditSettings>
+                </DxGridDataColumn>
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.CompletionPercent)"
+                                  Caption="% hoàn thành"
+                                  Width="11rem"
+                                  MinWidth="168"
+                                  TextAlignment="GridTextAlignment.Right">
+                    <CellDisplayTemplate>
+                        @{ var task = (ProjectImplementationTask)context.DataItem; }
+                        <div class="implementation-progress-detail-progress">
+                            <DxProgressBar CssClass="implementation-progress-detail-progress-bar"
+                                           MaxValue="100"
+                                           Value="@task.CompletionPercent"
+                                           ShowLabel="false" />
+                            <span>@task.CompletionPercent%</span>
+                        </div>
+                    </CellDisplayTemplate>
+                    <EditSettings>
+                        <DxSpinEditSettings MinValue="0"
+                                            MaxValue="100"
+                                            Increment="5" />
+                    </EditSettings>
+                </DxGridDataColumn>
+            </Columns>
+        </DxGrid>
+    </div>
+
+    @if(Phase.HasAcceptanceCriteria)
+    {
+        <section class="implementation-progress-phase-acceptance" aria-labelledby="@AcceptanceTitleId">
+            <header>
+                <p>Tiêu chí bàn giao</p>
+                <h5 id="@AcceptanceTitleId">Điều kiện nghiệm thu bàn giao</h5>
+            </header>
+            <ul>
+                @foreach(var criterion in Phase.AcceptanceCriteria)
+                {
+                    <li>@criterion</li>
+                }
+            </ul>
+        </section>
+    }
+
+    @if(Phase.RemainingDurationWeeks > 0)
+    {
+        <p class="implementation-progress-phase-remaining-detail">
+            <span aria-hidden="true"></span>
+            <span><strong>@Phase.RemainingDurationWeeks tuần còn lại</strong> của giai đoạn chưa có nội dung chi tiết.</span>
+        </p>
+    }
+</section>

@@ -157,6 +157,13 @@ public static class VntaNavMenuCatalog
                 ImplementationTone,
                 AttendanceAdministrationRoles,
                 isInProgress: true)),
+        MenuItem(
+            "implementation_progress",
+            "Tiến độ triển khai",
+            "/implementation/progress",
+            VntaDevExpressIcons.Implementation,
+            ImplementationTone,
+            isInProgress: true),
         RestrictedMenuGroup(
             "hr",
             "Nhân sự",

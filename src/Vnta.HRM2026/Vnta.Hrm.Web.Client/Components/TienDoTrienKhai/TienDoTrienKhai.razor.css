@@ -1,0 +1,31 @@
+.content-root {
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+}
+
+.implementation-progress-root {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 100%;
+    padding: clamp(0.9rem, 1.6vw, 1.5rem);
+    margin: 0;
+}
+
+.implementation-progress-persistence-error {
+    margin: 0 0 0.9rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-content-danger-default-rest, #b91c1c) 28%, var(--dxds-color-border-neutral-default-rest));
+    border-radius: 0.7rem;
+    color: var(--dxds-color-content-danger-default-rest, #b91c1c);
+    background: color-mix(in srgb, var(--dxds-color-content-danger-default-rest, #b91c1c) 6%, var(--dxds-color-surface-neutral-default-rest));
+    font-size: 0.84rem;
+    line-height: 1.45;
+}
+
+@media (max-width: 540px) {
+    .implementation-progress-root {
+        padding: 0.75rem;
+    }
+}

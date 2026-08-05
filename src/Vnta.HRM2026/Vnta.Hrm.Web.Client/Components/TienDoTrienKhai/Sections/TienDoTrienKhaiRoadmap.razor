@@ -1,0 +1,72 @@
+@using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Models
+@using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Phases
+
+<section class="implementation-progress-roadmap-layout" aria-labelledby="implementation-progress-roadmap-title">
+    <div class="implementation-progress-roadmap-main">
+        <section class="implementation-progress-roadmap-card">
+            <header class="implementation-progress-roadmap-card-header">
+                <div>
+                    <p class="implementation-progress-section-kicker">Kế hoạch tuần tự</p>
+                    <h2 id="implementation-progress-roadmap-title">Lộ trình theo thời lượng</h2>
+                    <p>Các giai đoạn được sắp xếp nối tiếp trên tổng thời lượng @TotalDurationWeeks tuần.</p>
+                </div>
+                <span class="implementation-progress-roadmap-total">@TotalDurationWeeks tuần</span>
+            </header>
+
+            <div class="implementation-progress-timeline-scroll" aria-hidden="true">
+                <div class="implementation-progress-timeline" style="@TimelineGridStyle">
+                    <div class="implementation-progress-timeline-scale">
+                        @foreach(var week in TimelineWeeks)
+                        {
+                            <span>T@week</span>
+                        }
+                    </div>
+                    <div class="implementation-progress-timeline-track">
+                        @foreach(var phase in Phases)
+                        {
+                            <div @key="phase.Id"
+                                 class="@GetTimelineSegmentCssClass(phase)"
+                                 style="@GetTimelineSegmentStyle(phase)">
+                                <strong>GĐ @phase.Sequence</strong>
+                                <span>@phase.DurationWeeks tuần</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="implementation-progress-phase-list" aria-label="Danh sách các giai đoạn triển khai">
+            <TienDoTrienKhaiPhaseOne @key="PhaseOne.Id" Phase="@PhaseOne" />
+            <TienDoTrienKhaiPhaseTwo @key="PhaseTwo.Id" Phase="@PhaseTwo" />
+            <TienDoTrienKhaiPhaseThree @key="PhaseThree.Id" Phase="@PhaseThree" />
+            <TienDoTrienKhaiPhaseFour @key="PhaseFour.Id" Phase="@PhaseFour" />
+            <TienDoTrienKhaiPhaseFive @key="PhaseFive.Id" Phase="@PhaseFive" />
+        </div>
+    </div>
+
+    <aside class="implementation-progress-roadmap-aside" aria-label="Tổng quan kế hoạch">
+        <section class="implementation-progress-plan-brief">
+            <p class="implementation-progress-section-kicker">Tổng quan dự án</p>
+            <h2>@PhaseCount giai đoạn liên tiếp</h2>
+            <p class="implementation-progress-plan-brief-description">Mỗi giai đoạn là một phần việc riêng trong lộ trình triển khai @TotalDurationWeeks tuần.</p>
+            <ol class="implementation-progress-duration-list">
+                @foreach(var phase in Phases)
+                {
+                    <li @key="phase.Id">
+                        <span>Giai đoạn @phase.Sequence</span>
+                        <strong>@phase.DurationWeeks tuần</strong>
+                    </li>
+                }
+            </ol>
+        </section>
+
+        <section class="implementation-progress-next-update">
+            <span class="implementation-progress-next-update-icon" aria-hidden="true"></span>
+            <div>
+                <h2>Sẵn sàng cập nhật chi tiết</h2>
+                <p>Nội dung, mốc công việc và các thông tin thực hiện của từng giai đoạn sẽ được bổ sung sau.</p>
+            </div>
+        </section>
+    </aside>
+</section>

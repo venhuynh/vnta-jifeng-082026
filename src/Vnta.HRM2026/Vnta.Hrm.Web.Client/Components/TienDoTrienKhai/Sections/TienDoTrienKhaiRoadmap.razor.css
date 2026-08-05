@@ -1,0 +1,276 @@
+.implementation-progress-roadmap-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, 21rem);
+    gap: 1rem;
+    align-items: start;
+    margin-top: 1rem;
+}
+
+.implementation-progress-roadmap-main,
+.implementation-progress-roadmap-aside {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.implementation-progress-roadmap-card,
+.implementation-progress-plan-brief,
+.implementation-progress-next-update {
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.9rem;
+    background: var(--dxds-color-surface-neutral-default-rest, #fff);
+    box-shadow: 0 0.45rem 1.4rem color-mix(in srgb, #0f172a 5%, transparent);
+}
+
+.implementation-progress-roadmap-card {
+    overflow: hidden;
+}
+
+.implementation-progress-roadmap-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.15rem 1.25rem 1rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+}
+
+.implementation-progress-section-kicker {
+    margin: 0;
+    color: var(--dxds-color-content-info-default-rest, #2563eb);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.implementation-progress-roadmap-card h2,
+.implementation-progress-plan-brief h2,
+.implementation-progress-next-update h2 {
+    margin: 0.38rem 0 0;
+    color: var(--dxds-color-content-neutral-default-rest, #172033);
+    font-size: 1.08rem;
+    font-weight: 740;
+    letter-spacing: -0.018em;
+    line-height: 1.3;
+}
+
+.implementation-progress-roadmap-card-header p:not(.implementation-progress-section-kicker),
+.implementation-progress-plan-brief-description,
+.implementation-progress-next-update p {
+    margin: 0.36rem 0 0;
+    color: var(--dxds-color-content-neutral-subtle-rest, #64748b);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.implementation-progress-roadmap-total {
+    flex: 0 0 auto;
+    padding: 0.45rem 0.65rem;
+    border-radius: 999px;
+    color: var(--dxds-color-content-info-default-rest, #2563eb);
+    background: color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 9%, transparent);
+    font-size: 0.78rem;
+    font-weight: 760;
+    white-space: nowrap;
+}
+
+.implementation-progress-timeline-scroll {
+    overflow-x: auto;
+    padding: 1rem 1.25rem 1.15rem;
+    scrollbar-color: color-mix(in srgb, var(--dxds-color-content-neutral-subtle-rest, #64748b) 40%, transparent) transparent;
+    scrollbar-width: thin;
+}
+
+.implementation-progress-timeline {
+    min-width: 46rem;
+}
+
+.implementation-progress-timeline-scale,
+.implementation-progress-timeline-track {
+    display: grid;
+    grid-template-columns: repeat(var(--implementation-timeline-columns), minmax(2.3rem, 1fr));
+}
+
+.implementation-progress-timeline-scale {
+    margin-bottom: 0.42rem;
+}
+
+.implementation-progress-timeline-scale span {
+    color: var(--dxds-color-content-neutral-subtle-rest, #64748b);
+    font-size: 0.68rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
+.implementation-progress-timeline-track {
+    gap: 0.24rem;
+    min-height: 3.65rem;
+    padding: 0.32rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 82%, transparent);
+    border-radius: 0.7rem;
+    background:
+        repeating-linear-gradient(
+            to right,
+            transparent 0,
+            transparent calc(100% / var(--implementation-timeline-columns) - 1px),
+            color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 55%, transparent) calc(100% / var(--implementation-timeline-columns) - 1px),
+            color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 55%, transparent) calc(100% / var(--implementation-timeline-columns))
+        ),
+        color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 88%, #f8fafc);
+}
+
+.implementation-progress-timeline-segment {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: 0.4rem 0.55rem;
+    border-radius: 0.46rem;
+    color: #fff;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    overflow: hidden;
+}
+
+.implementation-progress-timeline-segment strong,
+.implementation-progress-timeline-segment span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.implementation-progress-timeline-segment strong {
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.implementation-progress-timeline-segment span {
+    margin-top: 0.13rem;
+    opacity: 0.84;
+}
+
+.implementation-progress-timeline-segment-1 { background: #2563eb; }
+.implementation-progress-timeline-segment-2 { background: #0f766e; }
+.implementation-progress-timeline-segment-3 { background: #7c3aed; }
+.implementation-progress-timeline-segment-4 { background: #c2410c; }
+.implementation-progress-timeline-segment-5 { background: #475569; }
+
+.implementation-progress-phase-list {
+    display: grid;
+    gap: 0.72rem;
+}
+
+.implementation-progress-plan-brief {
+    padding: 1.15rem;
+}
+
+.implementation-progress-duration-list {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0;
+    margin: 0.9rem 0 0;
+    list-style: none;
+}
+
+.implementation-progress-duration-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.62rem 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 65%, transparent);
+    color: var(--dxds-color-content-neutral-subtle-rest, #64748b);
+    font-size: 0.82rem;
+}
+
+.implementation-progress-duration-list li:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.implementation-progress-duration-list strong {
+    flex: 0 0 auto;
+    color: var(--dxds-color-content-neutral-default-rest, #172033);
+    font-variant-numeric: tabular-nums;
+}
+
+.implementation-progress-next-update {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-color: color-mix(in srgb, var(--dxds-color-content-warning-default-rest, #b45309) 25%, var(--dxds-color-border-neutral-default-rest));
+    background: color-mix(in srgb, var(--dxds-color-content-warning-default-rest, #b45309) 5%, var(--dxds-color-surface-neutral-default-rest));
+}
+
+.implementation-progress-next-update-icon {
+    position: relative;
+    display: block;
+    flex: 0 0 auto;
+    width: 1.4rem;
+    height: 1.4rem;
+    margin-top: 0.08rem;
+    border: 2px solid var(--dxds-color-content-warning-default-rest, #b45309);
+    border-radius: 50%;
+}
+
+.implementation-progress-next-update-icon::before {
+    position: absolute;
+    top: 0.18rem;
+    left: 0.58rem;
+    width: 0.12rem;
+    height: 0.5rem;
+    content: "";
+    border-radius: 1rem;
+    background: var(--dxds-color-content-warning-default-rest, #b45309);
+}
+
+.implementation-progress-next-update-icon::after {
+    position: absolute;
+    bottom: 0.18rem;
+    left: 0.58rem;
+    width: 0.12rem;
+    height: 0.12rem;
+    content: "";
+    border-radius: 50%;
+    background: var(--dxds-color-content-warning-default-rest, #b45309);
+}
+
+.implementation-progress-next-update h2 {
+    margin-top: 0;
+    font-size: 0.92rem;
+}
+
+.implementation-progress-next-update p {
+    font-size: 0.8rem;
+}
+
+@media (max-width: 1080px) {
+    .implementation-progress-roadmap-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .implementation-progress-roadmap-aside {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 720px) {
+    .implementation-progress-roadmap-card-header {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 1rem;
+    }
+
+    .implementation-progress-roadmap-total {
+        align-self: flex-start;
+    }
+
+    .implementation-progress-timeline-scroll {
+        display: none;
+    }
+
+    .implementation-progress-roadmap-aside {
+        grid-template-columns: 1fr;
+    }
+}

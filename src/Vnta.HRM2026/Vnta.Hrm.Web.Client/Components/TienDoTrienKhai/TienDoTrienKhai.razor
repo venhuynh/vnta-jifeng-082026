@@ -1,0 +1,25 @@
+@page "/implementation/progress"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Sections
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Lộ trình triển khai</PageTitle>
+
+<div class="content-root">
+    <main class="implementation-progress-root" aria-labelledby="implementation-progress-page-title">
+        @if(!string.IsNullOrWhiteSpace(LoadError))
+        {
+            <p class="implementation-progress-persistence-error" role="alert">@LoadError</p>
+        }
+
+        <TienDoTrienKhaiProjectHeader PhaseCount="@PhaseCount"
+                                        TotalDurationWeeks="@TotalDurationWeeks" />
+        <TienDoTrienKhaiRoadmap Phases="@Phases"
+                                  TimelineWeeks="@TimelineWeeks"
+                                  PhaseCount="@PhaseCount"
+                                  TotalDurationWeeks="@TotalDurationWeeks" />
+    </main>
+</div>

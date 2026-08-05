@@ -1,67 +1,20 @@
 @page "/implementation/progress"
 
 @using Microsoft.AspNetCore.Authorization
-@using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Dialogs
 @using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Sections
 
 @attribute [Authorize]
 @rendermode InteractiveServer
 
-<PageTitle>VNTA - Tiến độ triển khai</PageTitle>
+<PageTitle>VNTA - Lộ trình triển khai</PageTitle>
 
 <div class="content-root">
-    <div class="card toolbar">
-        <TienDoTrienKhaiToolbar CanInteract="@CanInteract"
-                                AddRequested="OpenCreatePopupAsync"
-                                ResetRequested="ResetItemsAsync"
-                                ColumnChooserRequested="OnColumnChooserRequested" />
-    </div>
-
-    <div class="implementation-progress-root">
-        <div class="card implementation-progress-grid-card">
-            <div class="implementation-progress-grid-content">
-                <TienDoTrienKhaiSummary SummaryBadges="@SummaryBadges"
-                                        ActiveSummaryBadgeKey="@ActiveSummaryBadgeKey"
-                                        SearchText="@SearchText"
-                                        AverageProgress="@AverageProgress"
-                                        CanInteract="@CanInteract"
-                                        SummaryBadgeSelected="OnSummaryBadgeClick"
-                                        SearchTextChanged="OnSearchTextChanged" />
-                <TienDoTrienKhaiGrid @ref="GridSection"
-                                    Records="@Records"
-                                    StartRecordIndex="@CurrentPageStartRecord"
-                                    CanOperate="@CanOperate"
-                                    PageSize="@PageSize"
-                                    EmptyStateTitle="@EmptyStateTitle"
-                                    EmptyStateMessage="@EmptyStateMessage"
-                                    EmptyStateActionText="@EmptyStateActionText"
-                                    StatusLabel="GetStatusLabel"
-                                    StatusCssClass="GetStatusCssClass"
-                                    ProgressValueCssClass="GetProgressValueCssClass"
-                                    EditRequested="OpenEditPopupAsync"
-                                    EmptyStateActionRequested="OnEmptyStateActionClick" />
-                <TienDoTrienKhaiPager SummaryText="@PagerSummaryText"
-                                      CanBrowsePages="@CanBrowsePages"
-                                      TotalPageCount="@TotalPageCount"
-                                      CurrentPageIndex="@CurrentPageIndex"
-                                      PageChanged="OnActivePageIndexChangedAsync"
-                                      PageSizeOptions="@PageSizeOptions"
-                                      PageSize="@PageSize"
-                                      PageSizeChanged="OnPageSizeChangedAsync"
-                                      CanChangeFilters="@CanChangeFilters"
-                                      PageSizeDescription="@PageSizeDescription" />
-            </div>
-        </div>
-    </div>
+    <main class="implementation-progress-root" aria-labelledby="implementation-progress-page-title">
+        <TienDoTrienKhaiProjectHeader PhaseCount="@PhaseCount"
+                                        TotalDurationWeeks="@TotalDurationWeeks" />
+        <TienDoTrienKhaiRoadmap Phases="@Phases"
+                                  TimelineWeeks="@TimelineWeeks"
+                                  PhaseCount="@PhaseCount"
+                                  TotalDurationWeeks="@TotalDurationWeeks" />
+    </main>
 </div>
-
-<TienDoTrienKhaiEditPopup Visible="@IsEditPopupVisible"
-                           VisibleChanged="OnEditPopupVisibleChanged"
-                           IsSaving="@IsSavingEdit"
-                           Title="@EditPopupTitle"
-                           Model="@EditModel"
-                           EditContext="@EditContext"
-                           StatusOptions="@StatusOptions"
-                           CanEditFields="@CanEditFields"
-                           CanSave="@CanSaveEdit"
-                           SaveRequested="SaveEditAsync" />

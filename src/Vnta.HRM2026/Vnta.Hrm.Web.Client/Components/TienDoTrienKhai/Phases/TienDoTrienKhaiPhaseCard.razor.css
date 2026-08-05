@@ -1,0 +1,171 @@
+.implementation-progress-phase-card {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+    gap: 0.85rem;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.85rem;
+    background: var(--dxds-color-surface-neutral-default-rest, #fff);
+    box-shadow: 0 0.32rem 1.15rem color-mix(in srgb, #0f172a 4%, transparent);
+}
+
+.implementation-progress-phase-card:not(:last-child)::after {
+    position: absolute;
+    top: calc(100% + 0.06rem);
+    bottom: -0.78rem;
+    left: 2.48rem;
+    z-index: 0;
+    width: 1px;
+    content: "";
+    background: color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 90%, transparent);
+}
+
+.implementation-progress-phase-marker {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 28%, transparent);
+    border-radius: 0.72rem;
+    color: var(--dxds-color-content-info-default-rest, #2563eb);
+    background: color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 9%, var(--dxds-color-surface-neutral-default-rest));
+    font-size: 0.88rem;
+    font-weight: 820;
+    font-variant-numeric: tabular-nums;
+}
+
+.implementation-progress-phase-content {
+    min-width: 0;
+}
+
+.implementation-progress-phase-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.implementation-progress-phase-meta {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.implementation-progress-phase-label {
+    color: var(--dxds-color-content-neutral-subtle-rest, #64748b);
+    font-size: 0.76rem;
+    font-weight: 740;
+}
+
+.implementation-progress-phase-duration,
+.implementation-progress-phase-start-date {
+    padding: 0.27rem 0.48rem;
+    border-radius: 999px;
+    font-size: 0.71rem;
+    font-weight: 760;
+    white-space: nowrap;
+}
+
+.implementation-progress-phase-duration {
+    color: var(--dxds-color-content-utility-purple-default-rest, #7c3aed);
+    background: color-mix(in srgb, var(--dxds-color-content-utility-purple-default-rest, #7c3aed) 8%, transparent);
+}
+
+.implementation-progress-phase-start-date {
+    color: var(--dxds-color-content-info-default-rest, #2563eb);
+    background: color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 8%, transparent);
+    font-variant-numeric: tabular-nums;
+}
+
+.implementation-progress-phase-card h3 {
+    margin: 0.42rem 0 0;
+    color: var(--dxds-color-content-neutral-default-rest, #172033);
+    font-size: 0.98rem;
+    font-weight: 700;
+    line-height: 1.48;
+}
+
+.implementation-progress-phase-pending-detail,
+.implementation-progress-phase-detail-summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.42rem;
+    margin-top: 0.72rem;
+    padding-top: 0.68rem;
+}
+
+.implementation-progress-phase-pending-detail {
+    border-top: 1px dashed color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 82%, transparent);
+}
+
+.implementation-progress-phase-detail-summary {
+    border-top: 1px dashed color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 30%, transparent);
+}
+
+.implementation-progress-phase-pending-detail > span,
+.implementation-progress-phase-detail-summary > span {
+    display: block;
+    flex: 0 0 auto;
+    width: 0.42rem;
+    height: 0.42rem;
+    margin-top: 0.36rem;
+    border-radius: 50%;
+}
+
+.implementation-progress-phase-pending-detail > span {
+    background: var(--dxds-color-content-neutral-subtle-rest, #64748b);
+    opacity: 0.55;
+}
+
+.implementation-progress-phase-detail-summary > span {
+    background: var(--dxds-color-content-info-default-rest, #2563eb);
+}
+
+.implementation-progress-phase-pending-detail p,
+.implementation-progress-phase-detail-summary p {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.implementation-progress-phase-pending-detail p {
+    color: var(--dxds-color-content-neutral-subtle-rest, #64748b);
+    font-style: italic;
+}
+
+.implementation-progress-phase-detail-summary p {
+    color: var(--dxds-color-content-info-default-rest, #2563eb);
+    font-weight: 650;
+}
+
+@media (max-width: 720px) {
+    .implementation-progress-phase-card {
+        grid-template-columns: 2.45rem minmax(0, 1fr);
+        gap: 0.7rem;
+        padding: 0.9rem;
+    }
+
+    .implementation-progress-phase-marker {
+        width: 2.45rem;
+        height: 2.45rem;
+    }
+
+    .implementation-progress-phase-card:not(:last-child)::after {
+        left: 2.13rem;
+    }
+
+    .implementation-progress-phase-topline {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.38rem;
+    }
+
+    .implementation-progress-phase-meta {
+        flex-wrap: wrap;
+    }
+}

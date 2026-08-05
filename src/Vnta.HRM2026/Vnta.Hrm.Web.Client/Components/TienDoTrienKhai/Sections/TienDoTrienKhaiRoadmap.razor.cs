@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Models;
 
@@ -15,6 +14,16 @@ public partial class TienDoTrienKhaiRoadmap
 
     [Parameter, EditorRequired] public int TotalDurationWeeks { get; set; }
 
+    private ProjectImplementationPhase PhaseOne => Phases.Single(phase => phase.Sequence == 1);
+
+    private ProjectImplementationPhase PhaseTwo => Phases.Single(phase => phase.Sequence == 2);
+
+    private ProjectImplementationPhase PhaseThree => Phases.Single(phase => phase.Sequence == 3);
+
+    private ProjectImplementationPhase PhaseFour => Phases.Single(phase => phase.Sequence == 4);
+
+    private ProjectImplementationPhase PhaseFive => Phases.Single(phase => phase.Sequence == 5);
+
     private int TimelineColumnCount => TotalDurationWeeks > 0 ? TotalDurationWeeks : 1;
 
     private string TimelineGridStyle => $"--implementation-timeline-columns: {TimelineColumnCount};";
@@ -25,6 +34,4 @@ public partial class TienDoTrienKhaiRoadmap
     private static string GetTimelineSegmentStyle(ProjectImplementationPhase phase) =>
         $"grid-column: span {phase.DurationWeeks};";
 
-    private static string FormatDate(DateOnly value) =>
-        value.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
 }

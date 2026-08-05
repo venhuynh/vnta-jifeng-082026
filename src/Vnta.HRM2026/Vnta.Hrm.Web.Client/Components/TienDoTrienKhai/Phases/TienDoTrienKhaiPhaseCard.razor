@@ -1,0 +1,39 @@
+@using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Models
+
+<article class="implementation-progress-phase-card" aria-labelledby="@PhaseTitleId">
+    <div class="implementation-progress-phase-marker" aria-hidden="true">
+        <span>@Phase.Sequence.ToString("D2")</span>
+    </div>
+    <div class="implementation-progress-phase-content">
+        <div class="implementation-progress-phase-topline">
+            <span class="implementation-progress-phase-label">Giai đoạn @Phase.Sequence</span>
+            <div class="implementation-progress-phase-meta">
+                @if(Phase.StartDate is { } startDate)
+                {
+                    <span class="implementation-progress-phase-start-date">Bắt đầu @FormatDate(startDate)</span>
+                }
+                <span class="implementation-progress-phase-duration">@Phase.DurationText</span>
+            </div>
+        </div>
+        <h3 id="@PhaseTitleId">Giai đoạn @Phase.Sequence: @Phase.Title</h3>
+        @if(Phase.HasMilestones)
+        {
+            <div class="implementation-progress-phase-detail-summary">
+                <span aria-hidden="true"></span>
+                <p>@Phase.Milestones.Count mốc công việc · @Phase.DetailedDurationWeeks/@Phase.DurationWeeks tuần đã có nội dung.</p>
+            </div>
+        }
+        else
+        {
+            <div class="implementation-progress-phase-pending-detail">
+                <span aria-hidden="true"></span>
+                <p>Nội dung chi tiết sẽ được cập nhật.</p>
+            </div>
+        }
+    </div>
+</article>
+
+@if(ChildContent is not null)
+{
+    @ChildContent
+}

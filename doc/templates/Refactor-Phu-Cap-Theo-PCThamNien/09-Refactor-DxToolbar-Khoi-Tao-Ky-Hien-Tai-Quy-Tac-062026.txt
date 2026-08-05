@@ -1,0 +1,112 @@
+## Refactor DxToolbar: khởi tạo kỳ hiện tại và xác minh Quy tắc kỳ 06/2026
+
+Refactor phần chọn **Năm/Tháng** và chức năng **`Quy tắc`** trong `DxToolbar` của màn hình Phụ cấp đích. Tham chiếu cách tổ chức component/state của màn hình chuẩn:
+
+`src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\ChamCong\BangCongNgay`
+
+Các điểm tham chiếu chính:
+
+- `ToolbarMonth`, `ToolbarYear`, `AppliedMonth`, `AppliedYear`, `NormalizeSelectedPeriod` và `GetDefaultPayrollPeriod` trong `BangCongNgay.razor.cs`.
+- Năm/tháng trong `DxToolbar` của `BangCongNgay.razor`.
+- `Bảng công ngày không có popup Quy tắc tương ứng` và handler mở popup Quy tắc.
+
+### Mục tiêu bắt buộc
+
+1. Mỗi lần màn hình được khởi tạo, Năm và Tháng hiển thị trong `DxToolbar` phải là **năm/tháng hiện tại tại thời điểm khởi tạo màn hình**, theo timezone và clock convention được dự án quy định.
+2. Bài kiểm chứng nghiệp vụ bắt buộc: khi người dùng chọn kỳ **06/2026** và mở `Quy tắc`, hệ thống phải hiển thị đúng bộ quy tắc có hiệu lực cho kỳ 06/2026 theo tài liệu/source of truth của dự án.
+
+`06/2026` là kỳ kiểm chứng của chức năng Quy tắc, **không phải** giá trị mặc định được hard-code cho Năm/Tháng. Nếu thời điểm hiện tại không phải 06/2026, toolbar vẫn phải khởi tạo theo tháng hiện tại.
+
+### 1. Đọc tài liệu và xác định rule source — bắt buộc
+
+Trước khi phân tích hoặc viết code, đọc đầy đủ:
+
+- `doc\agent-skills`
+- `doc\checklists`
+- `doc\rules`
+- `doc\project`
+
+Tìm tài liệu/source hiện có liên quan đến:
+
+- Quy ước timezone, clock/time provider và kỳ lương mặc định.
+- Giới hạn kỳ lương hỗ trợ, quy tắc normalize/tháng tối thiểu/tối đa.
+- Quy tắc phụ cấp của màn hình đích, hiệu lực theo thời gian, versioning và kỳ 06/2026.
+- Nguồn dữ liệu quy tắc: tài liệu được quản lý, cấu hình, database, API hay quy tắc tĩnh trong source.
+- Authorization/bảo mật dữ liệu rule, validation API, audit/log và testing.
+
+Xác định rõ và báo cáo:
+
+- Timezone/clock nào là nguồn thời gian chuẩn của hệ thống.
+- Kỳ hiện tại được normalize như thế nào khi nằm ngoài phạm vi hỗ trợ.
+- Bộ quy tắc nào có hiệu lực tại 06/2026, căn cứ vào tài liệu/source nào, ngày hiệu lực và version nếu có.
+- Rule popup có cần thay đổi theo kỳ được chọn hay được thiết kế là nội dung tĩnh; chỉ giữ tĩnh nếu tài liệu xác nhận rule không version theo kỳ.
+
+Nếu tài liệu mâu thuẫn hoặc không xác định được quy tắc hiệu lực cho 06/2026, dừng ở kế hoạch và xin xác nhận. Không sao chép hoặc tự suy luận rule từ `BangCongNgay`.
+
+### 2. Yêu cầu khởi tạo Năm/Tháng hiện tại
+
+- Lấy năm/tháng hiện tại tại **runtime khi component/screen được khởi tạo**, không dùng giá trị hard-code.
+- Không dùng giá trị tĩnh được khởi tạo một lần khi type/application load nếu điều đó làm kỳ mặc định cũ đi trong một phiên chạy dài; sử dụng clock/time provider theo convention dự án để có thể test được.
+- Áp dụng timezone chuẩn của dự án. Chỉ dùng UTC offset cố định nếu đó là convention đã được xác nhận; ưu tiên abstraction/timezone configuration hiện có.
+- Normalize Năm/Tháng hiện tại theo giới hạn kỳ được hỗ trợ. Nếu kỳ hiện tại không hợp lệ, dùng fallback do tài liệu quy định và hiển thị/ghi nhận cảnh báo phù hợp; không âm thầm chọn một kỳ tùy ý.
+- Đồng bộ nhất quán `ToolbarMonth`/`ToolbarYear` với state kỳ áp dụng. Phân biệt rõ:
+  - **Kỳ được chọn trên toolbar**;
+  - **Kỳ đang áp dụng cho dữ liệu đã tải**.
+- Không tự gọi `Xem`, prepare period, recalculate hoặc bất kỳ API mutation nào chỉ vì khởi tạo default period, trừ khi tài liệu của màn hình đích yêu cầu rõ ràng.
+- Khi người dùng đổi Năm/Tháng, giữ các guard/loading/normalization và handling pending period change theo pattern màn hình chuẩn.
+
+### 3. Yêu cầu chức năng Quy tắc cho kỳ 06/2026
+
+- Nút `Quy tắc` mở popup/component theo convention của `Bảng công ngày không có popup Quy tắc tương ứng`, nhưng title, context và nội dung phải phù hợp với màn hình Phụ cấp đích.
+- Popup phải hiển thị rõ kỳ áp dụng/effective period khi rule có version theo thời gian; người dùng phải nhận biết rule đang xem thuộc kỳ nào.
+- Khi toolbar chọn `06/2026`, popup phải hiển thị chính xác rules effective tại 06/2026, gồm điều kiện, thang/mức tính, ngoại lệ và ghi chú theo tài liệu chính thức.
+- Không hard-code nội dung rule của Bảng công ngày hoặc hard-code `06/2026` trong UI nếu rule source có version/configuration/API.
+- Nếu architecture hiện hữu dùng rule tĩnh đã được tài liệu xác nhận là đúng cho mọi kỳ, chỉ cập nhật text/metadata cần thiết và ghi rõ căn cứ; không tạo API/configuration mới chỉ để giống pattern.
+- Chuẩn hóa toàn bộ UI tiếng Việt: `Quy tắc`, title, context kỳ, nội dung rule, tooltip, error/empty state và button `Đóng`; dùng UTF-8, đúng chính tả và thống nhất thuật ngữ.
+
+### 4. Ràng buộc backend và data-access
+
+Nếu Quy tắc được tải từ backend/configuration, backend phải tuân thủ tài liệu/kiến trúc dự án:
+
+- Không tin cậy year/month hoặc scope do client gửi; validate kỳ yêu cầu và authorization server-side.
+- Xác định rule/version effective từ source of truth ở server; chỉ trả về rule hợp lệ trong phạm vi dữ liệu user được phép xem.
+- Validate thời gian hiệu lực, rule version, overlap/gap theo quy định nghiệp vụ; không trả về rule không xác định hoặc rule của kỳ khác mà không có thông báo rõ ràng.
+- Không có side effect khi xem Quy tắc: không chuẩn bị dữ liệu, không cập nhật rule, không audit mutation. Chỉ audit truy cập nếu tài liệu hiện hành yêu cầu.
+- Dùng error contract hiện có cho validation/not-found/authorization error; không lộ exception nội bộ hoặc dữ liệu nhạy cảm.
+
+Nếu rule là tĩnh theo kiến trúc đã xác nhận, không tự tạo endpoint/service/backend layer mới. Tuy vậy, các thao tác tính phụ cấp ở backend vẫn phải dùng đúng rule source/effective version theo quy định dự án; popup chỉ là nội dung tham chiếu, không phải source of truth cho tính toán.
+
+### 5. Cổng phê duyệt kế hoạch — bắt buộc trước khi sửa code
+
+Sau khi hoàn tất phân tích, **không sửa, tạo, đổi tên hoặc xóa file**. Hãy báo cáo kế hoạch gồm:
+
+- Tài liệu/rule/checklist đã đọc và các quy định áp dụng.
+- Phân tích xung đột tiềm ẩn giữa “kỳ hiện tại khi khởi tạo” và “kiểm chứng Quy tắc 06/2026”, cùng kết luận: `06/2026` là test case hay yêu cầu default cố định.
+- Thiết kế state cho Toolbar period, Applied period và Rules popup period/context.
+- Bảng behavior cho các tình huống: current period hợp lệ, current period ngoài phạm vi, đổi tháng/năm, có pending period change, chọn 06/2026, rule không tồn tại, rule tĩnh và rule versioned.
+- Mapping với `BangCongNgay`: clock/default period, normalize, toolbar binding, rules popup, data source và error handling.
+- Source of truth, version/effective date của rule 06/2026 và bằng chứng tài liệu/source xác nhận.
+- Danh sách file client/backend/configuration/contract/test sẽ thay đổi, kèm lý do.
+- Chiến lược test clock/timezone và các rủi ro đối với boundary thời gian, timezone, rule version và quyền truy cập.
+- Các điểm cần người dùng xác nhận.
+
+**Chỉ bắt đầu triển khai sau khi người dùng xác nhận rõ ràng kế hoạch.**
+
+### 6. Kiểm tra sau khi được phê duyệt và triển khai
+
+1. Build toàn bộ project bị ảnh hưởng.
+2. Dùng clock có thể kiểm soát để kiểm tra khởi tạo màn hình ở nhiều thời điểm, gồm kịch bản runtime trong tháng 07/2026: toolbar phải mặc định `07/2026`, không phải `06/2026`.
+3. Kiểm tra timezone/boundary: gần nửa đêm, đầu tháng/đầu năm và kỳ hiện tại nằm ngoài phạm vi hỗ trợ.
+4. Kiểm tra đổi Năm/Tháng, normalization, pending period change, enable/disable và không có API mutation tự phát khi khởi tạo.
+5. Chọn `06/2026`, mở `Quy tắc` và đối chiếu từng điều kiện/mức/ngoại lệ hiển thị với tài liệu/source of truth của kỳ 06/2026.
+6. Kiểm tra rule không tồn tại, user không có quyền hoặc backend/configuration lỗi: UI hiển thị error/empty state đúng, không hiển thị rule của kỳ khác.
+7. Kiểm tra tiếng Việt, UTF-8, accessibility và responsive của toolbar/popup.
+8. Thêm/chạy automated test cho default period, timezone/normalization, rule effective period và authorization nếu áp dụng.
+9. Không tự commit hoặc push.
+
+### Báo cáo kết quả
+
+- Timezone/clock và default period đã áp dụng.
+- Source of truth cùng rule version/effective period xác nhận cho 06/2026.
+- Các file thay đổi, kết quả build/test và bằng chứng kiểm tra `06/2026`.
+- Các giới hạn/rủi ro hoặc điểm cần xác nhận trước khi tiếp tục các action khác của `DxToolbar`.

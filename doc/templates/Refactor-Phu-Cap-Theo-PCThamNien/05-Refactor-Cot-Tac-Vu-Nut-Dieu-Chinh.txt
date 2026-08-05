@@ -1,0 +1,105 @@
+## Refactor chức năng Điều chỉnh theo chuẩn Bảng công ngày
+
+Triển khai/refactor đầy đủ chức năng **`Điều chỉnh`** trong cột `Tác vụ` của màn hình Phụ cấp đích. Lấy cấu trúc UI, state management và luồng xử lý của màn hình chuẩn làm tham chiếu:
+
+`src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\ChamCong\BangCongNgay`
+
+Các file tham chiếu chính:
+
+- `BangCongNgay.razor` và `BangCongNgay.razor.cs`
+- `BangCongNgayDetailCard.razor`, `.razor.cs`, `.razor.css`
+- Provider/request/response/backend contract mà `BangCongNgay` đang sử dụng
+
+Mục tiêu: màn hình đích có một luồng Điều chỉnh an toàn, nhất quán về UI/UX với `BangCongNgay`, và có backend logic đúng quy định dự án lẫn nghiệp vụ của màn hình đích. Không sao chép máy móc tên DTO, API, field hoặc rule đặc thù của Bảng công ngày.
+
+### 1. Đọc tài liệu và xác định quy định backend — bắt buộc
+
+Trước khi phân tích hoặc viết code, đọc toàn bộ quy tắc/checklist/tài liệu liên quan tại:
+
+- `doc\agent-skills`
+- `doc\checklists`
+- `doc\rules`
+- `doc\project`
+
+Tìm thêm các tài liệu đặc tả hoặc triển khai liên quan đến màn hình Phụ cấp đích, bao gồm nghiệp vụ điều chỉnh, authorization, validation, API, audit/log, concurrency, exception handling và testing.
+
+Lập danh sách quy định bắt buộc áp dụng cho backend. Nếu tài liệu mâu thuẫn với source chuẩn `BangCongNgay`, ưu tiên rule/checklist/đặc tả nghiệp vụ hiện hành; ghi rõ mâu thuẫn, không tự suy diễn.
+
+### 2. Phân tích luồng chuẩn và màn hình đích
+
+Phân tích rõ luồng Điều chỉnh của `BangCongNgay`:
+
+1. Nút `Điều chỉnh` chỉ enabled khi row và dataset thỏa điều kiện thao tác.
+2. Kiểm tra lại điều kiện quyền và trạng thái row trước khi mở popup, đặc biệt trạng thái khóa.
+3. Tạo edit model riêng từ row, không binding trực tiếp row đang hiển thị vào form.
+4. Mở `DxPopup` có thông tin read-only cần thiết, các trường được phép điều chỉnh, nút `Hủy` và `Lưu`.
+5. Khi lưu: chặn lưu trùng, validate UI, gọi provider/backend, đóng popup khi thành công, reload dữ liệu và thông báo kết quả.
+6. Khi lỗi/cancellation: giữ dữ liệu nhất quán, không báo thành công sai, khôi phục loading state và hiển thị message tiếng Việt phù hợp.
+
+Đối chiếu với màn hình đích để xác định:
+
+- Field nào chỉ đọc và field nào được phép điều chỉnh.
+- Điều kiện nghiệp vụ khiến một row không thể điều chỉnh.
+- Endpoint/command/request/response hiện có hoặc cần bổ sung.
+- Lớp backend chịu trách nhiệm thực thi nghiệp vụ và nơi áp dụng authorization, validation, audit/concurrency theo tài liệu.
+- Các dữ liệu cần reload sau khi cập nhật thành công.
+
+### 3. Yêu cầu UI và client-side theo chuẩn
+
+- Chuẩn hóa cột `Tác vụ` và item `Điều chỉnh` theo prompt UI đã được phê duyệt.
+- Tạo/tái cấu trúc edit popup theo pattern `BangCongNgayDetailCard`: Razor, code-behind và CSS isolation riêng khi phù hợp với cấu trúc màn hình đích.
+- Popup phải có title tiếng Việt theo ngữ cảnh, các trường chỉ đọc rõ ràng, field editor phù hợp kiểu dữ liệu, `Hủy` và `Lưu`.
+- Dùng edit model độc lập; không làm thay đổi row/grid trước khi backend trả kết quả thành công.
+- Disable field, nút Lưu và đóng popup theo trạng thái đang lưu, row bị khóa hoặc period/context thay đổi theo quy tắc màn hình đích.
+- Không đóng popup khi backend trả lỗi validation hoặc lỗi hệ thống; cho phép người dùng sửa và thử lại nếu quy định cho phép.
+- Chuẩn hóa toàn bộ caption, validation text, loading text, toast và tooltip bằng tiếng Việt UTF-8, đúng chính tả và nhất quán thuật ngữ.
+
+### 4. Ràng buộc backend logic — bắt buộc
+
+Backend không được tin cậy validation, quyền hoặc trạng thái do client gửi lên. Thực thi các quy định được xác định từ tài liệu tại tầng backend phù hợp, bao gồm tối thiểu:
+
+- Xác thực người dùng và authorization cho thao tác Điều chỉnh theo policy/permission của dự án.
+- Tải lại bản ghi theo ID ở server; không dùng trực tiếp dữ liệu row do client gửi làm nguồn xác thực.
+- Kiểm tra record tồn tại, thuộc đúng phạm vi dữ liệu/kỳ lương/đơn vị mà người dùng được phép thao tác và chưa bị xóa/khóa nếu nghiệp vụ cấm chỉnh sửa.
+- Validate tất cả field được điều chỉnh: required, kiểu dữ liệu, min/max, độ chính xác số, format, độ dài ghi chú và các rule nghiệp vụ theo tài liệu.
+- Chỉ cho phép cập nhật field được nghiệp vụ cho phép; chống over-posting/mass assignment.
+- Bảo toàn transaction, consistency và concurrency/audit trail theo pattern bắt buộc của dự án. Không tự tạo cơ chế audit hoặc concurrency mới nếu chưa được tài liệu/kiến trúc dự án cho phép.
+- Trả lỗi domain/validation/authorization theo contract lỗi hiện có của dự án; không làm lộ exception nội bộ, thông tin nhạy cảm hoặc chi tiết hạ tầng ra UI.
+- Không dùng UI disabled state như một cơ chế bảo mật.
+
+Tái sử dụng service/provider/request/response và pattern exception handling của màn hình chuẩn **chỉ khi** chúng phù hợp với domain của màn hình đích và tài liệu dự án. Không gọi endpoint của Bảng công ngày cho một loại phụ cấp khác.
+
+### 5. Cổng phê duyệt kế hoạch — bắt buộc trước khi sửa code
+
+Sau khi hoàn tất phân tích, **không sửa, tạo, đổi tên hoặc xóa file**. Hãy dừng lại và báo cáo kế hoạch gồm:
+
+- Tóm tắt quy định/backend checklist đã đọc và cách mỗi quy định được áp dụng.
+- Các tài liệu cũ/mâu thuẫn đã phát hiện cùng phương án xử lý.
+- Sequence diagram hoặc luồng từng bước: click `Điều chỉnh` → mở popup → validate → request → backend validation/authorization → persist → reload → thông báo.
+- Bảng mapping giữa luồng/Popup/Provider của `BangCongNgay` và màn hình đích, nêu rõ phần tái sử dụng, phần thay thế và lý do.
+- Danh sách chính xác field read-only, field editable, validation và điều kiện không thể điều chỉnh.
+- Danh sách file client/backend/contract/test sẽ tạo hoặc thay đổi, kèm lý do.
+- API/command contract dự kiến: request fields, response, validation/domain error và authorization áp dụng; không công bố secret hoặc dữ liệu nhạy cảm.
+- Chiến lược transaction, concurrency và audit dựa trên tài liệu/source hiện hữu.
+- Rủi ro và câu hỏi nghiệp vụ cần người dùng xác nhận.
+
+**Chỉ bắt đầu triển khai sau khi người dùng xác nhận rõ ràng kế hoạch.**
+
+### 6. Kiểm tra sau khi được phê duyệt và triển khai
+
+1. Build tất cả project bị ảnh hưởng.
+2. Kiểm tra mở popup từ một row hợp lệ; dữ liệu hiển thị đúng, edit model không làm thay đổi grid trước khi lưu.
+3. Kiểm tra validation ở client và backend, gồm dữ liệu không hợp lệ, thiếu dữ liệu, giới hạn số/độ dài và rule nghiệp vụ.
+4. Kiểm tra authorization ở backend bằng người dùng không có quyền; kiểm tra record bị khóa, không tồn tại, sai phạm vi hoặc đã thay đổi đồng thời.
+5. Kiểm tra lưu thành công: persist đúng field cho phép, popup đóng đúng lúc, grid reload, summary liên quan cập nhật và toast đúng tiếng Việt.
+6. Kiểm tra lỗi backend, lỗi mạng và cancellation: không mất dữ liệu form ngoài ý muốn, loading state được khôi phục, không báo thành công sai.
+7. Thêm/chạy automated test theo quy định dự án cho backend validation/authorization và luồng cập nhật quan trọng.
+8. Không tự commit hoặc push.
+
+### Báo cáo kết quả
+
+- Tài liệu/quy định đã áp dụng và các điểm mâu thuẫn đã xử lý.
+- Các file thay đổi cùng mục đích.
+- Hợp đồng backend đã dùng và các lớp validation/authorization/concurrency/audit được áp dụng.
+- Kết quả build/test và các kịch bản đã kiểm tra.
+- Rủi ro còn lại hoặc việc cần xác nhận trước khi tiếp tục với nút chức năng kế tiếp.

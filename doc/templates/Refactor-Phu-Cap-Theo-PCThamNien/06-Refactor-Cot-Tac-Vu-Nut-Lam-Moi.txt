@@ -1,0 +1,109 @@
+## Refactor chức năng Làm mới theo chuẩn Bảng công ngày
+
+Triển khai/refactor chức năng **`Làm mới` cho một dòng** trong cột `Tác vụ` của màn hình Phụ cấp đích. Tham chiếu luồng UI, client/provider và backend của màn hình chuẩn:
+
+`src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\ChamCong\BangCongNgay`
+
+Các thành phần chuẩn cần tham khảo:
+
+- Item `Làm mới` trong `DxDropDownButton` của `BangCongNgay.razor`.
+- `RefreshRowAsync`, điều kiện `CanRefreshRow`, loading, reload và toast trong `BangCongNgay.razor.cs`.
+- Provider/request/response refresh của Bảng công ngày.
+- Endpoint refresh, application/domain service, audit scope/correlation và handling lỗi tương ứng trong server.
+
+Mục tiêu: làm mới lại dữ liệu tính toán của **đúng một dòng** trên màn hình đích từ nguồn dữ liệu hợp lệ, tuân thủ hoàn toàn quy định backend và nghiệp vụ. Không xem “Làm mới” chỉ là reload UI; phải xác định rõ dữ liệu nào được tính lại, nguồn nào được dùng và dữ liệu nào bắt buộc được bảo toàn.
+
+### 1. Đọc tài liệu và xác định semantics nghiệp vụ — bắt buộc
+
+Trước khi phân tích hoặc viết code, đọc toàn bộ tài liệu/rule/checklist liên quan tại:
+
+- `doc\agent-skills`
+- `doc\checklists`
+- `doc\rules`
+- `doc\project`
+
+Tìm các tài liệu đặc tả của màn hình Phụ cấp đích liên quan đến: cách tính phụ cấp, nguồn dữ liệu, kỳ lương, refresh/recalculate, dữ liệu điều chỉnh thủ công, trạng thái khóa, authorization, audit/log, transaction, concurrency, API và testing.
+
+Phải trả lời được từ tài liệu/source hiện có trước khi thiết kế:
+
+- “Làm mới” tính lại field nào và dùng nguồn dữ liệu nào?
+- Khi nào row đủ điều kiện làm mới?
+- Record bị khóa, record điều chỉnh thủ công hoặc dữ liệu nguồn thiếu/không hợp lệ được xử lý thế nào?
+- Làm mới một dòng có được phép tạo record mới không, hay chỉ cập nhật record hiện hữu?
+- Kết quả cần trả về gồm những count/status nào để UI thông báo trung thực?
+
+Nếu chưa có câu trả lời đáng tin cậy, dừng tại kế hoạch và xin xác nhận; không suy diễn theo nghiệp vụ Bảng công ngày.
+
+### 2. Phân tích pattern chuẩn và mapping cho màn hình đích
+
+Phân tích luồng chuẩn của `BangCongNgay`:
+
+1. Nút `Làm mới` chỉ enabled khi row/dataset thỏa điều kiện thao tác.
+2. Client kiểm tra điều kiện trước khi gọi provider, hiển thị loading text theo row và chặn thao tác lặp.
+3. Request refresh xác định rõ kỳ lương và record cần làm mới.
+4. Backend thực hiện toàn bộ validation, authorization và nghiệp vụ refresh; HTTP boundary thực hiện audit/correlation theo kiến trúc hiện có.
+5. Client reload dữ liệu sau khi thành công và hiển thị toast dựa trên kết quả thực tế, bao gồm số dòng cập nhật/bỏ qua nếu contract có cung cấp.
+6. Client xử lý cancellation, lỗi và `finally` để luôn khôi phục loading state.
+
+Lập mapping từ pattern trên sang màn hình đích, chỉ rõ các điểm tương đương/khác biệt về record ID, kỳ lương, nguồn tính, trạng thái khóa, dữ liệu điều chỉnh thủ công, result contract và nội dung thông báo.
+
+### 3. Yêu cầu UI và client-side
+
+- Item `Làm mới` dùng icon refresh, nhãn/tooltip tiếng Việt chuẩn và placement trong menu theo prompt cột Tác vụ đã phê duyệt.
+- Chỉ enable khi row hiện tại thật sự có thể làm mới. UI check chỉ phục vụ trải nghiệm; không được thay thế kiểm tra phía server.
+- Chống double-click/parallel refresh trên cùng row hoặc màn hình theo pattern dự án; trong thời gian xử lý, trạng thái enabled/loading phải nhất quán.
+- Gửi request tối thiểu theo contract: định danh row, kỳ/context cần thiết; không gửi toàn bộ row hoặc field không cần thiết.
+- Không tự cập nhật giá trị trên grid bằng dữ liệu dự đoán. Sau khi backend thành công, reload/refresh đúng phần dữ liệu mà quy định dự án yêu cầu.
+- Toast/loading/error dùng tiếng Việt UTF-8, phản ánh chính xác kết quả: làm mới thành công, không có thay đổi, bị bỏ qua do khóa, thiếu nguồn hoặc lỗi.
+- Hủy/cancellation không được hiển thị như thành công hoặc lỗi nghiệp vụ.
+
+### 4. Ràng buộc backend logic — bắt buộc
+
+Backend phải tuân thủ tài liệu và pattern kiến trúc hiện có, không tin cậy dữ liệu từ client. Tối thiểu phải thực hiện:
+
+- Xác thực và authorization ở server cho thao tác Làm mới theo policy/permission dự án.
+- Validate request: record ID, kỳ lương/context, quan hệ giữa record và context, định dạng/phạm vi dữ liệu.
+- Tải record và nguồn dữ liệu từ server; kiểm tra record tồn tại, thuộc phạm vi người dùng được phép thao tác, và chưa bị xóa/khóa theo rule.
+- Tính lại dữ liệu theo rule/domain service của màn hình đích. Không gọi hoặc tái sử dụng endpoint/service Bảng công ngày nếu domain khác.
+- Bảo vệ dữ liệu không được phép ghi đè: record đã khóa, giá trị nhập tay, override hoặc trạng thái bảo vệ khác phải được xử lý đúng quy định đã xác nhận.
+- Xử lý idempotency, transaction, consistency và concurrency theo tài liệu/kiến trúc sẵn có; không tự thêm cơ chế mới nếu chưa được quy định.
+- Gắn audit action, audit scope và correlation theo pattern backend hiện hữu cho thao tác có thay đổi dữ liệu.
+- Trả response contract minh bạch: định danh/kỳ xử lý và các outcome/count cần thiết như cập nhật, giữ nguyên, bỏ qua do khóa hoặc không tìm thấy nguồn, nếu nghiệp vụ có các trạng thái đó.
+- Trả validation/domain/authorization error theo error contract dự án; không lộ exception nội bộ hoặc thông tin nhạy cảm.
+
+### 5. Cổng phê duyệt kế hoạch — bắt buộc trước khi sửa code
+
+Sau khi hoàn tất phân tích, **không sửa, tạo, đổi tên hoặc xóa file**. Hãy báo cáo kế hoạch gồm:
+
+- Quy định/checklist/tài liệu đã đọc và bảng áp dụng từng quy định vào refresh backend.
+- Định nghĩa nghiệp vụ chính xác của “Làm mới” trên màn hình đích: input, nguồn dữ liệu, field bị tính lại và field được bảo toàn.
+- Sequence diagram: click `Làm mới` → client guard/loading → request → backend authorization/validation → tính lại/persist/audit → response → reload/toast.
+- Bảng mapping với `BangCongNgay`: client handler, request/response, endpoint, service, audit, xử lý record khóa và xử lý override thủ công.
+- Contract request/response/error dự kiến, với lý do cho từng field và count/status trả về.
+- Điều kiện enable/disable cho button và điều kiện server-side tương ứng.
+- Danh sách file client/backend/contract/test sẽ thay đổi, kèm lý do.
+- Chiến lược transaction, concurrency, audit và các rủi ro về ghi đè dữ liệu.
+- Các câu hỏi nghiệp vụ còn thiếu cần người dùng xác nhận.
+
+**Chỉ bắt đầu triển khai sau khi người dùng xác nhận rõ ràng kế hoạch.**
+
+### 6. Kiểm tra sau khi được phê duyệt và triển khai
+
+1. Build toàn bộ project bị ảnh hưởng.
+2. Kiểm tra refresh một row hợp lệ: input/source đúng, backend persist đúng và grid/summary reload chính xác.
+3. Kiểm tra button/loading chống gọi lặp, cancellation và trạng thái UI được khôi phục trong mọi nhánh lỗi.
+4. Kiểm tra authorization server-side với người dùng không có quyền; kiểm tra ID không tồn tại, sai kỳ/context và record ngoài phạm vi.
+5. Kiểm tra record khóa, record điều chỉnh thủ công/override và dữ liệu nguồn thiếu theo rule đã xác nhận; không được ghi đè trái phép.
+6. Kiểm tra concurrency/transaction/audit theo yêu cầu dự án.
+7. Kiểm tra toast bằng tiếng Việt: kết quả thành công, không thay đổi, bị bỏ qua và lỗi phải chính xác, không gây hiểu nhầm.
+8. Thêm/chạy automated test cho validation, authorization, business rule bảo vệ dữ liệu và refresh thành công theo quy định dự án.
+9. Không tự commit hoặc push.
+
+### Báo cáo kết quả
+
+- Ý nghĩa nghiệp vụ đã xác nhận của thao tác Làm mới.
+- Tài liệu/quy định áp dụng và các mâu thuẫn đã xử lý.
+- File thay đổi và contract backend được dùng.
+- Cách hệ thống bảo vệ record khóa/override/dữ liệu điều chỉnh thủ công.
+- Kết quả build/test và các kịch bản đã kiểm tra.
+- Rủi ro hoặc điểm cần xác nhận trước khi triển khai nút tiếp theo.

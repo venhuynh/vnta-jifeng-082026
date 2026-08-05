@@ -1,0 +1,124 @@
+## Refactor vùng nội dung bên dưới DxToolbar theo chuẩn Bảng công ngày
+
+Refactor **chỉ vùng nội dung nằm bên dưới `DxToolbar`** của màn hình Phụ cấp đích, lấy màn hình chuẩn sau làm tham chiếu:
+
+`src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\ChamCong\BangCongNgay\BangCongNgay.razor`
+
+Không refactor nội dung hoặc hành vi của `DxToolbar` trong giai đoạn này. Mục tiêu là chuẩn hóa cấu trúc, state UI, grid và CSS của vùng nội dung theo cách triển khai của `BangCongNgay`, đồng thời giữ nguyên nghiệp vụ, dữ liệu, phân quyền và API của màn hình đích.
+
+### Thành phần chuẩn phải phân tích và đối chiếu
+
+Phân tích riêng từng thành phần bên dưới toolbar của `BangCongNgay` và xác định thành phần tương ứng trên màn hình đích:
+
+1. **Content root và card container**
+   - Container bao ngoài nội dung.
+   - Card hiển thị grid.
+   - Cách dùng CSS isolation để duy trì vùng hiển thị co giãn đúng, không làm vỡ layout trang.
+
+2. **Error state**
+   - Điều kiện hiển thị lỗi tải dữ liệu.
+   - `state-title`, `state-message` và nút thử lại.
+   - Nội dung thông báo phù hợp với nghiệp vụ của màn hình đích.
+   - Không che giấu hoặc nuốt lỗi API; giữ cơ chế xử lý lỗi hiện có nếu có.
+
+3. **Loading state**
+   - `HrmLoadingPanel` bao quanh vùng grid.
+   - Trạng thái block nội dung, indicator, loading text và thời điểm bật/tắt loading.
+   - Bảo đảm loading, error và dữ liệu không hiển thị chồng chéo sai trạng thái.
+
+4. **Grid header**
+   - Khu vực summary/badge/filter cục bộ phía trên grid, nếu nghiệp vụ màn hình đích có dữ liệu tương đương.
+   - Khu vực tổng hợp, ví dụ tổng tiền hoặc tổng số bản ghi, với cách format nhất quán.
+   - `DxSearchBox` tìm kiếm phía client với delayed input, clear button và trạng thái enabled phù hợp.
+   - Nếu không có nghiệp vụ tương ứng với badge hoặc tổng hợp của Bảng công ngày, không tạo dữ liệu giả; nêu rõ lý do trong kế hoạch và chỉ giữ các thành phần phù hợp.
+
+5. **DxGrid hiển thị chính**
+   - `@ref`, `Data`, `KeyFieldName`, CSS class và quy ước binding dữ liệu.
+   - Phân trang, lựa chọn page size, pager summary, chế độ "Tất cả", skeleton rows.
+   - Resize cột, filter menu, text wrap, focused row, hover row và row selection.
+   - Đồng bộ state selection, search text, filter criteria và dữ liệu đang hiển thị.
+   - Bảo toàn sort, filter, paging, selection và các hành vi hiện có của màn hình đích.
+
+6. **Columns và cell template**
+   - Cột chọn dòng, STT, tác vụ dòng và các cột nghiệp vụ.
+   - Kích thước cột, `MinWidth`, visibility mặc định và column chooser theo convention của chuẩn.
+   - Cell template cho format ngày, số tiền, số lượng, trạng thái hoặc highlight kết quả tìm kiếm.
+   - Cột trạng thái sử dụng CSS class/semantic style tương ứng, không hard-code trạng thái nghiệp vụ của Bảng công ngày.
+
+7. **Tác vụ trên từng dòng**
+   - Khu vực `DxDropDownButton` trong cột tác vụ.
+   - Ngăn click trong menu làm kích hoạt chọn/focus dòng ngoài ý muốn.
+   - Enable/disable theo đúng permission, trạng thái dữ liệu và quy tắc nghiệp vụ của màn hình đích.
+   - Không thêm các tác vụ như điều chỉnh, làm mới, khóa/mở khóa hoặc bảng công nếu màn hình đích không có nghiệp vụ tương ứng.
+
+8. **Summary và empty state của grid**
+   - `TotalSummary` khi màn hình đích có chỉ số cần tổng hợp.
+   - `EmptyDataAreaTemplate` gồm `state-title`, `state-message` và action phù hợp.
+   - Phân biệt chính xác trường hợp chưa tải dữ liệu, không có dữ liệu, không có kết quả sau tìm kiếm/lọc và xảy ra lỗi tải dữ liệu.
+
+9. **Export grid**
+   - Kiểm tra màn hình đích có cơ chế export hay không.
+   - Nếu có, tổ chức `DxGrid` ẩn dành cho export theo cùng pattern của màn hình chuẩn: dữ liệu export đầy đủ, không bị giới hạn bởi paging/filter hiển thị nếu nghiệp vụ yêu cầu.
+   - Nếu không có export hoặc export được triển khai theo cơ chế khác, không tự ý thêm export; ghi rõ trong kế hoạch.
+
+### Chuẩn hóa tiếng Việt cho toàn bộ UI — bắt buộc
+
+Chuẩn hóa toàn bộ nội dung tiếng Việt xuất hiện trong vùng bên dưới `DxToolbar`, gồm:
+
+- Tiêu đề state: `state-title` của error state và empty state.
+- Thông điệp: `state-message`, loading text, thông báo không có dữ liệu và thông báo không có kết quả tìm kiếm/lọc.
+- Nhãn UI: tiêu đề grid, cột, summary/badge, tổng số liệu, pager và các nhãn hỗ trợ.
+- Hành động: nút thử lại, nút empty state, tác vụ dòng, nhãn export và tooltip liên quan.
+- Tooltip, `aria-label`, nội dung hỗ trợ accessibility và các text hiển thị do component truyền vào.
+
+Áp dụng các quy tắc sau:
+
+- Dùng tiếng Việt có dấu, câu ngắn gọn, rõ nghĩa và đúng chính tả; lưu file ở encoding UTF-8.
+- Dùng thuật ngữ nghiệp vụ nhất quán trong cùng màn hình và với `BangCongNgay`; ví dụ không trộn lẫn các cách gọi khác nhau cho cùng một khái niệm.
+- Thống nhất quy tắc viết hoa: tiêu đề/caption dùng Title Case tiếng Việt phù hợp; câu hướng dẫn, message và tooltip dùng câu tự nhiên, không lạm dụng viết hoa toàn bộ.
+- Dùng thuật ngữ chính xác theo ngữ cảnh: "Tìm kiếm", "Lọc", "Không có dữ liệu", "Không tìm thấy kết quả", "Thử lại", "Tổng", "Tất cả"; không dùng từ viết tắt hoặc thuật ngữ tiếng Anh khi đã có cách gọi tiếng Việt rõ ràng.
+- Không thay đổi giá trị dữ liệu nghiệp vụ, field name, API contract, key kỹ thuật, CSS class, route hoặc identifier chỉ để Việt hóa.
+- Không Việt hóa tên component DevExpress, tên thuộc tính C#, tên file, enum, mã lỗi kỹ thuật hoặc các chuỗi bắt buộc do thư viện/API quy định.
+
+Trước khi báo cáo kế hoạch, lập bảng chuẩn hóa text gồm: text hiện tại, text đề xuất, vị trí sử dụng và lý do thay đổi. Chỉ áp dụng các thay đổi text sau khi kế hoạch được người dùng phê duyệt.
+
+### Cổng phê duyệt kế hoạch — bắt buộc
+
+Trước khi sửa, tạo, đổi tên hoặc xóa file, hãy dừng lại và báo cáo kế hoạch refactor. Báo cáo phải bao gồm:
+
+- Danh sách các thành phần hiện có bên dưới toolbar của màn hình đích.
+- Bảng mapping từng thành phần với 9 nhóm thành phần chuẩn ở trên: áp dụng, không áp dụng hoặc cần điều chỉnh.
+- Cây/khối layout hiện tại và layout dự kiến sau refactor.
+- Danh sách file `.razor`, `.razor.cs`, `.razor.css` và component liên quan sẽ thay đổi, kèm lý do.
+- Danh sách state, event handler, callback, binding và dependency bị ảnh hưởng.
+- Các rủi ro đối với loading/error/empty state, grid selection, filter, paging, row action, authorization và export.
+- Bảng chuẩn hóa tiếng Việt của toàn bộ text UI bị ảnh hưởng.
+- Các điểm cần người dùng xác nhận.
+
+**Không bắt đầu refactor cho đến khi người dùng xác nhận rõ ràng kế hoạch.**
+
+### Nguyên tắc thực hiện sau khi được phê duyệt
+
+- Chỉ refactor vùng dưới `DxToolbar`; không thay đổi toolbar, route, API contract hoặc nghiệp vụ ngoài phạm vi.
+- Giữ tên và ý nghĩa nghiệp vụ riêng của màn hình đích; chỉ chuẩn hóa cấu trúc và trải nghiệm theo pattern của `BangCongNgay`.
+- Không thêm state, action, cột, filter hoặc dữ liệu chỉ để giống về mặt hình thức.
+- Không để lại code chết, import không dùng, CSS không còn tham chiếu hoặc state trùng lặp.
+- Dùng CSS isolation và class name theo convention của module đích; không làm ảnh hưởng màn hình Phụ cấp khác.
+- Tuân thủ rules và checklist của dự án.
+
+### Kiểm tra sau refactor
+
+1. Build project/solution bị ảnh hưởng.
+2. Kiểm tra đầy đủ transition giữa loading, error, empty và data state.
+3. Kiểm tra search, filter, sort, paging, page size, chọn dòng, focus row và row action.
+4. Kiểm tra responsive/overflow của grid và header grid ở kích thước màn hình nhỏ.
+5. Kiểm tra export nếu chức năng này tồn tại.
+6. Kiểm tra lại toàn bộ text UI hiển thị: tiếng Việt có dấu, đúng chính tả, thuật ngữ nhất quán, không còn text mojibake/lỗi encoding và không còn text tiếng Anh không cần thiết.
+7. Không tự commit hoặc push.
+
+### Báo cáo kết quả
+
+- Các thành phần đã chuẩn hóa theo `BangCongNgay`.
+- Các thành phần không áp dụng và lý do nghiệp vụ.
+- File đã thay đổi cùng kết quả build/kiểm tra.
+- Khác biệt còn lại so với chuẩn và lý do giữ lại.

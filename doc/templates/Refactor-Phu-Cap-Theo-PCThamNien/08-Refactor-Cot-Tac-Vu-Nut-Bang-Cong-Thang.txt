@@ -1,0 +1,106 @@
+## Refactor nút Bảng công tháng trong cột Tác vụ theo chuẩn Bảng công ngày
+
+Triển khai/refactor chức năng **`Bảng công tháng` cho một dòng** trong cột `Tác vụ` của màn hình Phụ cấp đích. Lấy cấu trúc và luồng chuẩn tại:
+
+`src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\ChamCong\BangCongNgay`
+
+Các file tham chiếu chính:
+
+- Item `Bảng công tháng` và `OpenMonthlyWorkPopupAsync(row)` trong `BangCongNgay.razor`/`.razor.cs`.
+- `BangCongNgayDetailCard.razor`, `.razor.cs`, `.razor.css`.
+- `MonthlyWorkSummaryDataProvider` và backend contract/service dùng để tải công tháng của một nhân viên.
+
+Phạm vi chỉ là xem bảng công tháng của **một nhân viên tương ứng với row được chọn trong cột Tác vụ**. Popup và nút `Làm mới` bên trong popup chỉ tải lại dữ liệu hiển thị; không được tạo, sửa, xóa, tính lại hoặc thay đổi dữ liệu chấm công/lương/phụ cấp trong giai đoạn này.
+
+### 1. Đọc tài liệu và xác định quyền/phạm vi dữ liệu — bắt buộc
+
+Trước khi phân tích hoặc viết code, đọc đầy đủ:
+
+- `doc\agent-skills`
+- `doc\checklists`
+- `doc\rules`
+- `doc\project`
+
+Tìm các tài liệu/source liên quan đến: bảng công tháng, dữ liệu chấm công, kỳ lương, phạm vi dữ liệu nhân viên/đơn vị, authorization, bảo mật dữ liệu cá nhân, audit/log truy cập, API, exception handling và testing.
+
+Xác định rõ:
+
+- Dữ liệu bảng công nào được phép hiển thị cho chức năng Phụ cấp đích và nguồn dữ liệu chuẩn là gì.
+- Quyền xem bảng công của nhân viên có giống quyền thao tác Phụ cấp hay cần permission/policy riêng.
+- Quy tắc xác định tháng/năm hoặc khoảng ngày cần hiển thị; không mặc định dùng kỳ trên UI nếu tài liệu quy định khác.
+- Những thông tin nhạy cảm nào không được hiển thị hoặc phải được che giấu.
+- Dữ liệu nguồn không tồn tại, nhân viên không hợp lệ, sai scope/kỳ hoặc bị chặn bởi workflow được xử lý thế nào.
+
+Nếu tài liệu không xác nhận được các điểm trên, dừng ở kế hoạch để xin xác nhận; không suy diễn từ màn hình Bảng công ngày.
+
+### 2. Pattern UI/client cần áp dụng
+
+1. **Action trong cột Tác vụ**
+   - Dùng nhãn `Bảng công tháng`, icon phù hợp theo convention chuẩn (ví dụ TaskList), tooltip tiếng Việt rõ nghĩa và handler nhận đúng row.
+   - Chỉ enable khi row có định danh nhân viên hợp lệ và người dùng có thể xem dữ liệu theo điều kiện UI; backend vẫn phải kiểm tra lại toàn bộ quyền/phạm vi.
+   - Không để click action làm select/focus row ngoài ý muốn.
+
+2. **Popup chỉ đọc**
+   - Tách thành component popup riêng theo cấu trúc Razor, code-behind và CSS isolation của `BangCongNgayDetailCard` khi phù hợp.
+   - Header gồm title, context nhận diện nhân viên/kỳ dữ liệu và trạng thái nguồn nếu có theo đặc tả; không hiển thị dữ liệu nhạy cảm vượt phạm vi quyền.
+   - Mở popup trước với loading state; không chờ API xong mới render popup.
+   - Không có control chỉnh sửa dữ liệu. Nút `Làm mới` trong header chỉ gọi lại truy vấn read-only của popup; nút Đóng bị disable trong lúc loading theo pattern chuẩn.
+   - Có error state, empty state và loading state phân biệt rõ ràng; tiếng Việt UTF-8, đúng chính tả và không làm lộ lỗi nội bộ.
+
+3. **Nội dung popup**
+   - Phân tích các summary card, `DxButtonGroup` lọc/tổng hợp và `DxGrid` của popup chuẩn: loại ngày công, trạng thái, ngày, thứ, loại ngày, ca, vào-ra, trạng thái chấm công, OT, đi trễ/về sớm.
+   - Chỉ hiển thị summary, badge, cột và format có ý nghĩa với dữ liệu/đặc tả của màn hình đích. Không tạo dữ liệu giả chỉ để giống UI.
+   - Giữ summary/filter phía client đồng bộ với `FilteredRows`; mỗi `DxButtonGroup` chỉ thay đổi view filter, không gọi API hoặc thay đổi dữ liệu nguồn trừ khi tài liệu yêu cầu khác.
+   - Format ngày/giờ/số giờ theo culture/convention của dự án; xử lý dữ liệu trống bằng text nhất quán, không dùng giá trị giả.
+   - Bảo đảm responsive: breakpoint, popup size, scroll/overflow của grid và keyboard focus theo pattern chuẩn.
+
+### 3. Ràng buộc backend và data-access — bắt buộc
+
+Đây là chức năng read-only nhưng vẫn phải bảo mật ở backend. Không tin cậy `EmployeeId`, kỳ/khung ngày hoặc scope từ client. Tối thiểu:
+
+- Xác thực và authorization server-side theo policy/permission của dự án cho phép xem bảng công tháng.
+- Tải/xác minh row, nhân viên, đơn vị và context từ server; chỉ cho phép truy cập dữ liệu thuộc phạm vi người dùng được phép xem.
+- Validate request input: định danh nhân viên, kỳ/context hoặc date range; giới hạn date range và không cho client truy vấn vượt phạm vi hợp lệ.
+- Xác định from/to date ở server hoặc validate nghiêm ngặt giá trị client gửi, theo rule của kỳ lương/bảng công.
+- Chỉ trả về field được phép hiển thị; không đưa PII hoặc dữ liệu chấm công nhạy cảm không cần thiết cho UI.
+- Không tạo mutation, không làm mới dữ liệu nguồn, không tự đồng bộ dữ liệu chấm công và không có side effect chỉ vì người dùng mở/refresh popup.
+- Áp dụng audit/correlation cho truy cập dữ liệu nếu tài liệu/kiến trúc hiện có yêu cầu; tái sử dụng pattern sẵn có, không tự tạo cơ chế audit mới.
+- Trả validation/authorization/not-found/domain error theo error contract dự án, không lộ exception nội bộ hoặc chi tiết hạ tầng.
+
+Không sử dụng API/DTO/service Bảng công ngày cho domain khác nếu dữ liệu bảng công của màn hình đích cần contract hoặc authorization khác.
+
+### 4. Cổng phê duyệt kế hoạch — bắt buộc trước khi sửa code
+
+Sau khi hoàn tất phân tích, **không sửa, tạo, đổi tên hoặc xóa file**. Hãy báo cáo kế hoạch gồm:
+
+- Tài liệu/checklist đã đọc và các quy định bảo mật/authorization được áp dụng.
+- Bảng mapping giữa `BangCongNgayDetailCard` và popup dự kiến: header, context, loading/error/empty state, summary, `DxButtonGroup`, grid, refresh và responsive CSS.
+- Danh sách field/cột/summary: áp dụng, không áp dụng hoặc cần xác nhận, kèm nguồn dữ liệu và lý do.
+- Sequence diagram: click `Bảng công tháng` → UI guard → mở popup/loading → request → backend authorization/scope validation → response → render/filter → refresh/close.
+- Contract request/response/error dự kiến và data classification: dữ liệu nào được hiển thị, dữ liệu nào bị loại/che giấu.
+- Điều kiện enable/disable của action và điều kiện kiểm tra tương ứng phía server.
+- Danh sách file client/backend/contract/test sẽ thay đổi, kèm lý do.
+- Rủi ro về bảo mật dữ liệu nhân viên, sai kỳ, scope, loading concurrency, popup close và responsive grid.
+- Các câu hỏi nghiệp vụ cần người dùng xác nhận.
+
+**Chỉ bắt đầu triển khai sau khi người dùng xác nhận rõ ràng kế hoạch.**
+
+### 5. Kiểm tra sau khi được phê duyệt và triển khai
+
+1. Build toàn bộ project bị ảnh hưởng.
+2. Kiểm tra popup mở đúng row/nhân viên/kỳ và hiển thị loading, data, empty state, error state chính xác.
+3. Kiểm tra nút `Làm mới` trong popup chỉ re-query dữ liệu read-only; xác minh không có API mutation hoặc thay đổi dữ liệu nguồn.
+4. Kiểm tra summary card, `DxButtonGroup`, filter, grid, format ngày/giờ/số liệu, trạng thái trống và responsive/overflow.
+5. Kiểm tra authorization/scope ở backend: user không có quyền, employee không tồn tại, employee ngoài đơn vị/phạm vi, request sai kỳ/date range.
+6. Kiểm tra response không lộ field nhạy cảm và lỗi không lộ exception nội bộ.
+7. Kiểm tra cancellation, thao tác refresh lặp, đóng popup trong lúc loading và cleanup state khi đóng popup.
+8. Thêm/chạy automated test theo quy định dự án cho authorization, scope/date-range validation, mapping response và read-only guarantee.
+9. Không tự commit hoặc push.
+
+### Báo cáo kết quả
+
+- Semantics và nguồn dữ liệu bảng công tháng đã xác nhận.
+- Quy định authorization/bảo mật được áp dụng.
+- Các summary/cột/filter đã áp dụng hoặc không áp dụng, cùng lý do.
+- File và contract thay đổi.
+- Kết quả build/test, xác nhận read-only guarantee và các rủi ro còn lại.

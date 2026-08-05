@@ -1,0 +1,74 @@
+## Refactor UI cột Tác vụ theo chuẩn Bảng công ngày — chưa triển khai logic
+
+Refactor **chỉ phần UI của cột `Tác vụ` trong `DxGrid`** trên màn hình Phụ cấp đích, lấy implementation chuẩn tại:
+
+`src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\ChamCong\BangCongNgay\BangCongNgay.razor`
+
+Tham chiếu cụ thể là cột `Tác vụ` sử dụng `DxDropDownButton` trong cell template, với icon menu ba chấm và các action item chuẩn. Đây là giai đoạn UI-only; **không triển khai, thay đổi hoặc kích hoạt logic nghiệp vụ**.
+
+### Phạm vi UI cần chuẩn hóa
+
+1. **Cột Tác vụ**
+   - Caption: `Tác vụ`.
+   - Căn giữa nội dung, kích thước cột, `MinWidth`, `AllowSort="false"` và `ShowInColumnChooser="false"` theo pattern màn hình chuẩn khi phù hợp.
+   - Không làm thay đổi thứ tự hay ý nghĩa các cột nghiệp vụ khác.
+
+2. **Nút menu theo dòng**
+   - Dùng `DxDropDownButton` trong `CellDisplayTemplate`.
+   - Dùng icon menu ba chấm theo convention của màn hình chuẩn (`icon more-icon medium-icon` hoặc icon tương đương đang được dự án quy định).
+   - Dùng `ButtonRenderStyle.Link` và `DropDownToggleVisible="false"` như chuẩn, nếu không mâu thuẫn với UI framework/version của dự án.
+   - Bọc button bằng host container và chặn propagation của `click`/`mousedown` để thao tác menu không vô tình select hoặc focus dòng grid.
+   - Tooltip của nút: tiếng Việt rõ nghĩa, theo ngữ cảnh màn hình đích; ví dụ `Tác vụ dòng ...`.
+
+3. **Danh sách action item**
+   - Phân tích action item trong màn hình chuẩn: `Điều chỉnh`, `Làm mới`, `Khóa`/`Mở khóa` và `Bảng công tháng`.
+   - Đối chiếu với nghiệp vụ thực tế của màn hình đích và chỉ hiển thị action có ý nghĩa hoặc đã được thống nhất cho màn hình đích.
+   - Dùng nhãn tiếng Việt chuẩn, icon DevExpress phù hợp và nhóm action (`BeginGroup`) giống cách tổ chức của màn hình chuẩn.
+   - Nếu action có trạng thái thay đổi (ví dụ Khóa/Mở khóa), chỉ chuẩn bị vị trí binding nhãn/icon/trạng thái; không tạo hoặc suy diễn logic xác định trạng thái.
+   - Không copy các action đặc thù của Bảng công ngày sang màn hình đích nếu không có nghiệp vụ tương ứng.
+
+### Ràng buộc giai đoạn UI-only
+
+- Không thêm hoặc sửa service call, API endpoint, command, repository hoặc DTO.
+- Không gọi API, không cập nhật dữ liệu, không mở popup nghiệp vụ, không export, không thay đổi trạng thái khóa và không thay đổi dữ liệu grid.
+- Không tạo event handler giả/no-op chỉ để button có thể click.
+- Không thay đổi permission/authorization hiện có. Nếu capability flag/permission cần thiết chưa tồn tại, nêu trong kế hoạch; không tự tạo logic permission.
+- Các menu item chưa có logic được render ở trạng thái `Enabled="false"`, có tooltip phù hợp như `Chức năng sẽ được triển khai ở giai đoạn tiếp theo`, hoặc theo convention dự án. Mục tiêu là xem được cấu trúc UI mà không tạo thao tác gây hiểu nhầm.
+- Nếu màn hình đích đã có handler nghiệp vụ đang hoạt động, không thay đổi hoặc di chuyển logic đó trong giai đoạn này, trừ khi cần giữ nguyên binding hiện có sau khi đổi markup; mọi trường hợp phải nêu rõ trong kế hoạch.
+- Không thay đổi toolbar, route, API contract, nội dung business column hoặc các popup ngoài phạm vi cột Tác vụ.
+
+### Chuẩn hóa tiếng Việt và accessibility
+
+- Tất cả caption, action text và tooltip phải là tiếng Việt có dấu, đúng chính tả, ngắn gọn và nhất quán.
+- Không dùng text tiếng Anh, text lỗi encoding hoặc thuật ngữ mơ hồ.
+- Tooltip phải nói rõ tác dụng của nút/action nhưng không khẳng định một thao tác sẽ được thực thi khi action hiện đang disabled.
+- Duy trì khả năng điều hướng và sử dụng bằng bàn phím do DevExpress hỗ trợ; không dùng CSS làm ẩn focus state.
+
+### Cổng phê duyệt kế hoạch — bắt buộc
+
+Trước khi thay đổi file, hãy phân tích cột Tác vụ hiện tại và dừng lại để báo cáo kế hoạch. Kế hoạch cần có:
+
+- Markup/cấu trúc hiện tại của cột Tác vụ và cấu trúc dự kiến sau refactor.
+- Bảng mapping giữa action của màn hình chuẩn với action dự kiến trên màn hình đích: áp dụng, không áp dụng hoặc cần xác nhận.
+- Bảng gồm action text, icon, tooltip, nhóm menu, trạng thái enabled/disabled và ghi chú về logic chưa triển khai.
+- Danh sách file `.razor`, `.razor.cs`, `.razor.css` sẽ thay đổi, kèm lý do.
+- Các handler, binding hoặc permission hiện hữu cần được giữ nguyên; các điểm không được sửa trong giai đoạn UI-only.
+- Rủi ro về row selection, click propagation, accessibility và khác biệt nghiệp vụ.
+
+**Chỉ bắt đầu refactor UI sau khi người dùng xác nhận rõ ràng kế hoạch.**
+
+### Kiểm tra sau khi được phê duyệt và refactor UI
+
+1. Build project/solution bị ảnh hưởng.
+2. Kiểm tra menu hiển thị đúng trên từng dòng và không làm thay đổi selection/focus của grid ngoài ý muốn.
+3. Kiểm tra icon, caption, tooltip, menu group, responsive layout và keyboard focus.
+4. Xác minh mọi action chưa có logic đều disabled và không gọi API/không làm thay đổi dữ liệu.
+5. Kiểm tra tiếng Việt, encoding UTF-8 và không còn text mojibake.
+6. Không tự commit hoặc push.
+
+### Báo cáo kết quả
+
+- Các thay đổi UI của cột Tác vụ.
+- Bảng action đã triển khai phần hiển thị và trạng thái hiện tại.
+- Xác nhận rõ: chưa có logic nghiệp vụ mới nào được triển khai hoặc kích hoạt.
+- Kết quả build và kiểm tra tương tác UI.

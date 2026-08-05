@@ -1,0 +1,118 @@
+## Refactor DxToolbar → Hành động → Khóa / Mở khóa theo chuẩn Bảng công ngày
+
+Triển khai/refactor hai thao tác hàng loạt **`Hành động → Khóa`** và **`Hành động → Mở khóa`** của `DxToolbar` trên màn hình Phụ cấp đích. Tham chiếu UI, client flow, request/response, endpoint, application service và audit pattern của:
+
+`src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\ChamCong\BangCongNgay`
+
+Các thành phần chuẩn phải phân tích:
+
+- Items `Khóa`, `Mở khóa`, `OnLockSelectedAsync`, `OnUnlockSelectedAsync`, `OpenLockActionPopupAsync`, `ConfirmLockActionAsync` trong màn hình chính.
+- `ToggleSummaryLockStateAsync.razor`, `.razor.cs`, `.razor.css`.
+- `SetAttendanceWorkdaySummaryLockStateRequest`, `ToggleSummaryLockStateAsync`, endpoint `/api/attendance/logs/workday-summary/lock-state`, `IAttendanceWorkdaySummaryService` và audit action tương ứng.
+
+Phạm vi của prompt này là **khóa/mở khóa hàng loạt từ DxToolbar** theo một trong hai phạm vi: `Các dòng đã chọn` hoặc `Toàn bộ kỳ lương`. Không refactor nút Khóa/Mở khóa trên từng dòng trong cột `Tác vụ`; thao tác cấp dòng đã có prompt riêng.
+
+### 1. Đọc tài liệu và xác định semantics khóa — bắt buộc
+
+Trước khi phân tích hoặc viết code, đọc đầy đủ:
+
+- `doc\agent-skills`
+- `doc\checklists`
+- `doc\rules`
+- `doc\project`
+
+Tìm tài liệu/source liên quan tới màn hình Phụ cấp đích: payroll period lifecycle, lock/unlock state, manual override, chỉnh sửa/tính lại, approval/finalization, authorization, segregation of duties, audit/log, transaction, concurrency, API error contract và testing.
+
+Xác định rõ trước khi thiết kế:
+
+- Điều kiện nghiệp vụ, permission/policy và workflow nào cho phép Khóa và Mở khóa; hai thao tác có thể cần quyền khác nhau.
+- Lock có hiệu lực ngăn những action nào ở backend (Điều chỉnh, Làm mới, Tính lại, export, workflow hoặc action khác).
+- Mở khóa có cần lý do, quyền cao hơn, approval hoặc chỉ được phép trong trạng thái/kỳ nhất định không.
+- Toàn bộ kỳ nghĩa là tất cả record nào; selected rows được xác định theo state nào và có bao gồm row đang bị filter/paging không.
+- Rule của record đã locked/unlocked, manual override, approved/finalized và record không tồn tại/ngoài scope.
+- Chính sách all-or-nothing hay partial success; behavior khi một ID được chọn không thuộc kỳ/scope hoặc đã bị thay đổi đồng thời.
+
+Nếu không có căn cứ tài liệu/source, ghi rõ blocker và chờ xác nhận. Không suy diễn từ Bảng công ngày.
+
+### 2. UI và client flow bắt buộc
+
+1. **Mở popup xác nhận**
+   - `Khóa` và `Mở khóa` phải mở cùng một popup action, với title, prompt, icon và nút xác nhận thay đổi theo target state.
+   - Popup hiển thị rõ kỳ đang **áp dụng cho dataset**, không dùng toolbar period chưa được tải nếu đang có pending period change.
+   - Hiển thị hai lựa chọn phạm vi: `Các dòng đã chọn` và `Toàn bộ kỳ MM/YYYY`.
+   - `Các dòng đã chọn` disabled khi không có selection hợp lệ; `Toàn bộ kỳ` luôn phải mô tả đúng số lượng/tác động dự kiến nếu dữ liệu có sẵn.
+   - Nội dung warning phải nói rõ hậu quả của Khóa/Mở khóa theo nghiệp vụ đã xác nhận, không dùng thông điệp chung chung hoặc sai scope.
+
+2. **Xác định scope và xác nhận**
+   - Phân biệt tuyệt đối request scope:
+     - `Selected rows`: gửi danh sách record ID đã chọn, đã loại `Guid.Empty` và loại trùng.
+     - `Whole period`: gửi scope toàn kỳ theo contract; nếu contract chuẩn dùng `null` cho danh sách ID thì chỉ `null` mới có nghĩa toàn kỳ.
+     - Danh sách ID rỗng không được tự động hiểu là toàn kỳ.
+   - Trước confirm, kiểm tra selection còn hợp lệ trên dữ liệu đang hiển thị; nếu không còn target hợp lệ thì hiển thị cảnh báo và không gọi backend.
+   - Khi confirm: disable popup/toolbar và thao tác cạnh tranh, hiển thị loading text theo action/scope, chặn double-click/parallel request.
+   - Khi Khóa có thể ảnh hưởng popup Điều chỉnh đang mở cho một record target, xử lý theo rule được xác nhận (màn hình chuẩn đóng popup edit để tránh lưu dữ liệu không còn hợp lệ).
+   - Sau thành công: reload dataset/summary/selection phù hợp, hiển thị toast dựa trên `TargetRowCount` và `UpdatedCount` thực tế, bao gồm case không có dữ liệu hoặc trạng thái đã được áp dụng.
+   - Khi lỗi/cancellation: không báo thành công, không đổi state lạc quan, khôi phục loading và giữ/đóng popup theo behavior đã phê duyệt.
+
+3. **Chuẩn hóa UI**
+   - Dùng popup component độc lập theo pattern `ToggleSummaryLockStateAsync`, Razor/code-behind/CSS isolation khi phù hợp.
+   - Tiếng Việt có dấu, UTF-8, nhất quán cho title, scope, mô tả, warning, loading, error, success toast, tooltip và accessibility label.
+   - Đảm bảo popup responsive, keyboard accessible và không thể đóng ngoài ý muốn trong lúc operation đang chạy.
+
+### 3. Ràng buộc backend trọng yếu — bắt buộc
+
+Backend là source of truth. Không tin period, scope, selected IDs, current lock state hoặc permission từ client. Tối thiểu phải thực hiện:
+
+- Xác thực người dùng và authorization server-side riêng cho Khóa/Mở khóa theo policy/permission/segregation of duties của dự án.
+- Validate payroll period, trạng thái kỳ/workflow và action target state. Không cho thao tác kỳ ngoài phạm vi, đã chốt hoặc state bị cấm.
+- Xác định scope tại server:
+  - Whole period: truy vấn toàn bộ record hợp lệ của đúng kỳ/scope được authorization.
+  - Selected rows: normalize/deduplicate ID, xác minh từng record tồn tại, thuộc đúng kỳ và nằm trong phạm vi user được phép thao tác.
+  - Không để `null`, empty collection hoặc ID invalid bị diễn giải mơ hồ dẫn đến mở rộng phạm vi ngoài ý muốn.
+- Áp dụng rule cho record protected: locked/unlocked, manual override, approved/finalized hoặc trạng thái khác theo đặc tả. Nếu một số target không hợp lệ, xử lý all-or-nothing/partial result đúng theo chính sách đã xác nhận và trả outcome rõ ràng.
+- Chỉ update record có state khác target state để bảo đảm idempotency; request lặp phải cho kết quả dự đoán được và không phát sinh thay đổi/audit sai.
+- Thực thi bulk update trong transaction/atomicity và concurrency strategy theo kiến trúc hiện có. Không được có trạng thái nửa kỳ khi operation thất bại ngoài chính sách partial success đã được phê duyệt.
+- Ghi audit action, actor, correlation, period, scope, target state, số target, số cập nhật, reason/approval nếu có và metadata cần thiết theo audit infrastructure hiện hữu. Không log PII/secret vượt quy định.
+- Enforce lock boundary tại **mọi endpoint mutation liên quan**: Điều chỉnh, Làm mới, Tính lại và các action bị cấm phải bị backend từ chối ngay cả khi UI hoặc request bị can thiệp.
+- Trả result contract minh bạch: period, scope, target count, updated count, unchanged/already target state, skipped/denied/error count nếu chính sách cần; dùng error contract hiện có cho validation, authorization, conflict/concurrency và domain error.
+- Không lộ exception nội bộ, SQL/schema hoặc dữ liệu nhạy cảm ra UI.
+
+Không tái sử dụng endpoint, DTO, permission, audit action hoặc lock rule của Bảng công ngày cho domain khác nếu tài liệu màn hình đích quy định khác.
+
+### 4. Cổng phê duyệt kế hoạch — bắt buộc trước khi sửa code
+
+Sau khi hoàn tất phân tích, **không sửa, tạo, đổi tên hoặc xóa file**. Hãy báo cáo kế hoạch gồm:
+
+1. Tài liệu/rule/checklist đã đọc và cách áp dụng từng quy định.
+2. Lock State Matrix: state hiện tại, Khóa/Mở khóa có được phép, permission, workflow/precondition, target state, action bị chặn sau transition và audit requirement.
+3. Scope Matrix: selected rows vs whole period, cách xác định target, request representation (`null`/empty/list), expected count, behavior với ID invalid/ngoài kỳ/ngoài scope.
+4. Sequence diagram cho Khóa và Mở khóa: toolbar → popup → chọn scope → confirm → client guard/loading → backend authorization/validation → transaction/concurrency/audit → response → reload/toast.
+5. Mapping với `BangCongNgay`: popup, selection, request/result, service/endpoint, audit, pending edit popup và behavior idempotent.
+6. API/command request-response-error contract dự kiến và semantics all-or-nothing/partial success.
+7. Danh sách endpoint mutation bị ảnh hưởng bởi lock enforcement và strategy kiểm tra backend cho từng endpoint.
+8. Danh sách file client/application/infrastructure/endpoint/contract/test sẽ thay đổi, kèm lý do.
+9. Test plan: permission, scope, selected/whole period, empty selection, lock/unlock repeat, protected record, concurrent action, audit và rollback/failure.
+10. Các blocker/câu hỏi nghiệp vụ cần người dùng xác nhận.
+
+**Chỉ bắt đầu triển khai sau khi người dùng xác nhận rõ ràng kế hoạch.**
+
+### 5. Kiểm tra sau khi được phê duyệt và triển khai
+
+1. Build toàn bộ project bị ảnh hưởng.
+2. Kiểm tra mở popup Khóa/Mở khóa, period/context, title/icon/prompt, scope options, keyboard focus, responsive và tiếng Việt UTF-8.
+3. Kiểm tra selected rows: selection trùng/rỗng, selection qua paging/filter, ID invalid/ngoài kỳ/ngoài scope và request representation không gây escalation sang whole period.
+4. Kiểm tra whole period: đúng dataset/kỳ áp dụng, count/result/toast chính xác, không dùng toolbar pending period nhầm sang kỳ đang tải.
+5. Kiểm tra backend authorization cho Khóa/Mở khóa, workflow/period validation, protected record và enforcement trên mọi mutation endpoint liên quan.
+6. Kiểm tra idempotency: khóa row/kỳ đã khóa, mở khóa row/kỳ đã mở; result/audit phải đúng, không update thừa.
+7. Kiểm tra concurrency, double-submit, cancellation, DB failure và atomicity/partial success theo chính sách đã phê duyệt.
+8. Kiểm tra audit/correlation/actor/scope/count/reason và không log dữ liệu nhạy cảm không cần thiết.
+9. Thêm/chạy automated unit, integration và UI tests theo checklist dự án.
+10. Không tự commit hoặc push.
+
+### Báo cáo kết quả
+
+- Lock State Matrix và Scope Matrix cuối cùng.
+- Tài liệu/quy định được áp dụng, các mâu thuẫn/blocker đã xử lý.
+- File/contract/endpoint thay đổi và semantics scope đã triển khai.
+- Cách backend enforce lock boundary trên các mutation action.
+- Kết quả build/test/audit verification và rủi ro còn lại.

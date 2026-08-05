@@ -1,0 +1,140 @@
+## Refactor DxToolbar → Hành động → Tính lại theo chuẩn Bảng công ngày
+
+Triển khai/refactor chức năng nghiệp vụ trọng yếu **`Hành động → Tính lại`** của `DxToolbar` trên màn hình Phụ cấp đích. Tham chiếu đầy đủ UI, client, contract, endpoint, application service, infrastructure calculation và audit của màn hình chuẩn:
+
+`src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\ChamCong\BangCongNgay`
+
+Các thành phần chuẩn phải phân tích:
+
+- Item `Tính lại` trong `DxDropDownButton` của toolbar.
+- `OnRecalculateClickAsync`, popup xác nhận, `ConfirmRecalculateAsync`, loading/reload/toast trong `BangCongNgay.razor` và `.razor.cs`.
+- `BangCongNgayRecalculateConfirmPopup`.
+- `RebuildAttendanceWorkdaySummaryRequest/Result`, provider, endpoint `/api/attendance/logs/workday-summary/rebuild`, `IAttendanceWorkdaySummaryService` và `DatabaseAttendanceWorkdaySummaryService`.
+- Audit action, audit scope/correlation, transaction, error contract và automated test hiện có.
+
+Đây là thao tác có thể ghi đè kết quả tính và ảnh hưởng nhiều dòng của một kỳ lương. Không được bắt đầu triển khai bằng cách chỉ copy handler/UI hoặc suy đoán công thức. Phải hoàn tất truy vết nguồn dữ liệu, quy tắc áp dụng, dữ liệu cần bảo toàn và hậu quả của thao tác trước.
+
+### 1. Đọc tài liệu và truy vết dữ liệu nguồn — bắt buộc
+
+Trước khi phân tích hoặc sửa code, đọc đầy đủ:
+
+- `doc\agent-skills`
+- `doc\checklists`
+- `doc\rules`
+- `doc\project`
+
+Tìm mọi tài liệu/source liên quan tới màn hình Phụ cấp đích: đặc tả công thức, dữ liệu nguồn, kỳ lương, hiệu lực quy tắc, manual override, lock, approval/workflow, payroll summary, authorization, audit/log, transaction, concurrency, failure recovery và testing.
+
+Lập **Data Lineage Matrix** bắt buộc, cho từng output được Tính lại ghi xuống:
+
+| Output lưu | Bảng/aggregate đích | Công thức/quy tắc | Nguồn dữ liệu chính | Kỳ/thời điểm hiệu lực | Dữ liệu được bảo toàn | Owner/source of truth |
+|---|---|---|---|---|---|---|
+
+Trong đó phải xác định được tối thiểu:
+
+- Record/detail và summary/aggregate nào của Phụ cấp đích sẽ được cập nhật.
+- Danh sách nguồn dữ liệu (nhân sự, hợp đồng, chấm công, ca làm, lương, cấu hình phụ cấp, phê duyệt hoặc nguồn khác) cùng điều kiện chọn dữ liệu theo kỳ.
+- Cách xác định ngày đầu/cuối kỳ và timezone/calendar được dùng.
+- Rule set/version/effective date áp dụng cho từng kỳ và cách xử lý khi thiếu, chồng lấn hoặc không xác định rule.
+- Các giá trị nhập tay, override, row đã khóa, row đã duyệt/chốt và field/system snapshot nào được phép hoặc không được phép ghi đè.
+- Side effect/downstream consumer bị ảnh hưởng: tổng phụ cấp, bảng lương, export, báo cáo, workflow hoặc audit.
+
+Nếu không thể chứng minh nguồn hoặc rule cho một output từ tài liệu/source hiện có, liệt kê là blocker và dừng ở kế hoạch. Không dùng giá trị cũ của grid như nguồn tính toán, không tự suy luận rule từ UI popup.
+
+### 2. Phân tích pattern chuẩn Bảng công ngày
+
+Phân tích và ghi nhận rõ các behavior chuẩn sau, sau đó đối chiếu với domain của màn hình đích:
+
+1. Tính lại cả kỳ gửi request theo `PayrollYear`/`PayrollMonth`; không có record ID nghĩa là xử lý phạm vi các detail đã tồn tại của kỳ.
+2. Service tải lại dữ liệu source trên server, không tin dữ liệu từ client/detail cũ.
+3. Với Bảng công ngày, nguồn gồm payroll summary, nhân sự và attendance workday summaries của đúng kỳ; công tính lương được tính lại từ dữ liệu chấm công.
+4. Với Bảng công ngày, lệnh tính công nhận đúng một `WorkDate`; nguồn dữ liệu và điều kiện tính phải được xác minh từ log chấm công, lịch công, ca làm việc và contract hiện hành.
+5. Kết quả `RebuildAttendanceWorkdaySummaryResult` phải phản ánh số dòng được tính/cập nhật, lượt chấm công, công quy đổi và dòng bị bỏ qua do đã khóa; không tự suy diễn threshold hoặc công thức từ màn hình khác.
+6. Dòng đã khóa là ranh giới dữ liệu: không được sửa, không tạo detail mới thay thế và được trả trong count bỏ qua.
+7. Dòng chưa khóa có thể bị tính lại và ghi đè giá trị chỉnh sửa thủ công; popup xác nhận phải cảnh báo trung thực điều này.
+8. Snapshot detail và số tiền/field liên quan trên summary được đồng bộ trong cùng đơn vị lưu/transaction theo kiến trúc hiện có.
+9. Response trả counts/outcome thực tế (ví dụ tổng dòng, số cập nhật, số bỏ qua do khóa) để UI thông báo chính xác.
+
+Các rule trên là **reference behavior của Bảng công ngày**, không được sao chép công thức, threshold, bảng mức tiền, nguồn dữ liệu hoặc semantics ghi đè sang màn hình Phụ cấp đích nếu tài liệu của domain đích không xác nhận.
+
+### 3. Quyết định nghiệp vụ bắt buộc cho màn hình đích
+
+Trước khi code, xác nhận bằng tài liệu/owner nghiệp vụ các quyết định sau:
+
+- Phạm vi của `Tính lại`: toàn bộ kỳ, dữ liệu đang lọc, selected rows, hoặc một scope khác. Không mở rộng phạm vi chỉ vì chuẩn Bảng công ngày tính theo toàn kỳ.
+- Tính lại có được tạo mới detail thiếu hay chỉ cập nhật detail hiện hữu?
+- Cách xử lý từng trạng thái: unlocked, locked, manual override, approved, finalized/posted và missing source.
+- Có cần preserve manual values, ghi đè với xác nhận đặc biệt, hay phải có action riêng để bỏ override?
+- Đối tượng/nguồn nào được tính vào hoặc loại khỏi kỳ; xử lý nhân viên nghỉ việc, thay đổi hợp đồng, chuyển đơn vị, dữ liệu chấm công thiếu hoặc retroactive adjustment.
+- Rule effective-date/version nào áp dụng và cách tái lập kết quả lịch sử (reproducibility).
+- Yêu cầu transaction/all-or-nothing, partial success, retry/idempotency và rollback/recovery nếu một phần xử lý lỗi.
+
+### 4. Yêu cầu UI/client-side
+
+- Item `Tính lại` hiển thị trong `DxToolbar → Hành động` theo convention chuẩn: icon phù hợp, tooltip tiếng Việt nêu rõ phạm vi/tác động và trạng thái enabled hợp lệ.
+- Chỉ enable khi một kỳ dữ liệu đã được chuẩn bị/tải, không có pending period change, user có thể thao tác và không có operation cạnh tranh; UI guard không thay thế enforcement phía server.
+- Mở popup xác nhận riêng theo pattern `BangCongNgayRecalculateConfirmPopup` trước khi gửi request. Popup phải hiển thị rõ kỳ, phạm vi, nguồn/loại dữ liệu bị tính lại, dữ liệu có thể bị ghi đè và dữ liệu được bảo toàn.
+- Nội dung xác nhận chỉ sử dụng thông tin đã được tài liệu/source xác nhận; không tuyên bố “giữ nguyên” hoặc “ghi đè” nếu chưa rõ semantics.
+- Khi confirm: chặn double-click/parallel request, hiển thị loading, disable thao tác cạnh tranh và dùng cancellation token theo pattern dự án.
+- Sau thành công: đóng popup đúng thời điểm, reload toàn bộ dữ liệu/summary/state bị ảnh hưởng, reset selection/filter state nếu cần theo quy định, và toast dựa trên result thực tế.
+- Khi validation/domain/backend lỗi: không báo thành công, giữ/khôi phục state UI nhất quán; popup chỉ đóng theo behavior được phê duyệt.
+- Chuẩn hóa toàn bộ tiếng Việt, UTF-8, title, warning, loading/error/success toast và accessibility text.
+
+### 5. Ràng buộc backend trọng yếu — bắt buộc
+
+Backend là source of truth của thao tác Tính lại. Không tin period, scope, permission, lock state, manual flag, rule version hoặc dữ liệu nguồn do client gửi. Triển khai theo tài liệu và layer architecture hiện có:
+
+- Xác thực người dùng và authorization server-side cho hành động Tính lại; tách permission với quyền xem nếu dự án quy định.
+- Validate period/scope và kiểm tra payroll period trong trạng thái cho phép tính lại; không cho phép xử lý kỳ ngoài phạm vi, đã chốt/đã trả lương hoặc workflow bị khóa nếu rule cấm.
+- Tải lại toàn bộ target records và dữ liệu nguồn từ server theo kỳ/scope đã xác thực; xác định scope trên server, không dựa vào danh sách row client gửi.
+- Áp dụng chính xác rule version/effective date đã xác nhận. Rule engine/service phải có deterministic output cho cùng input + version; không lấy rule từ popup/UI text.
+- Validate chất lượng dữ liệu nguồn: nguồn thiếu, trùng, sai kỳ, sai employee mapping, invalid date/amount hoặc trạng thái chưa được phê duyệt phải có outcome rõ ràng theo nghiệp vụ, không âm thầm tính sai.
+- Enforce boundary cho locked/manual override/approved/finalized records trước mọi ghi: không ghi đè trạng thái bảo vệ nếu chưa được policy cho phép; reporting count phải phân biệt các loại bị bỏ qua khi cần.
+- Persist detail, summary và các aggregate liên quan với transaction/consistency strategy theo kiến trúc dự án. Không để summary phản ánh số tiền mới nếu detail thất bại hoặc ngược lại.
+- Xử lý concurrency, re-entrancy và idempotency của thao tác theo kỳ/scope. Hai request Tính lại đồng thời không được tạo trạng thái pha trộn, duplicate audit hoặc ghi đè kết quả theo thứ tự không kiểm soát.
+- Gắn audit action, correlation, actor, period, scope, rule version, input/source snapshot metadata phù hợp và result counts qua hạ tầng audit hiện hữu. Không log PII/secret vượt yêu cầu tài liệu.
+- Trả result contract có thể giải thích được: period/scope, total target, updated, unchanged, skipped locked, skipped manual/approved/finalized, missing/invalid source, rule version và warning/error summary nếu domain yêu cầu.
+- Dùng error contract hiện có cho authorization, validation, conflict/concurrency và domain error; không lộ exception nội bộ, SQL/schema hoặc dữ liệu nhạy cảm.
+
+Không tái sử dụng endpoint, DTO, bảng, service hoặc rule của Bảng công ngày cho domain khác nếu data lineage/đặc tả của màn hình đích khác nhau.
+
+### 6. Cổng phê duyệt kế hoạch — bắt buộc trước khi sửa code
+
+Sau khi hoàn tất phân tích, **không sửa, tạo, đổi tên hoặc xóa file**. Hãy dừng lại và báo cáo kế hoạch với mức chi tiết phù hợp thao tác payroll quan trọng, gồm:
+
+1. Tài liệu/rule/checklist đã đọc, các quy định áp dụng và mâu thuẫn phát hiện.
+2. Data Lineage Matrix hoàn chỉnh cho mọi output được ghi bởi Tính lại.
+3. Rule Matrix: điều kiện, thứ tự ưu tiên, input, effective period/version, output và nguồn chứng minh cho từng rule.
+4. State/overwrite Matrix cho unlocked, locked, manual override, approved, finalized, missing source, invalid source và concurrent update.
+5. Sequence diagram: toolbar action → confirm popup → client guard/loading → request → authorization → load sources → validate → apply rule → transaction/audit → result → reload/toast.
+6. Mapping với `BangCongNgay`: phần UI/client/backend pattern có thể tái sử dụng, phần domain bắt buộc thay thế và lý do.
+7. API/command request-response-error contract dự kiến, scope semantics, rule version và result counts.
+8. Transaction, concurrency, idempotency, audit và rollback/recovery strategy dựa trên kiến trúc hiện có.
+9. Danh sách file client/application/infrastructure/endpoint/contract/test sẽ thay đổi, kèm lý do.
+10. Test plan gồm happy path, data-quality failure, locked/manual/approved/finalized, rule boundary, source update, concurrent execution, cancellation/retry và audit.
+11. Các blocker/câu hỏi nghiệp vụ cần người dùng xác nhận.
+
+**Chỉ bắt đầu triển khai sau khi người dùng xác nhận rõ ràng kế hoạch.**
+
+### 7. Kiểm tra sau khi được phê duyệt và triển khai
+
+1. Build toàn bộ project bị ảnh hưởng.
+2. Kiểm tra popup xác nhận, warning ghi đè, enabled/loading state và chống double-submit.
+3. Kiểm tra data lineage bằng dữ liệu fixture: từng source được dùng đúng kỳ/scope, không lấy giá trị grid/detail cũ làm nguồn.
+4. Kiểm tra Rule Matrix tại mọi boundary, effective date/version, thứ tự ưu tiên và output amount/status/snapshot.
+5. Kiểm tra full-period/scope semantics, tổng dòng, updated/unchanged/skipped/missing counts và toast hiển thị chính xác.
+6. Kiểm tra locked, manual override, approved/finalized records theo State/overwrite Matrix; xác minh không có ghi đè trái phép.
+7. Kiểm tra detail, summary và downstream aggregate nhất quán sau success, failure, cancellation và retry; kiểm tra transaction/rollback.
+8. Kiểm tra authorization, period/workflow validation, tampered request, invalid source và concurrency/re-entrancy ở backend.
+9. Kiểm tra audit/correlation/actor/rule version/result counts theo quy định, không ghi log dữ liệu nhạy cảm không cần thiết.
+10. Thêm/chạy automated unit, integration và end-to-end tests theo checklist dự án; ưu tiên tests cho rule engine, data lineage, overwrite protection và transaction boundary.
+11. Không tự commit hoặc push.
+
+### Báo cáo kết quả
+
+- Data Lineage Matrix, Rule Matrix và State/overwrite Matrix cuối cùng.
+- Nguồn dữ liệu/rule version đã xác nhận, phạm vi xử lý và behavior ghi đè.
+- Tài liệu/quy định được áp dụng, các mâu thuẫn/blocker đã xử lý.
+- File và contract thay đổi, transaction/concurrency/audit strategy thực tế.
+- Kết quả build/test cùng bằng chứng cho các kịch bản payroll quan trọng.
+- Rủi ro còn lại hoặc việc cần xác nhận trước khi triển khai action DxToolbar kế tiếp.

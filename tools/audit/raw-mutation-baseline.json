@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "description": "Reviewed baseline of Infrastructure raw write APIs. Changing this file requires the corresponding AUD-010 inventory/policy review.",
+  "entries": [
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/CaKip/BangXepCa/DatabaseAttendanceShiftAssignmentEnsureService.cs", "occurrences": 1 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/CaKip/BangXepCa/DatabaseAttendanceShiftAssignmentManualEditService.cs", "occurrences": 1 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/CaKip/BangXepCa/DatabaseAttendanceShiftAssignmentReadService.cs", "occurrences": 1 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/CaKip/CaiDatCa/DatabaseAttendanceShiftService.cs", "occurrences": 1 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/CaKip/CaiDatXepCa/DatabaseShiftSchedulingSettingService.cs", "occurrences": 1 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/CaKip/LichLamViec/DatabaseAttendanceWorkCalendarService.cs", "occurrences": 1 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/DangKyPheDuyet/DangKyTangCa/DatabaseOvertimeRegistrationService.cs", "occurrences": 3 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/DangTrienKhai/DuLieuSinhTracHoc/DatabaseAttendanceBiometricDataReadService.cs", "occurrences": 1 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/DangTrienKhai/DuLieuSinhTracHoc/DatabaseAttendanceBiometricDataRefreshService.cs", "occurrences": 11 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/DangTrienKhai/DuLieuSinhTracHoc/DatabaseAttendanceBiometricDeviceQueueService.cs", "occurrences": 3 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/DangTrienKhai/LuongCanBan/DatabaseBasicSalaryService.cs", "occurrences": 1 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/Data/ApplicationSchemaGuard.cs", "occurrences": 4 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/KhauTru/KhauTruBHXHYT/DatabasePayrollInsuranceDeductionService.cs", "occurrences": 1 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/NhanSu/ChucVu/DatabaseAttendancePositionService.cs", "occurrences": 3 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/NhanSu/NhanVien/DatabaseEmployeeRefreshService.cs", "occurrences": 3 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/NhanSu/NhanVien/DatabaseEmployeeService.cs", "occurrences": 1 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/NhanSu/PhongBan/DatabaseAttendanceDepartmentService.cs", "occurrences": 1 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/PhuCap/PhuCapChuyenCan/DatabaseAttendanceAllowanceResultService.cs", "occurrences": 8 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/PhuCap/PhuCapCom/DatabaseMealAllowanceService.cs", "occurrences": 2 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/PhuCap/PhuCapPhepLe/DatabaseLeaveHolidayAllowanceService.cs", "occurrences": 1 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/PhuCap/PhuCapThamNien/DatabasePayrollEmployeeSeniorityAllowanceService.cs", "occurrences": 2 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/QuanTri/LenhMayChamCong/DatabaseAdmsDeviceCommandService.cs", "occurrences": 1 },
+    { "path": "src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/TongQuan/ChamCongHangNgay/DatabaseAttendanceDailySummaryService.cs", "occurrences": 2 }
+  ]
+}

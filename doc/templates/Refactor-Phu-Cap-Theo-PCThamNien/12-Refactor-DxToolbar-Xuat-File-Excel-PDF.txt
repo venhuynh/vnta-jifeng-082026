@@ -1,0 +1,115 @@
+## Refactor DxToolbar → Xuất file → Xuất Excel / Xuất PDF theo chuẩn Bảng công ngày
+
+Triển khai/refactor nhóm chức năng **`DxToolbar → Xuất file → Xuất Excel`** và **`Xuất PDF`** trên màn hình Phụ cấp đích. Tham chiếu UI, export grid, loading flow, data provider và naming convention của:
+
+`src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\ChamCong\BangCongNgay`
+
+Các thành phần chuẩn cần phân tích:
+
+- Menu `Xuất file`, items Excel/PDF, trạng thái `CanExport` và tooltip trong toolbar.
+- `ExportAllDataToExcelAsync`, `ExportAllDataToPdfAsync`, `ExportAllForAppliedPeriodAsync`, loading/cleanup/toast và `BuildExportFileName`.
+- `ExportGrid` ẩn, `ExportRecords` và schema cột export trong `BangCongNgay.razor`.
+- Provider/API/backend query dùng để tải đầy đủ dữ liệu export của một kỳ.
+
+Mục tiêu: xuất **toàn bộ dữ liệu được phép xuất của kỳ đang áp dụng** ra Excel/PDF, không bị giới hạn bởi pagination, filter tìm kiếm, selection hoặc column chooser của grid hiển thị, trừ khi tài liệu nghiệp vụ của màn hình đích quy định khác.
+
+`Kỳ đang áp dụng` là kỳ mà dữ liệu hiện tại đã được người dùng tải/xem thành công. Không xuất nhầm theo Năm/Tháng mới chọn trên toolbar khi đang có pending period change.
+
+### 1. Đọc tài liệu và xác định đặc tả export — bắt buộc
+
+Trước khi phân tích hoặc viết code, đọc đầy đủ:
+
+- `doc\agent-skills`
+- `doc\checklists`
+- `doc\rules`
+- `doc\project`
+
+Tìm tài liệu/source liên quan đến export dữ liệu lương/phụ cấp, gồm: permission, dữ liệu cá nhân/nhạy cảm, retention/download policy, audit/log, Excel/PDF formatting, tên file, giới hạn dung lượng/số dòng, timezone/culture, API/data scope, error handling và testing.
+
+Xác định và báo cáo rõ:
+
+- Ai có quyền export Excel, PDF; hai format có quyền khác nhau không.
+- Kỳ và scope export chính xác: toàn bộ kỳ, theo đơn vị/phạm vi người dùng, theo filter/selection hoặc theo scope khác.
+- Field Allowlist: cột nào được xuất, cột nào phải loại/che giấu; nguồn dữ liệu và classification của từng field.
+- Schema export chính thức: thứ tự cột, caption tiếng Việt, kiểu dữ liệu, format ngày/số tiền/số lượng, summary/tổng và cách xử lý null.
+- Tên file, metadata báo cáo, timezone/culture/version rule cần in trong file theo đặc tả.
+- Behavior khi không có dữ liệu, dữ liệu quá lớn, export bị hủy, lỗi tạo file hoặc user không có quyền.
+
+Nếu đặc tả chưa xác nhận schema, phạm vi hoặc field nhạy cảm, dừng ở kế hoạch và xin xác nhận. Không suy diễn schema export từ grid hiển thị hoặc từ Bảng công ngày.
+
+### 2. UI và client-side theo pattern chuẩn
+
+1. **Menu Xuất file**
+   - Dùng `DxToolbarItem` có menu con `Xuất Excel` và `Xuất PDF`, icon/tooltip/nhãn tiếng Việt theo convention dự án.
+   - Chỉ enable khi kỳ dữ liệu đang áp dụng hợp lệ, user có quyền export và không có loading/export/period change cạnh tranh.
+   - Tooltip phải nêu chính xác phạm vi export, ví dụ `Xuất toàn bộ dữ liệu ... của kỳ MM/YYYY`, không dùng từ “đang chọn” nếu kỳ đó chưa được áp dụng.
+
+2. **Chuẩn bị dữ liệu export**
+   - Tải lại dataset export đầy đủ từ provider/backend theo kỳ/scope đã áp dụng; không export trực tiếp `VisibleRecords`, data đang page, row được chọn hoặc grid filter client-side nếu đặc tả yêu cầu toàn bộ kỳ.
+   - Tạo `ExportGrid`/export component riêng, không hiển thị cho người dùng nhưng có schema cố định theo Field Allowlist; không phụ thuộc column chooser hoặc CSS của grid hiển thị.
+   - Chỉ render/export sau khi data export đã sẵn sàng. Cleanup data/ref sau khi hoàn tất, lỗi hoặc cancellation để tránh leak dữ liệu giữa các lần export.
+
+3. **Excel và PDF**
+   - Excel: giữ kiểu dữ liệu số/ngày phù hợp để có thể tính/lọc trong Excel; format hiển thị theo đặc tả, không chuyển toàn bộ số thành string chỉ để đẹp.
+   - PDF: layout, khổ giấy/hướng giấy, header, pagination, repeat column header, wrap/overflow và format số phải đọc được với lượng dữ liệu thực tế.
+   - Dùng tên file an toàn, nhất quán, chứa nghiệp vụ và kỳ áp dụng theo convention; không dùng input chưa sanitize trực tiếp làm tên file.
+   - Không để content text do người dùng/nguồn dữ liệu gây formula injection trong Excel hoặc làm hỏng layout/PDF; dùng cơ chế escaping/sanitization đã được dự án/thư viện hỗ trợ.
+
+4. **Trạng thái và thông báo**
+   - Chống click lặp/parallel export. Hiển thị loading rõ ràng trong toàn bộ chuỗi: tải dữ liệu → render export grid → generate/download file.
+   - Khi không có dữ liệu, hiển thị thông báo thông tin tiếng Việt, không tạo file rỗng trừ khi đặc tả yêu cầu.
+   - Khi thành công, toast nêu đúng format và kỳ đã export. Khi lỗi/cancellation, không báo thành công và khôi phục UI state đúng.
+   - Chuẩn hóa toàn bộ text UI bằng tiếng Việt UTF-8, đúng chính tả, accessible tooltip/label và không có mojibake.
+
+### 3. Ràng buộc backend và data-access — bắt buộc
+
+Export có thể làm lộ dữ liệu payroll/PII; backend là source of truth cho permission, scope và field. Không tin period/scope/filter từ client. Tối thiểu:
+
+- Xác thực và authorization server-side cho export; tách permission với quyền xem nếu tài liệu quy định.
+- Validate kỳ export và trạng thái kỳ/workflow; xác định Applied period/scope được phép ở server hoặc validate chặt request tương ứng.
+- Áp dụng row-level/organization-level data scope của user trước khi truy vấn; không trả record ngoài đơn vị/phạm vi chỉ vì client yêu cầu toàn kỳ.
+- Dùng Field Allowlist tại server/contract hoặc export layer để không đưa dữ liệu nhạy cảm/không được phép xuống client. Không dựa vào việc ẩn cột UI làm cơ chế bảo mật.
+- Dùng query projection/export DTO chuyên biệt khi architecture hiện có yêu cầu; tránh trả toàn bộ entity/DTO nội bộ chỉ để export.
+- Validate và giới hạn số dòng/kích thước/thời gian xử lý theo tài liệu. Với export lớn, dùng chiến lược streaming/background job/download token hiện có nếu cần; không tự tạo cơ chế mới khi chưa được phê duyệt.
+- Ghi audit truy cập/export theo hạ tầng hiện hữu nếu quy định yêu cầu: actor, correlation, format, period, scope, row count, file/result metadata; không ghi PII/secret không cần thiết.
+- Không có mutation dữ liệu nghiệp vụ khi export. Không prepare/recalculate/refresh dữ liệu nguồn chỉ vì export, trừ khi đặc tả yêu cầu rõ ràng.
+- Trả validation/authorization/not-found/export failure theo error contract hiện có; không lộ exception nội bộ, hạ tầng file hoặc query nhạy cảm.
+
+Không sao chép field/caption/schema/tên file của Bảng công ngày sang màn hình đích nếu nghiệp vụ export khác.
+
+### 4. Cổng phê duyệt kế hoạch — bắt buộc trước khi sửa code
+
+Sau khi hoàn tất phân tích, **không sửa, tạo, đổi tên hoặc xóa file**. Hãy báo cáo kế hoạch gồm:
+
+1. Tài liệu/rule/checklist đã đọc và các quy định export/bảo mật áp dụng.
+2. Export Scope Matrix: Excel/PDF, kỳ/scope, permission, Applied-vs-Toolbar period, row count expectation, behavior no-data/large-data/cancellation.
+3. Field Allowlist Matrix: field nguồn, caption, kiểu/format, classification, có xuất hay che giấu và lý do.
+4. Schema/wireframe dự kiến cho Excel và PDF: cột, thứ tự, summary, header/footer, file name, page layout.
+5. Sequence diagram: click format → client guard/loading → server authorization/scope/projection → data transfer → export grid/render → generate/download → cleanup/audit/toast.
+6. Mapping với `BangCongNgay`: toolbar menu, export grid, full-period data provider, lifecycle cleanup, naming và phần domain-specific phải thay thế.
+7. Danh sách file client/backend/contract/export-template/test sẽ thay đổi, kèm lý do.
+8. Rủi ro: PII/data leak, wrong period/scope, formula injection, large file/performance, format corruption, cancellation và audit.
+9. Các blocker/câu hỏi cần người dùng xác nhận.
+
+**Chỉ bắt đầu triển khai sau khi người dùng xác nhận rõ ràng kế hoạch.**
+
+### 5. Kiểm tra sau khi được phê duyệt và triển khai
+
+1. Build toàn bộ project bị ảnh hưởng.
+2. Kiểm tra button/menu/tooltip/enable state cho Excel và PDF, Applied-vs-Toolbar period, pending period change, no-data và double-click.
+3. Kiểm tra export đầy đủ kỳ với dataset vượt một page/filter/selection; đối chiếu row count và summary với nguồn được phép export.
+4. Kiểm tra backend authorization và row/organization scope bằng user không có quyền hoặc request bị can thiệp; xác minh Field Allowlist không lộ dữ liệu cấm.
+5. Kiểm tra Excel: định dạng file mở được, tên sheet/tên file, header/caption, kiểu số/ngày, format tiền, null handling, UTF-8/tiếng Việt và formula injection safety.
+6. Kiểm tra PDF: file mở được, orientation/page break/repeated header, wrap/overflow, font tiếng Việt, tổng và footer/header theo đặc tả.
+7. Kiểm tra dataset lớn, cancellation, lỗi backend/generate/download và cleanup `ExportRecords`/state/ref; không rò dữ liệu sang lần export sau.
+8. Kiểm tra audit/correlation/format/period/scope/row count nếu quy định áp dụng.
+9. Thêm/chạy automated unit, integration và artifact/content tests theo checklist dự án.
+10. Không tự commit hoặc push.
+
+### Báo cáo kết quả
+
+- Export Scope Matrix và Field Allowlist Matrix cuối cùng.
+- Schema Excel/PDF, naming convention và dữ liệu/scope thực tế đã export.
+- Quy định authorization/bảo mật/audit đã áp dụng.
+- File/contract thay đổi, kết quả build/test và kiểm tra artifact.
+- Rủi ro còn lại hoặc việc cần xác nhận trước khi triển khai action DxToolbar kế tiếp.

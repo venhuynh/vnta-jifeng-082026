@@ -1,0 +1,108 @@
+## Rà soát cuối: dọn code smell và dirty code sau refactor Phụ cấp
+
+Thực hiện đợt rà soát chất lượng cuối cho toàn bộ thay đổi refactor màn hình Phụ cấp theo chuẩn `BangCongNgay`, sau khi các giai đoạn UI, cột Tác vụ, DxToolbar, backend nghiệp vụ, popup, export và rule liên quan đã được triển khai/phê duyệt.
+
+Mục tiêu: loại bỏ code smell và dirty code có bằng chứng, tăng tính dễ đọc/bảo trì/testability, nhưng **không thay đổi nghiệp vụ, public contract, authorization, calculation rule, data scope, audit semantics hoặc hành vi UI đã được phê duyệt**.
+
+### 1. Chuẩn bị và bảo vệ working tree — bắt buộc
+
+1. Đọc lại đầy đủ:
+   - `doc\agent-skills`
+   - `doc\checklists`
+   - `doc\rules`
+   - `doc\project`
+2. Kiểm tra `git status`, nhánh hiện tại, diff đang có và các file không tracked.
+3. Lập baseline: danh sách file thuộc phạm vi refactor Phụ cấp, các file do người dùng thay đổi sẵn, lỗi build/analyzer/test hiện có trước khi dọn dẹp.
+4. Không tự ý commit, push, stash, reset, checkout, `git clean`, xóa file hàng loạt hoặc format/overwrite file ngoài phạm vi.
+5. Không xóa/đổi tên code chỉ vì có vẻ không dùng khi chưa xác minh reference động, routing, DI registration, reflection, Razor component discovery, CSS isolation, test fixture hoặc tài liệu triển khai.
+
+### 2. Phạm vi rà soát
+
+Rà soát ưu tiên các file đã thay đổi hoặc liên quan trực tiếp tới refactor, bao gồm khi có mặt:
+
+- Component Razor, code-behind, CSS isolation và popup của màn hình Phụ cấp đích.
+- Data provider/client service, request/response/DTO và mapping liên quan.
+- Endpoint, application/domain service, infrastructure query/mutation và DI registration.
+- Export schema/template, rules popup và component dùng chung được chạm tới.
+- Unit/integration/UI tests đã thêm hoặc bị ảnh hưởng.
+
+Không mở rộng thành đại tu toàn solution. Với code smell nằm ngoài phạm vi trực tiếp, chỉ ghi nhận trong báo cáo, không sửa nếu không có sự phê duyệt riêng.
+
+### 3. Danh mục code smell và dirty code phải kiểm tra
+
+#### A. Cấu trúc và tính dễ đọc
+
+- File/component/phương thức quá dài hoặc có nhiều trách nhiệm; chỉ tách khi giúp rõ ràng và vẫn theo cấu trúc chuẩn `BangCongNgay`.
+- Duplicated code giữa UI handler, popup, provider, endpoint hoặc service; trích xuất helper/domain method chỉ khi không làm mờ nghiệp vụ.
+- Tên biến, state, method, component, CSS class, request/result gây mơ hồ hoặc không còn đúng semantics.
+- Magic number/string, đặc biệt rule nghiệp vụ, permission, route, status key, tháng/năm, format và loading text: chỉ thay bằng constant/configuration/source of truth phù hợp, không thay đổi giá trị hoặc hiệu lực rule.
+- Comment/XML documentation cũ, sai hoặc mô tả implementation trước refactor; cập nhật/xóa comment sai, không thêm comment lặp lại code hiển nhiên.
+
+#### B. Razor/Blazor và state management
+
+- `@using`, `[Inject]`, parameter, event callback, `@ref`, state field, computed property và lifecycle method không còn dùng.
+- Binding/event handler trùng lặp, closure không cần thiết, `async void`, state mutation không await/rerender đúng cách.
+- Loading/error/empty/success state bị stale, state không reset khi đóng popup/đổi kỳ/cancellation, race condition do thao tác song song.
+- Cancellation token, `OperationCanceledException`, dispose và async cleanup không nhất quán với pattern dự án.
+- UI enable/disable chỉ là guard trải nghiệm, không được thay thế/loại bỏ backend enforcement.
+- Chuỗi tiếng Việt lỗi encoding, text trùng lặp, thuật ngữ không thống nhất hoặc tooltip/accessibility text sai.
+
+#### C. Backend, dữ liệu và bảo mật
+
+- Validation, authorization, scope check, lock/manual/approved/finalized enforcement bị lặp hoặc thiếu ở endpoint/service mutation.
+- Request chứa field thừa hoặc có nguy cơ over-posting; response lộ entity/internal field hoặc dữ liệu nhạy cảm không cần thiết.
+- Query N+1, tải entity dư thừa, filter thực hiện không đúng layer, query không có `AsNoTracking` cho read-only khi pattern dự án yêu cầu.
+- Transaction/concurrency/idempotency/audit/correlation bị bỏ sót hoặc không nhất quán với các action Điều chỉnh, Làm mới, Tính lại, Khóa/Mở khóa và Xuất file.
+- Exception bị nuốt, catch quá rộng, error message sai ngữ cảnh hoặc làm lộ chi tiết nội bộ.
+- Log/audit có PII, token, secret hoặc payload vượt chính sách dữ liệu.
+
+#### D. Export, CSS và artifact
+
+- Export grid/schema/DTO/temporary state không cleanup sau success, error hoặc cancellation.
+- Excel/PDF có data/format hard-code không còn khớp Field Allowlist, Applied period hoặc source of truth.
+- CSS isolation selector mồ côi, class không tham chiếu, `::deep` quá rộng, style trùng/override không cần thiết, responsive/overflow regression.
+- File tạm, TODO/FIXME/debug log/console output, commented-out code, dead code, import/package/reference không còn cần thiết.
+
+### 4. Cổng phê duyệt kế hoạch — bắt buộc trước khi sửa code
+
+Sau khi inventory và rà soát ban đầu, **chưa được chỉnh sửa, xóa, đổi tên hoặc format file**. Hãy dừng lại và báo cáo kế hoạch gồm:
+
+1. Baseline working tree và danh sách file trong phạm vi; phân biệt thay đổi của người dùng với thay đổi của refactor.
+2. Bảng Code Smell Inventory với các cột: ID, file/vị trí, loại smell, bằng chứng, mức độ/rủi ro, đề xuất xử lý, ảnh hưởng nghiệp vụ/contract và test cần chạy.
+3. Phân loại từng mục: sửa ngay an toàn, cần xác nhận, ngoài phạm vi hoặc giữ nguyên có chủ đích.
+4. Danh sách code/file dự kiến xóa hoặc đổi tên cùng mọi reference đã xác minh; không đề xuất xóa chỉ dựa trên tìm kiếm text đơn lẻ.
+5. Kế hoạch thứ tự thực hiện theo thay đổi nhỏ, reviewable; mỗi bước phải có kiểm tra tương ứng.
+6. Diff/risk assessment cho các điểm nhạy cảm: calculation rule, lock state, authorization, export scope, audit, transaction/concurrency và data mapping.
+7. Kết quả build/analyzer/test baseline và test plan sau cleanup.
+8. Các blocker/câu hỏi cần người dùng xác nhận.
+
+**Chỉ bắt đầu dọn dẹp sau khi người dùng xác nhận rõ ràng kế hoạch.**
+
+### 5. Nguyên tắc thực hiện sau khi được phê duyệt
+
+- Thực hiện thay đổi nhỏ, theo nhóm logic, không trộn cleanup với thay đổi nghiệp vụ mới.
+- Giữ nguyên public API/DTO/route/DI contract trừ khi kế hoạch được phê duyệt nêu rõ migration an toàn.
+- Không đổi behavior tính toán, threshold, rule effective date, lock behavior, quyền, data scope hay field export chỉ để “làm đẹp code”.
+- Ưu tiên reuse abstraction/convention đã có; không tạo generic framework/helper mới cho một vị trí đơn lẻ.
+- Dùng formatter/analyzer của dự án, không chạy format toàn solution nếu sẽ tạo noise ngoài phạm vi.
+- Mỗi code removal phải có bằng chứng reference được cập nhật/không tồn tại và build/test tương ứng.
+- Giữ encoding UTF-8 và chuẩn hóa tiếng Việt UI sau mọi refactor.
+
+### 6. Kiểm tra bắt buộc sau cleanup
+
+1. Kiểm tra lại `git diff` để bảo đảm chỉ có thay đổi trong phạm vi đã phê duyệt; không làm mất thay đổi người dùng.
+2. Build toàn bộ project bị ảnh hưởng, chạy analyzer/formatter/check theo quy định dự án.
+3. Chạy automated tests liên quan; tối thiểu gồm các luồng Điều chỉnh, Làm mới, Tính lại, Khóa/Mở khóa, Bảng công tháng, Quy tắc, Excel/PDF và grid state nếu các phần đó đã được triển khai.
+4. Rà soát lại authorization, data scope, validation, lock/manual/approved/finalized enforcement, audit/correlation, transaction/concurrency và export Field Allowlist.
+5. Kiểm tra UI: loading/error/empty state, popup close/cleanup, selection/filter/paging, responsive, tooltip/accessibility và tiếng Việt UTF-8.
+6. Xác minh không còn unused imports/state/handlers/CSS obvious, TODO/debug/commented-out code trong phạm vi đã duyệt.
+7. Không tự commit hoặc push.
+
+### Báo cáo kết quả
+
+- Code Smell Inventory trước/sau, nêu rõ mục đã sửa, giữ lại hoặc hoãn và lý do.
+- Danh sách file thay đổi/xóa/đổi tên cùng reference verification.
+- Xác nhận các hành vi nghiệp vụ/contract không bị thay đổi.
+- Kết quả build/analyzer/test và các regression check chính.
+- Dirty worktree còn lại không thuộc phạm vi, nếu có.
+- Rủi ro còn lại, technical debt được ghi nhận và đề xuất bước tiếp theo.

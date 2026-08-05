@@ -1,0 +1,106 @@
+Bạn đang làm việc trong repo:
+
+C:\Users\VNSIT\Documents\GitHub\Vnta-Blazor-2026
+
+Branch hiện tại:
+codex/refactor-phu-cap-tham-nien-ui-20260715
+
+Mục tiêu:
+1. Áp dụng lại đúng pattern fix lỗi truyền sai tham số tháng/năm mà đã làm ở màn Phụ cấp thâm niên.
+2. Mở rộng rule support từ tháng 06/2026 cho các màn hình phụ cấp khác nếu hiện tại đang bị chặn bởi minimum period hoặc đang lệch giữa UI và backend.
+3. Dọn sạch code, không để dead code / dirty code.
+4. Build xanh trước khi kết thúc.
+
+Bối cảnh tham chiếu:
+Màn hình Phụ cấp thâm niên đã được fix theo 2 hướng:
+- Fix sai lệch tháng/năm giữa toolbar, popup, payload gửi xuống backend.
+- Đồng bộ rule support từ 06/2026 ở cả UI và backend.
+
+Hãy dùng PhuCapThamNien làm reference implementation, đặc biệt xem:
+- src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/PhuCap/PhuCapThamNien/PhuCapThamNien.razor
+- src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/PhuCap/PhuCapThamNien/PhuCapThamNien.razor.cs
+- src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/Payroll/DatabasePayrollEmployeeSeniorityAllowanceService.cs
+
+Nhiệm vụ chi tiết:
+
+A. Rà soát toàn bộ các màn hình phụ cấp trong:
+- src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/PhuCap
+
+và các service/backend liên quan trong:
+- src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/Payroll
+- src/Vnta.HRM2026/Vnta.Hrm.Application/Payroll
+- src/Vnta.HRM2026/Vnta.Hrm.Web/Endpoints
+
+B. Tìm và sửa các lỗi cùng nhóm sau:
+1. UI toolbar đang cho user thấy một tháng/năm, nhưng khi click các action như:
+   - Xem
+   - Tính lại
+   - Khóa / Mở khóa
+   - Đồng bộ tháng trước
+   - Làm mới
+   - popup confirm / popup action
+   - request payload xuống API
+   thì lại dùng tháng/năm khác.
+2. Logic NormalizeSelectedPeriod / MinimumSupportedMonth / GetMinimumSupportedMonth / clamp month-year làm cho:
+   - UI hiển thị một giá trị
+   - state nội bộ lại là giá trị khác
+   - popup/confirm dùng khác với dataset đang load
+3. Dropdown tháng vẫn cho chọn tháng không hợp lệ theo rule backend, hoặc ngược lại backend support nhưng UI lại chặn.
+4. Các popup/confirm/action đang đọc sai nguồn period:
+   - trường hợp action chạy trên dataset đã load thì phải dùng Applied/Selected period snapshot đúng ngữ nghĩa
+   - label hiển thị và payload phải dùng cùng một nguồn period, không được lệch
+
+C. Áp dụng rule support từ tháng 06/2026:
+1. Với các màn hình phụ cấp khác có minimum period hoặc minimum month hardcode > 06/2026, hãy rà và đổi đồng bộ nếu đúng nghiệp vụ.
+2. Nếu một màn hình thực sự không thể support 06/2026 do phụ thuộc business/source data khác, không tự sửa bừa:
+   - ghi rõ màn hình nào
+   - lý do kỹ thuật / nghiệp vụ
+   - file/backend nào đang chặn
+3. Không được để tình trạng:
+   - UI support 06/2026 nhưng backend reject
+   - backend support 06/2026 nhưng UI không cho chọn
+   - toolbar hiển thị 06/2026 nhưng popup/payload lại thành 07/2026
+
+D. Quy tắc triển khai:
+1. Ưu tiên fix tận gốc, không vá ngọn.
+2. Không để duplicate logic hoặc helper thừa.
+3. Nếu có thể, gom logic period hợp lệ thành pattern nhất quán giữa các màn hình phụ cấp.
+4. Không phá behavior hiện có ngoài phạm vi period handling / support window.
+5. Giữ code clean, dễ đọc, đúng style repo.
+
+E. Những gì cần tìm trong code:
+- MinimumSupportedMonth
+- MinimumSupportedYear
+- MinimumSupportedPeriod
+- NormalizeSelectedPeriod(...)
+- GetMinimumSupportedMonth(...)
+- ToolbarMonth / ToolbarYear
+- AppliedMonth / AppliedYear / SelectedMonth / SelectedYear
+- popup period snapshot
+- Data của DxComboBox tháng
+- các action payload year/month
+- ValidatePeriod(...) ở backend
+- các endpoint / service / data provider truyền year-month
+
+F. Kết quả mong muốn:
+1. Tất cả màn hình phụ cấp liên quan không còn bug truyền sai tháng/năm.
+2. Các màn hình phụ cấp cần support 06/2026 sẽ support đồng bộ ở UI + backend.
+3. Các action/popup/confirm hiển thị đúng kỳ và gửi đúng payload.
+4. Nếu có màn nào không thể support 06/2026, báo rõ lý do thay vì sửa cưỡng ép.
+
+G. Kiểm thử bắt buộc:
+- Build:
+  dotnet build src\Vnta.HRM2026\Vnta.Hrm.Web\Vnta.Hrm.Web.csproj --no-restore -p:UseSharedCompilation=false -p:WasmEnableWebcil=false -p:OutDir=$env:TEMP\codex-period-support-fix -m:1
+
+- Sau khi xong, báo:
+  1. Những màn hình/files đã sửa
+  2. Những màn hình đã kiểm tra nhưng không cần sửa
+  3. Những màn hình không support 06/2026 và lý do
+  4. Các thay đổi backend liên quan
+
+H. Nếu hoàn tất và build xanh:
+- commit với message rõ ràng
+- push lên branch hiện tại
+
+Lưu ý rất quan trọng:
+Đừng chỉ sửa riêng PhuCapThamNien. Hãy coi đó là mẫu tham chiếu, rồi rà toàn bộ các màn hình phụ cấp khác có cùng pattern lỗi.

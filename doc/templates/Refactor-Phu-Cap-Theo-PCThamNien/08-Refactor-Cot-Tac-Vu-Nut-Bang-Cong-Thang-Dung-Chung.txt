@@ -1,0 +1,79 @@
+## Bổ sung nút Bảng công tháng cho màn Phụ cấp — prompt dùng chung
+
+Bạn là senior Blazor/.NET engineer. Hãy bổ sung chức năng đọc **Bảng công tháng** cho từng dòng trên màn Phụ cấp đích.
+
+### Biến đầu vào
+
+- Màn đích: `<TEN_MAN_HINH>`
+- Component Razor: `<DUONG_DAN_RAZOR>`
+- Code-behind: `<DUONG_DAN_RAZOR_CS>`
+- Kiểu record của grid: `<KIEU_RECORD>`
+- Màn tham chiếu: `BangCongNgay`
+- Popup tái sử dụng:
+  `Vnta.Hrm.Web.Client.Components.PhuCap.BangCongNgay.BangCongNgayDetailCard`
+
+### Mục tiêu
+
+- Bổ sung action `Bảng công tháng` vào cột/menu `Tác vụ` hiện hữu của màn đích.
+- Khi người dùng chọn action, mở popup read-only cho đúng nhân viên và đúng kỳ đang áp dụng của màn đích.
+- Tái sử dụng popup và luồng đọc bảng công có sẵn; không tạo popup riêng theo màn đích.
+
+### Ràng buộc bắt buộc
+
+- Không refactor, đổi bố cục, đổi thứ tự, đổi CSS, đổi icon, đổi grouping hoặc chuẩn hóa lại toàn bộ UI cột `Tác vụ`.
+- Chỉ chèn action mới theo convention/menu/markup hiện hữu của chính màn đích.
+- Không tạo file `<TenManHinh>MonthlyWorkPopup.razor`, `.razor.cs`, `.razor.css`; không clone popup hay CSS từ Bảng công ngày.
+- Tái sử dụng `BangCongNgayDetailCard` như presentation component nhận dữ liệu qua parameters; không phụ thuộc vào logic nghiệp vụ Bảng công ngày.
+- Tái sử dụng `MonthlyWorkSummaryDataProvider` nếu contract, quyền xem và data scope phù hợp.
+- Không tạo endpoint, DTO, provider, repository, service hoặc API mới nếu nguồn đọc hiện có đáp ứng yêu cầu.
+- Không tự suy diễn mapping nghiệp vụ. Đặc biệt không xem một trường phụ cấp/chấm công bất kỳ là `SalaryWorkDays` nếu chưa có bằng chứng về semantics.
+- Không mutation: mở popup và `Làm mới` trong popup chỉ được đọc lại dữ liệu; không tạo, sửa, xóa, tính lại hoặc đồng bộ dữ liệu chấm công, lương hay phụ cấp.
+- Không tự commit hoặc push.
+
+### Đọc trước khi sửa
+
+- `doc/templates/Refactor-Phu-Cap-Theo-PCThamNien/08-Refactor-Cot-Tac-Vu-Nut-Bang-Cong-Thang.txt`
+- `doc/templates/Refactor-Phu-Cap-Theo-PCThamNien/13-Ra-Soat-Code-Smell-Dirty-Code.txt`
+- `doc/agent-skills`, `doc/checklists`, `doc/rules`, `doc/project`
+- `BangCongNgay.razor`, `.razor.cs`
+- `BangCongNgayDetailCard.razor`, `.razor.cs`, `.razor.css`
+- `MonthlyWorkSummaryDataProvider.cs`
+- Source của màn đích, record grid, provider/API/authorization liên quan.
+
+### Quy trình
+
+1. Kiểm tra `git status --short`; bảo toàn mọi thay đổi có sẵn ngoài phạm vi.
+
+2. Phân tích trước, chưa sửa code:
+   - xác minh record có `EmployeeId` hợp lệ;
+   - xác minh màn có Applied period hoặc source xác thực khác cho tháng/năm;
+   - xác minh provider đọc dữ liệu có authorization/scope server-side phù hợp;
+   - xác định nguồn dữ liệu hợp lệ cho mọi parameter bắt buộc của popup;
+   - xác định action nên enabled/disabled theo state hiện có của màn, không tự tạo permission mới.
+
+3. Dừng và báo cáo kế hoạch để chờ phê duyệt, gồm:
+   - action hiện hữu sẽ được chèn ở đâu, không mô tả hay đề xuất refactor UI khác;
+   - mapping data từ record/kỳ áp dụng sang popup;
+   - state và handler tối thiểu cần thêm;
+   - xác nhận popup/provider được tái sử dụng;
+   - các file dự kiến sửa;
+   - câu hỏi/blocker về semantics, authorization hoặc data scope.
+
+4. Chỉ sau khi được phê duyệt:
+   - thêm action `Bảng công tháng` vào menu/cột `Tác vụ` hiện hữu, giữ nguyên cấu trúc UI xung quanh;
+   - thêm state và handler tối thiểu vào code-behind: open, load, refresh, close;
+   - mở popup trước ở trạng thái loading;
+   - tạo date range từ kỳ đã xác thực;
+   - gọi read provider, map dữ liệu sang model popup hiện có;
+   - dùng error message thân thiện, không lộ exception nội bộ;
+   - dọn state và xử lý cancellation theo pattern sẵn có;
+   - render trực tiếp shared popup, không tạo popup/CSS mới.
+
+### Kiểm chứng
+
+- Build các project bị ảnh hưởng.
+- Action mở đúng nhân viên/kỳ, không làm thay đổi selection/focus ngoài ý muốn.
+- Popup hiển thị đúng loading/empty/error/data, refresh chỉ đọc, close/cancellation an toàn.
+- Kiểm tra authorization/scope, employee không hợp lệ và kỳ không hợp lệ.
+- Xác nhận không có API mutation, không có UI refactor ngoài action mới, không có popup/CSS mới.
+- Báo cáo file thay đổi, build/test và rủi ro còn lại.

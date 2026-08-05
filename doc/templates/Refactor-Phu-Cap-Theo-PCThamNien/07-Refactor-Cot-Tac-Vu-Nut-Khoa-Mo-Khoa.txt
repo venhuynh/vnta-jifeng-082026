@@ -1,0 +1,103 @@
+## Refactor nút Khóa / Mở khóa trong cột Tác vụ theo chuẩn Bảng công ngày
+
+Triển khai/refactor chức năng **`Khóa` / `Mở khóa` cho một dòng** trong cột `Tác vụ` của màn hình Phụ cấp đích. Tham chiếu implementation chuẩn tại:
+
+`src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\ChamCong\BangCongNgay`
+
+Tham chiếu cụ thể:
+
+- Item động `@row.LockActionText`, icon Lock/Unlock và `ToggleLockStateAsync(row)` trong cột `Tác vụ` của `BangCongNgay.razor`.
+- Guard, gọi provider, cập nhật row từ response, toast và xử lý cancellation/lỗi trong `BangCongNgay.razor.cs`.
+- Provider/request/response, endpoint, application/domain service và audit của chức năng set lock state.
+
+Phạm vi của prompt này chỉ là thao tác khóa/mở khóa trên **một dòng từ cột `Tác vụ`**. Không triển khai, thay đổi hoặc tái sử dụng luồng khóa/mở khóa hàng loạt của `DxToolbar`, popup xác nhận theo toàn kỳ lương hoặc selected rows, trừ khi tài liệu của màn hình đích yêu cầu rõ ràng và người dùng phê duyệt phạm vi đó ở một giai đoạn khác.
+
+### 1. Đọc tài liệu và xác định semantics khóa — bắt buộc
+
+Trước khi phân tích hoặc viết code, đọc toàn bộ rule/checklist/tài liệu liên quan tại:
+
+- `doc\agent-skills`
+- `doc\checklists`
+- `doc\rules`
+- `doc\project`
+
+Tìm tài liệu đặc tả hoặc source hiện hữu của màn hình Phụ cấp đích liên quan đến trạng thái khóa, kỳ lương, chỉnh sửa thủ công, làm mới/tính lại, authorization, audit/log, concurrency, API và testing.
+
+Xác định rõ trước khi thiết kế:
+
+- Trạng thái nào có thể khóa và điều kiện nào có thể mở khóa?
+- Khóa ngăn những thao tác nào (ví dụ Điều chỉnh, Làm mới hoặc thao tác khác) và có hiệu lực ở UI lẫn backend ra sao?
+- Ai có quyền khóa, ai có quyền mở khóa; có cùng permission hay không?
+- Có cần reason, approval, confirmation hoặc audit metadata theo quy định không?
+- Trạng thái khóa có phụ thuộc vào kỳ lương, record parent, workflow/approval hoặc scope dữ liệu nào không?
+- Khi client gửi trạng thái đã cũ hoặc có thao tác đồng thời, server phải trả kết quả/ lỗi nào?
+
+Nếu không xác định được bằng tài liệu/source hiện hữu, báo cáo điểm thiếu và chờ xác nhận; không suy diễn nghiệp vụ theo Bảng công ngày.
+
+### 2. Phân tích và áp dụng pattern UI/client chuẩn
+
+Chuẩn hóa item trong menu `Tác vụ` theo pattern của `BangCongNgay`:
+
+- Text động: `Khóa` khi row chưa khóa và `Mở khóa` khi row đang khóa.
+- Icon động tương ứng Lock/Unlock theo convention icon của dự án.
+- Đặt action trong group phù hợp của menu (`BeginGroup`) theo chuẩn cột Tác vụ.
+- Dùng một handler rõ trách nhiệm cho thao tác đổi trạng thái của một row.
+- Enable/disable dựa trên điều kiện thao tác của row; UI guard chỉ hỗ trợ trải nghiệm và không thay thế backend authorization/validation.
+- Hiển thị tooltip, loading text, toast thành công/lỗi bằng tiếng Việt UTF-8, phản ánh chính xác trạng thái server trả về.
+
+Khi thao tác thành công, cập nhật row/grid bằng **record hoặc state được server trả về** theo pattern `ApplyUpdatedRecord` của màn hình chuẩn, hoặc reload dữ liệu nếu tài liệu/kiến trúc màn hình đích yêu cầu. Không tự đảo `IsLocked` ở client trước khi server xác nhận.
+
+Không chặn propagation của event theo cách làm mất behavior chuẩn của cột Tác vụ; giữ cơ chế để click menu không gây select/focus row ngoài ý muốn theo template UI đã phê duyệt.
+
+### 3. Ràng buộc backend logic — bắt buộc
+
+Backend không tin cậy trạng thái/permission từ client. Triển khai theo layer và convention dự án, tối thiểu:
+
+- Xác thực người dùng và authorization server-side riêng cho thao tác khóa/mở khóa theo policy/permission hiện hành.
+- Validate request: record ID, trạng thái đích được yêu cầu, kỳ/context và quan hệ của record với phạm vi dữ liệu người dùng được phép thao tác.
+- Tải record hiện tại ở server, kiểm tra tồn tại, ownership/scope, workflow/kỳ lương và các precondition nghiệp vụ.
+- Xử lý transition state hợp lệ theo rule: chỉ cho phép `unlocked → locked` hoặc `locked → unlocked` khi thỏa điều kiện; request lặp hoặc state đã đạt phải có outcome idempotent/validation rõ ràng theo quy định dự án.
+- Cập nhật trạng thái theo transaction và concurrency pattern hiện có; không để race condition ghi đè thao tác mới hơn.
+- Áp dụng hệ quả nghiệp vụ của trạng thái khóa ở backend: các endpoint Điều chỉnh/Làm mới và endpoint liên quan phải tiếp tục từ chối thao tác bị cấm, kể cả khi client bị can thiệp.
+- Ghi audit action, actor, record/context, trạng thái trước/sau và correlation theo hạ tầng audit của dự án; không tự tạo bảng/log mechanism mới nếu không được quy định.
+- Trả response chứa trạng thái thực tế sau xử lý và các field cần render lại; dùng error contract hiện có cho validation/domain/authorization/concurrency error.
+- Không để lộ exception nội bộ, thông tin nhạy cảm hoặc chi tiết hạ tầng lên client.
+
+Không tái sử dụng endpoint, DTO, permission hoặc rule Bảng công ngày cho domain khác chỉ vì tên thao tác giống nhau.
+
+### 4. Cổng phê duyệt kế hoạch — bắt buộc trước khi sửa code
+
+Sau khi hoàn tất phân tích, **không sửa, tạo, đổi tên hoặc xóa file**. Hãy báo cáo kế hoạch gồm:
+
+- Tài liệu/checklist đã đọc và bảng áp dụng từng quy định backend.
+- State transition table: trạng thái hiện tại, thao tác được phép, trạng thái kết quả, permission, precondition và thao tác bị khóa sau transition.
+- Sequence diagram: click action → UI guard/loading → request → backend authorization/validation → transaction/concurrency/audit → response → cập nhật grid/toast.
+- Bảng mapping với `BangCongNgay` cho UI item, handler, request/response, endpoint/service, audit, concurrency và cập nhật grid.
+- Contract request/response/error dự kiến, chỉ rõ dữ liệu nào do server quyết định.
+- Quyết định về confirmation/reason/approval: áp dụng hay không áp dụng, dựa trên tài liệu nào.
+- Danh sách file client/backend/contract/test sẽ thay đổi cùng lý do.
+- Các rủi ro: lock conflict, thao tác đồng thời, quyền mở khóa, ảnh hưởng tới Điều chỉnh/Làm mới và dữ liệu đang mở popup.
+- Các câu hỏi nghiệp vụ cần người dùng xác nhận.
+
+**Chỉ bắt đầu triển khai sau khi người dùng xác nhận rõ ràng kế hoạch.**
+
+### 5. Kiểm tra sau khi được phê duyệt và triển khai
+
+1. Build toàn bộ project bị ảnh hưởng.
+2. Kiểm tra row chưa khóa: hiển thị `Khóa`/icon đúng; sau thành công row hiển thị `Mở khóa`/icon đúng và các action bị cấm được disable.
+3. Kiểm tra row đã khóa: hiển thị `Mở khóa`; sau thành công các action được khôi phục đúng rule.
+4. Kiểm tra response server được dùng để cập nhật UI, không có optimistic update sai khi request thất bại.
+5. Kiểm tra authorization server-side cho user không có quyền khóa/mở khóa; record không tồn tại, sai scope/kỳ/context và transition không hợp lệ.
+6. Kiểm tra concurrent request, request lặp/idempotent và thao tác trên row đã thay đổi trạng thái từ phiên khác.
+7. Kiểm tra audit metadata/action và các endpoint Điều chỉnh/Làm mới vẫn bị backend chặn khi record đã khóa.
+8. Kiểm tra cancellation, lỗi mạng/lỗi domain, loading state, toast tiếng Việt và accessibility của menu.
+9. Thêm/chạy automated test theo quy định dự án cho transition, authorization, concurrency và enforcement ở endpoint liên quan.
+10. Không tự commit hoặc push.
+
+### Báo cáo kết quả
+
+- Semantics trạng thái khóa đã xác nhận và state transition table cuối cùng.
+- Tài liệu/quy định đã áp dụng cùng các mâu thuẫn đã xử lý.
+- Các file thay đổi và contract backend được dùng.
+- Cách backend bảo vệ thao tác bị cấm sau khi khóa.
+- Kết quả build/test, các kịch bản đã kiểm tra và rủi ro còn lại.

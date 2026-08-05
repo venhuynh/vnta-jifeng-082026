@@ -1,0 +1,75 @@
+Bạn đang ở trong một repo Git trên máy PC khác. Nhánh hiện tại KHÔNG phải là `main`.
+
+Mục tiêu:
+- Lấy source code mới nhất từ `origin/main`
+- Áp dụng vào nhánh hiện tại
+- Tuyệt đối không được ghi đè hoặc merge nội dung của các file mà nhánh hiện tại đã thay đổi kể từ lúc tách khỏi `origin/main`
+- Chỉ mang các thay đổi từ `origin/main` vào những file chưa bị nhánh hiện tại chỉnh sửa
+
+Nguyên tắc bắt buộc:
+1. Không dùng `git reset --hard`, không `rebase`, không `checkout`/`restore` làm mất thay đổi của nhánh hiện tại.
+2. Nếu working tree đang có thay đổi uncommitted thì dừng lại ngay và báo, không tự `stash`, không tự discard.
+3. Phải xác định danh sách “protected files” là các file đã thay đổi trên nhánh hiện tại so với merge-base với `origin/main`.
+4. Sau khi merge `origin/main`, phải khôi phục toàn bộ protected files về đúng trạng thái của nhánh hiện tại trước merge, cho cả index và working tree.
+5. Nếu còn conflict ở file không thuộc protected files thì dừng lại và báo rõ, không tự đoán cách xử lý.
+6. Trước khi commit phải hiển thị `git status` và tóm tắt diff để kiểm tra.
+
+Thực hiện theo đúng trình tự sau:
+
+PowerShell:
+```powershell
+git status --short
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+$currentBranch = git branch --show-current
+if (-not $currentBranch) { throw "Không xác định được nhánh hiện tại." }
+if ($currentBranch -eq "main") { throw "Hiện đang ở main, yêu cầu chỉ áp dụng khi đang ở nhánh khác main." }
+
+$dirty = git status --porcelain
+if ($dirty) { throw "Working tree đang có thay đổi uncommitted. Dừng để tránh ghi đè." }
+
+git fetch origin main
+if ($LASTEXITCODE -ne 0) { throw "Fetch origin/main thất bại." }
+
+$mergeBase = git merge-base HEAD origin/main
+if (-not $mergeBase) { throw "Không xác định được merge-base với origin/main." }
+
+$protectedFiles = git diff --name-only $mergeBase..HEAD
+
+git merge --no-commit --no-ff origin/main
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Merge có conflict hoặc cần xử lý thêm. Tiếp tục bảo vệ protected files trước khi quyết định dừng."
+}
+
+if ($protectedFiles) {
+    $protectedFiles -split "`r?`n" | Where-Object { $_.Trim() -ne "" } | ForEach-Object {
+        git restore --source=HEAD --staged --worktree -- $_
+    }
+}
+
+$remainingConflicts = git diff --name-only --diff-filter=U
+if ($remainingConflicts) {
+    Write-Host "Còn conflict ở file không thuộc protected files:"
+    Write-Host $remainingConflicts
+    throw "Dừng lại để người dùng quyết định cách xử lý."
+}
+
+git status
+git diff --stat --cached
+
+Write-Host "Current branch: $currentBranch"
+Write-Host "Merge base: $mergeBase"
+Write-Host "Protected files:"
+Write-Host $protectedFiles
+
+# Chỉ commit khi status/diff đúng yêu cầu
+git commit -m "Merge origin/main into $currentBranch without overwriting branch-owned files"
+```
+
+Yêu cầu đầu ra cuối cùng:
+- Tên nhánh hiện tại
+- Commit mới nhất của `origin/main`
+- Merge-base
+- Danh sách protected files đã được giữ nguyên
+- Xác nhận rằng không có file do nhánh hiện tại chỉnh sửa bị ghi đè
+- Nếu có conflict ở file unprotected thì dừng và báo rõ

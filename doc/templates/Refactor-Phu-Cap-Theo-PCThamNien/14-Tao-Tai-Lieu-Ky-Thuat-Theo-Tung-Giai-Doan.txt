@@ -1,0 +1,135 @@
+## Tạo bộ tài liệu kỹ thuật theo từng giai đoạn refactor màn hình Phụ cấp
+
+Tạo hoặc cập nhật bộ tài liệu kỹ thuật cho **màn hình Phụ cấp đang triển khai**. Mỗi file tài liệu phải tương ứng một-một với một prompt refactor đã thực hiện trong thư mục:
+
+`doc\templates\Refactor-Phu-Cap-Theo-PCThamNien`
+
+### 1. Vị trí lưu tài liệu
+
+1. Xác định tên folder UI thực tế của màn hình đích từ source component, ví dụ `PhuCapDocHai`, `PhuCapPhepLe` hoặc tên PascalCase tương ứng.
+2. Lưu toàn bộ tài liệu chuyên đề tại:
+
+   `doc\screens\phu-cap\<TenFolderManHinhUI>\`
+
+3. Không ghi tài liệu của màn hình đích vào folder `BangCongNgay` chỉ vì đây là màn hình chuẩn tham chiếu.
+4. Nếu folder đã tồn tại, đọc `README.md` và mọi file hiện hữu trước khi sửa; cập nhật/bổ sung thay vì ghi đè hoặc xóa nội dung hợp lệ.
+5. Không tự sửa các trang tổng quan bên ngoài folder màn hình, như `doc\screens\phu-cap\phu-cap-*.md`, trừ khi người dùng phê duyệt riêng.
+
+### 2. Nguyên tắc source of truth và tính chính xác
+
+- Đọc các rule/checklist/tài liệu dự án trước khi viết:
+  - `doc\agent-skills`
+  - `doc\checklists`
+  - `doc\rules`
+  - `doc\project`
+- Đối soát từng claim kỹ thuật với source runtime hiện tại, contract, endpoint, service/infrastructure, test và tài liệu nghiệp vụ liên quan.
+- Không sao chép nguyên văn prompt refactor thành tài liệu kỹ thuật. Prompt là yêu cầu triển khai; tài liệu phải mô tả **implementation thực tế đã được xác minh**.
+- Không suy đoán API, database table, rule tính, permission, audit, transaction, data lineage hoặc kết quả test. Nếu một giai đoạn chưa triển khai/chưa xác minh, ghi rõ trạng thái `Chưa triển khai`, `Đang triển khai` hoặc `Cần xác nhận`, kèm blocker.
+- Không ghi secret, token, connection string, dữ liệu cá nhân thực, payload nhạy cảm hoặc thông tin hạ tầng nội bộ không cần thiết.
+- Dùng tiếng Việt UTF-8, đúng chính tả, thuật ngữ nhất quán với UI/source và Markdown dễ đọc.
+- Dùng đường dẫn source tương đối từ repository; chỉ nêu line number khi đã kiểm tra và có giá trị hỗ trợ bảo trì.
+
+### 3. Cổng phê duyệt kế hoạch tài liệu — bắt buộc
+
+Trước khi tạo, sửa hoặc đổi tên tài liệu, hãy dừng và báo cáo kế hoạch gồm:
+
+1. Màn hình đích, route, source folder runtime và folder tài liệu sẽ dùng.
+2. Danh sách file tài liệu hiện hữu trong folder đích và đánh giá: giữ nguyên, cập nhật, hợp nhất hoặc tạo mới.
+3. Bảng mapping 1-1 giữa prompt refactor và file tài liệu dự kiến theo mục 4 bên dưới.
+4. Trạng thái triển khai/đối soát của từng giai đoạn: có bằng chứng source/test, chỉ có kế hoạch, hoặc blocked.
+5. Danh sách source of truth sẽ đọc cho mỗi tài liệu: Razor, code-behind, CSS, provider, contract, endpoint, application/infrastructure service, database doc và test liên quan.
+6. Các claim nghiệp vụ/rule/backend còn thiếu bằng chứng hoặc mâu thuẫn cần người dùng xác nhận.
+
+**Chỉ bắt đầu ghi/cập nhật tài liệu sau khi người dùng xác nhận rõ ràng kế hoạch.**
+
+### 4. Mapping bắt buộc: prompt refactor ↔ tài liệu kỹ thuật
+
+Tạo `README.md` làm index và tạo/cập nhật các file sau trong folder màn hình đích. Giữ số thứ tự để truy vết được từ tài liệu đến prompt.
+
+| Prompt nguồn | Tài liệu đích | Nội dung kỹ thuật bắt buộc |
+|---|---|---|
+| `01-Mo-nhanh-moi.txt` | `01-khoi-tao-va-ngu-canh.md` | Route, project/runtime source map, baseline branch/commit khi có, tài liệu/rule áp dụng, phạm vi màn hình và quyết định khởi tạo. Không ghi lịch sử Git nhạy cảm/không liên quan. |
+| `02-Refactor-Cau-Truc-Theo-PCThamNien.txt` | `02-cau-truc-component.md` | Cây thư mục component, trách nhiệm từng file, dependency/component diagram, mapping với chuẩn và các khác biệt domain hợp lệ. |
+| `03-Refactor-Noi-Dung-Duoi-DxToolbar.txt` | `03-noi-dung-duoi-dx-toolbar.md` | Content root/card, loading/error/empty state, state-title/message, summary/`DxButtonGroup`, search, grid, summary, export host, CSS/responsive. |
+| `04-Refactor-Cot-Tac-Vu-UI.txt` | `04-cot-tac-vu-ui.md` | Cấu trúc cột Tác vụ, menu per-row, icon/tooltip, stop propagation, enable/disable state, accessibility và phạm vi UI-only ban đầu. |
+| `05-Refactor-Cot-Tac-Vu-Nut-Dieu-Chinh.txt` | `05-cot-tac-vu-dieu-chinh.md` | Luồng popup Điều chỉnh, editable/read-only field, validation, request/response, backend authorization, lock/override/concurrency/audit, reload/toast và test. |
+| `06-Refactor-Cot-Tac-Vu-Nut-Lam-Moi.txt` | `06-cot-tac-vu-lam-moi.md` | Semantics refresh một dòng, data lineage, input/source/field recalculated-preserved, server guard, lock/manual behavior, result counts và test. |
+| `07-Refactor-Cot-Tac-Vu-Nut-Khoa-Mo-Khoa.txt` | `07-cot-tac-vu-khoa-mo-khoa.md` | Lock transition một dòng, permission, state transition, backend enforcement cho mutation liên quan, audit/concurrency và test. |
+| `08-Refactor-Cot-Tac-Vu-Nut-Bang-Cong-Thang.txt` | `08-cot-tac-vu-bang-cong-thang.md` | Popup bảng công read-only, context kỳ/nhân viên, data access/scope/privacy, summary/filter/grid, refresh read-only, empty/error/loading state và test. |
+| `09-Refactor-DxToolbar-Khoi-Tao-Ky-Hien-Tai-Quy-Tac-062026.txt` | `09-dx-toolbar-ky-hien-tai-va-quy-tac.md` | Toolbar/Applied period state, clock/timezone/normalization, Rule source/effective version, kịch bản kiểm chứng 06/2026 và backend data-access nếu có. |
+| `10-Refactor-DxToolbar-Hanh-Dong-Nut-Tinh-Lai.txt` | `10-dx-toolbar-tinh-lai.md` | Data Lineage Matrix, Rule Matrix, State/overwrite Matrix, confirm flow, transaction/concurrency/idempotency/audit, result counts và test payroll quan trọng. |
+| `11-Refactor-DxToolbar-Hanh-Dong-Nut-Khoa-Mo-Khoa.txt` | `11-dx-toolbar-khoa-mo-khoa.md` | Lock State Matrix, Scope Matrix selected rows/toàn kỳ, null-vs-empty request semantics, popup confirmation, batch backend/audit/enforcement và test. |
+| `12-Refactor-DxToolbar-Xuat-File-Excel-PDF.txt` | `12-dx-toolbar-xuat-excel-pdf.md` | Export Scope Matrix, Field Allowlist Matrix, Applied period, export grid/schema, Excel/PDF formatting, data security/audit, performance/cleanup và artifact test. |
+| `13-Ra-Soat-Code-Smell-Dirty-Code.txt` | `13-ra-soat-code-smell.md` | Code Smell Inventory trước/sau, cleanup thực tế, reference verification, technical debt giữ lại, regression/build/analyzer/test result. |
+
+### 5. Cấu trúc README.md của folder màn hình
+
+`README.md` phải là index kỹ thuật của riêng màn hình, gồm tối thiểu:
+
+1. Tên màn hình, route, mục tiêu nghiệp vụ và trạng thái triển khai.
+2. Source runtime chính: component folder, provider/API client, application/service, infrastructure, endpoint và test liên quan.
+3. Sơ đồ ngắn hoặc mô tả luồng: UI → provider/client → API endpoint → application/domain → infrastructure/database.
+4. Phân biệt `Toolbar period` và `Applied period` nếu màn hình có khái niệm này.
+5. Danh sách 13 tài liệu theo mapping ở mục 4, mỗi mục có link, trạng thái và một câu mô tả.
+6. Nguồn sự thật khi cập nhật tài liệu và ngày/commit/checkpoint đối soát gần nhất khi có bằng chứng.
+7. Liên kết đến screen overview, database doc, sprint/ADR/spec/checklist liên quan nếu các file đó tồn tại.
+
+### 6. Template nội dung cho từng tài liệu giai đoạn
+
+Mỗi file tài liệu trong mục 4 phải có cấu trúc tối thiểu sau; bổ sung section chuyên biệt theo cột “Nội dung kỹ thuật bắt buộc”:
+
+```md
+# <Tên giai đoạn> — <Tên màn hình>
+
+## Trạng thái
+
+- Trạng thái: Đã triển khai / Đang triển khai / Chưa triển khai / Cần xác nhận
+- Prompt liên quan: `<tên prompt>`
+- Đối soát với: `<source/test/doc đã kiểm tra>`
+- Checkpoint: `<ngày hoặc commit, chỉ khi có bằng chứng>`
+
+## Mục tiêu và phạm vi
+
+## Ngoài phạm vi
+
+## Kiến trúc và luồng xử lý
+
+## Source map
+
+## Contract, validation, authorization và data scope
+
+## Quy tắc nghiệp vụ / state / dữ liệu ảnh hưởng
+
+## Error, loading, cancellation, concurrency và audit
+
+## Kiểm tra và kết quả xác minh
+
+## Quyết định, giới hạn và technical debt
+
+## Liên kết liên quan
+```
+
+Quy tắc áp dụng template:
+
+- Với giai đoạn chỉ UI, section backend phải ghi rõ `Không áp dụng trong giai đoạn này` hoặc mô tả backend hiện hữu được giữ nguyên; không bịa logic backend.
+- Với Điều chỉnh/Làm mới/Tính lại/Khóa-Mở khóa/Export, phải có flow hoặc sequence diagram bằng Mermaid khi giúp làm rõ luồng; diagram phải khớp implementation thực tế.
+- Với rule/calculation, ưu tiên bảng rule/data lineage/state transition hơn văn xuôi dài.
+- Với mỗi source map, nêu trách nhiệm file, không chỉ liệt kê đường dẫn.
+- Với test, nêu lệnh/kịch bản/kết quả thật; không ghi “đã test” nếu chỉ mới dự kiến.
+
+### 7. Rà soát trước khi bàn giao tài liệu
+
+1. Kiểm tra tất cả file được lưu đúng folder `doc\screens\phu-cap\<TenFolderManHinhUI>\`.
+2. Kiểm tra mỗi trong 13 prompt có đúng một tài liệu tương ứng, mọi link trong README hoạt động và không có file trùng nghĩa.
+3. Đối chiếu đường dẫn source, route, contract, rule, permission, audit, data scope và test với code hiện tại.
+4. Xác minh không có claim chưa được chứng minh, dữ liệu nhạy cảm, secret, encoding lỗi hoặc tiếng Việt không nhất quán.
+5. Kiểm tra Markdown rendering: heading hierarchy, table, code block và Mermaid (nếu dùng) hợp lệ/dễ đọc.
+6. Không tự commit hoặc push.
+
+### 8. Báo cáo kết quả
+
+- Folder tài liệu màn hình đã tạo/cập nhật.
+- Bảng mapping prompt ↔ file tài liệu thực tế và trạng thái của từng file.
+- Danh sách source/test đã đối soát.
+- Claim còn thiếu bằng chứng, tài liệu cũ/mâu thuẫn và technical debt được ghi nhận.
+- Kết quả kiểm tra link/Markdown/encoding.

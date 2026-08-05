@@ -1,0 +1,97 @@
+Bạn là Senior Blazor UI Refactoring Engineer.
+
+Mục tiêu: chuẩn bị và bắt đầu refactor màn hình UI “Phụ cấp”, 
+trong đó màn hình “Bảng công ngày” là chuẩn tham chiếu về kiến trúc, UX/UI, quy ước code và hành vi nghiệp vụ.
+
+## 1. Chuẩn bị source code và nhánh làm việc
+
+Repository:
+C:\Users\VNSIT\Documents\GitHub\Vnta-Blazor-2026
+
+Thực hiện theo thứ tự:
+
+1. Kiểm tra trạng thái Git hiện tại (`git status`, nhánh hiện hành, thay đổi chưa commit).
+2. Không tự ý commit, push, stash, reset hoặc xóa các thay đổi chưa được commit của người dùng.
+3. Nếu working tree sạch và nhánh hiện tại có commit local cần đồng bộ, push nhánh hiện tại lên GitHub.
+4. Fetch toàn bộ remote branch/tag mới nhất.
+5. Pull/rebase từ remote tracking branch để cập nhật source code mới nhất.
+6. Nếu có conflict hoặc cần force push, dừng lại, báo cáo rõ nguyên nhân và không tự xử lý theo hướng gây mất dữ liệu.
+7. Tạo một nhánh mới từ source code đã được cập nhật, đặt tên theo quy ước phù hợp, ví dụ:
+   `refactor/workday-summary-ui`
+8. Báo cáo nhánh nguồn, nhánh mới và commit base trước khi bắt đầu chỉnh sửa.
+
+## 2. Nạp ngữ cảnh dự án
+
+Đọc đầy đủ các tài liệu, quy tắc và checklist liên quan trước khi thay đổi code:
+
+- `doc\agent-skills`
+- `doc\checklists`
+- `doc\rules`
+- `doc\project`
+
+
+Sau đó, tìm và đọc các tài liệu triển khai hiện có hoặc cũ liên quan đến:
+
+- Bảng công ngày
+- Payroll
+- UI/UX guideline
+- Blazor component conventions
+- Quy ước routing, authorization và navigation
+
+Xác định rõ tài liệu nào là tài liệu cũ/outdated. Không áp dụng tài liệu cũ nếu mâu thuẫn với rule, checklist hoặc source code hiện tại; hãy ghi nhận mâu thuẫn đó trong báo cáo.
+
+## 3. Phạm vi refactor chính
+
+Màn hình chuẩn cần phân tích:
+
+`src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\ChamCong\BangCongNgay`
+
+Hãy phân tích màn hình này để xác định:
+
+- Cấu trúc component và cách tổ chức file.
+- Quy ước đặt tên, dependency injection và state management.
+- Luồng tải dữ liệu, xử lý loading/empty/error state.
+- Quy tắc validation, thông báo và xử lý thao tác người dùng.
+- Cách phân quyền, routing và điều hướng.
+- Thành phần UI dùng chung, CSS/style và khả năng responsive.
+- Các điểm cần giữ nguyên để tránh ảnh hưởng nghiệp vụ hiện tại.
+
+Chưa thay đổi logic nghiệp vụ khi chưa xác định rõ tác động. Ưu tiên refactor có kiểm soát, nhỏ gọn, dễ review, tương thích với convention hiện có của dự án.
+
+## 4. Cấu hình chạy thẳng vào màn hình Bảng công ngày
+
+Điều chỉnh các file sau để khi chạy ứng dụng, người dùng đăng nhập thành công sẽ được điều hướng trực tiếp đến:
+
+`/attendance/workday-summaries`
+
+Các file trong phạm vi:
+
+- `src\Vnta.HRM2026\Vnta.Hrm.Web\Components\Account\IdentityRedirectManager.cs`
+- `src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\Index.razor`
+- `src\Vnta.HRM2026\Vnta.Hrm.Web\Properties\launchSettings.json`
+
+Yêu cầu:
+
+- Giữ nguyên cơ chế xác thực và phân quyền hiện có.
+- Không hard-code thông tin tài khoản, token hoặc secret.
+- Chỉ thay đổi redirect mặc định / route khởi động cần thiết.
+- Đảm bảo route đích tồn tại, người dùng đã xác thực có thể truy cập, và không tạo redirect loop.
+- Không thay đổi cấu hình môi trường ngoài phạm vi cần thiết.
+
+## 5. Kiểm tra và bàn giao
+
+Sau khi hoàn thành:
+
+1. Build solution hoặc các project bị ảnh hưởng.
+2. Chạy kiểm tra phù hợp theo checklist dự án.
+3. Xác minh luồng: mở app → đăng nhập → vào `/attendance/workday-summaries`.
+4. Kiểm tra lỗi compile, route không tồn tại, redirect loop và lỗi authorization.
+5. Không tự commit hoặc push nếu chưa có yêu cầu rõ ràng.
+
+Báo cáo cuối cùng cần gồm:
+
+- Tóm tắt tài liệu/rule/checklist đã áp dụng.
+- Các tài liệu cũ hoặc mâu thuẫn đã phát hiện.
+- Các file đã thay đổi và lý do thay đổi.
+- Kết quả build/test/kiểm tra luồng đăng nhập.
+- Các rủi ro, giả định hoặc việc cần xác nhận trước khi tiếp tục refactor sâu.

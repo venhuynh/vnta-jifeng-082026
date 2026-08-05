@@ -1,0 +1,118 @@
+Bạn là Senior Blazor UI Refactoring Engineer.
+
+## Mục tiêu
+
+Refactor/triển khai UI cho màn hình `<TEN_MAN_HINH>` tại `<DUONG_DAN_MAN_HINH>`.
+
+UI mẫu bắt buộc phải tham chiếu:
+
+`src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\ChamCong\BangCongNgay`
+
+Không được tự thiết kế một hệ UI mới. Mọi icon, tooltip, toast/notification, popup/dialog, loading/error/empty state, cách tổ chức action menu, CSS isolation, responsive và accessibility phải đối chiếu với implementation thực tế của `BangCongNgay`.
+
+## Đọc bắt buộc trước khi phân tích hoặc sửa code
+
+1. Đọc đầy đủ mọi file trong:
+
+   `doc\templates\Refactor-Phu-Cap-Theo-PCThamNien`
+
+2. Đọc các quy định dự án:
+
+   - `doc\agent-skills`
+   - `doc\checklists`
+   - `doc\rules`
+   - `doc\project`
+
+3. Đọc source UI mẫu thực tế, tối thiểu gồm:
+
+   - `BangCongNgay.razor`
+   - `BangCongNgay.razor.cs`
+   - `BangCongNgay.razor.css`
+   - Các popup liên quan trong cùng folder: Edit, MonthlyWork, Rules, RecalculateConfirm, LockAction.
+   - Các provider/service/contract mà hành vi UI đang dùng.
+
+4. Đọc toàn bộ Razor, code-behind, CSS và component liên quan của màn hình đích trước khi đề xuất thay đổi.
+
+Nếu tài liệu, source mẫu và rule dự án mâu thuẫn: ưu tiên rule/checklist/đặc tả nghiệp vụ hiện hành; ghi rõ mâu thuẫn, không tự suy diễn.
+
+## Quy tắc UI bắt buộc, không được vi phạm
+
+### 1. UI mẫu là nguồn chuẩn
+
+- Bắt buộc đối chiếu và lập mapping giữa UI màn đích với `BangCongNgay` trước khi sửa.
+- Áp dụng cùng pattern component, layout, CSS isolation, interaction, loading state, popup lifecycle, icon và tooltip khi phù hợp.
+- Không copy route, API endpoint, DTO, field, permission, rule tính hoặc nghiệp vụ đặc thù của Bảng công ngày.
+- Không thêm action, popup, tổng hợp, filter, export hoặc dữ liệu giả chỉ để giống UI mẫu.
+
+### 2. Icon và cột Tác vụ
+
+- Dùng `VntaDevExpressIcons` và icon convention đã có trong UI mẫu; không tự thêm thư viện icon, icon URL hoặc icon text khác.
+- Cột `Tác vụ` phải theo pattern mẫu: `DxDropDownButton` trong `CellDisplayTemplate`, icon ba chấm `icon more-icon medium-icon` (hoặc đúng icon tương đương đã được dự án quy định), `ButtonRenderStyle.Link`, `DropDownToggleVisible="false"` nếu phiên bản thư viện hỗ trợ.
+- Bọc menu bằng host container và chặn propagation `click`/`mousedown` để click menu không làm chọn hoặc focus dòng ngoài ý muốn.
+- Action dùng nhãn tiếng Việt, icon DevExpress đúng ngữ nghĩa và `BeginGroup` theo cách tổ chức của mẫu.
+- Chỉ render action có nghiệp vụ tương ứng trên màn hình đích.
+- Action chưa có logic phải `Enabled="false"`, không tạo handler giả/no-op, và có tooltip phù hợp, ví dụ: `Chức năng sẽ được triển khai ở giai đoạn tiếp theo`.
+
+### 3. Toast, notification, loading và lỗi
+
+- Bắt buộc tái sử dụng cơ chế `ToastService`/notification hiện hữu của dự án và pattern của UI mẫu; không tự tạo service thông báo mới.
+- Toast phải bằng tiếng Việt UTF-8, phản ánh chính xác response thực tế từ server: thành công, không thay đổi, không có dữ liệu, bị bỏ qua do khóa, nguồn thiếu, validation/domain error hoặc lỗi hệ thống.
+- Không báo thành công khi request thất bại, bị hủy hoặc chưa có xác nhận thành công từ server.
+- Không lộ exception nội bộ, SQL, hạ tầng, token hoặc dữ liệu nhạy cảm.
+- Luôn chống double-click/request song song; bật loading đúng lúc và khôi phục state trong `finally`.
+- Chỉ reload/cập nhật grid, summary và toast thành công sau khi server trả kết quả hợp lệ. Không optimistic update cho các thao tác mutation.
+
+### 4. Popup/dialog
+
+- Popup phải tái sử dụng hoặc mô phỏng đúng structure/lifecycle của popup tương ứng trong `BangCongNgay`.
+- Dùng `DxPopup`, title tiếng Việt theo ngữ cảnh, responsive, keyboard-accessible và CSS isolation.
+- Popup chỉnh sửa: dùng edit model độc lập, field read-only rõ ràng, editor đúng kiểu dữ liệu, nút `Hủy`/`Lưu`, chỉ đóng khi lưu thành công.
+- Popup xác nhận: nêu rõ kỳ áp dụng, phạm vi, tác động và dữ liệu có thể bị thay đổi, nhưng chỉ nêu thông tin đã được xác minh từ nghiệp vụ.
+- Popup read-only: hiển thị đầy đủ trạng thái loading/error/empty/data; refresh chỉ được đọc lại dữ liệu, không mutation.
+- Khi đang xử lý, disable thao tác cạnh tranh và không đóng popup gây mất state ngoài ý muốn.
+- Khi backend validation/lỗi hệ thống trả về, không tự đóng popup nếu người dùng còn có thể sửa và thử lại.
+
+### 5. Text, tooltip và accessibility
+
+- Toàn bộ caption, action text, title, tooltip, `aria-label`, validation, loading text, empty/error message và toast phải là tiếng Việt UTF-8 có dấu, đúng chính tả, ngắn gọn và nhất quán.
+- Tooltip phải nêu đúng tác dụng/phạm vi thực tế; không khẳng định action sẽ chạy khi action đang disabled.
+- Không để text tiếng Anh không cần thiết, mojibake hoặc thuật ngữ mơ hồ.
+- Bảo toàn keyboard navigation và focus state do DevExpress cung cấp; không dùng CSS để che focus.
+- Không Việt hóa identifier kỹ thuật, tên component DevExpress, tên thuộc tính C#, route, API hoặc CSS class chỉ vì mục tiêu hiển thị.
+
+### 6. State, grid và CSS
+
+- Duy trì phân biệt đúng các state: loading, error, empty, no-search-result và data; các state không được hiển thị chồng chéo.
+- Error/empty state dùng pattern `state-title`, `state-message` và action phù hợp như UI mẫu.
+- Bảo toàn search, filter, sort, paging, page size, selection, focus row và export hiện hữu.
+- Dùng CSS isolation theo convention của màn hình đích; không tạo CSS global gây ảnh hưởng màn hình khác.
+- Kiểm tra responsive, overflow và hiển thị grid/popup ở màn hình nhỏ.
+
+## Cổng phê duyệt bắt buộc
+
+Sau khi phân tích, CHƯA ĐƯỢC sửa, tạo, đổi tên hoặc xóa file.
+
+Dừng lại và báo cáo kế hoạch gồm:
+
+1. Danh sách tài liệu/source đã đọc.
+2. Mapping UI hiện tại → UI mẫu `BangCongNgay`.
+3. Bảng action gồm: text, icon, tooltip, grouping, enabled/disabled, handler và nghiệp vụ tương ứng.
+4. Mapping toast/notification, loading/error/empty state và popup/dialog.
+5. Danh sách file `.razor`, `.razor.cs`, `.razor.css`, component, provider hoặc contract dự kiến thay đổi.
+6. Những khác biệt domain bắt buộc giữ lại, các rủi ro và điểm cần xác nhận.
+
+Chỉ triển khai sau khi người dùng phê duyệt rõ ràng kế hoạch.
+
+## Kiểm tra bắt buộc sau triển khai
+
+- Build các project bị ảnh hưởng.
+- Kiểm tra icon, tooltip, menu grouping, enable/disable state và row-click propagation.
+- Kiểm tra popup open/close/cleanup, keyboard focus, responsive và overflow.
+- Kiểm tra đầy đủ loading/error/empty/data, success/error/cancellation và chống thao tác song song.
+- Kiểm tra toast/notification tiếng Việt UTF-8, đúng kết quả server.
+- Xác nhận không có API mutation hoặc thay đổi nghiệp vụ ngoài phạm vi đã phê duyệt.
+- Không tự commit hoặc push.
+
+## Báo cáo cuối
+
+Nêu rõ file đã thay đổi, mapping UI mẫu đã áp dụng, kết quả build/kiểm tra và các khác biệt nghiệp vụ được giữ lại.

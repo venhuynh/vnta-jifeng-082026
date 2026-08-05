@@ -1,0 +1,73 @@
+## Refactor cấu trúc màn hình theo chuẩn Bảng công ngày
+
+Tiếp tục refactor màn hình Phụ cấp đang thực hiện theo đúng cách tổ chức source code của màn hình chuẩn:
+
+`src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\ChamCong\BangCongNgay`
+
+Mục tiêu là làm cho màn hình đích có cấu trúc file, cách phân tách component, cách tổ chức code-behind, model, service interaction, state management và convention UI tương đồng tối đa với `BangCongNgay`, nhưng vẫn giữ nguyên nghiệp vụ riêng của màn hình đích.
+
+### Quy trình bắt buộc
+
+1. Đọc và lập danh sách đầy đủ tất cả file/thư mục trong `BangCongNgay`.
+2. Phân tích vai trò của từng file, bao gồm:
+   - File Razor giao diện chính.
+   - File `.razor.cs` code-behind (nếu có).
+   - Component con.
+   - Dialog/modal.
+   - Partial component.
+   - File CSS/SCSS riêng.
+   - DTO, request/response model, enum hoặc helper dùng cục bộ.
+   - Luồng giao tiếp với API/service.
+3. Xác định dependency và quan hệ giữa các component trước khi chỉnh sửa.
+4. Đối chiếu cấu trúc hiện tại của màn hình đích với `BangCongNgay`, sau đó lập mapping rõ ràng: file hiện tại nào sẽ được giữ lại, tách ra, đổi tên hoặc tạo mới tương ứng với cấu trúc chuẩn.
+
+### Cổng phê duyệt kế hoạch — bắt buộc trước khi refactor
+
+Sau khi hoàn tất phân tích và mapping, **chưa được sửa, tạo, đổi tên hoặc xóa bất kỳ file nào**. Hãy dừng lại và báo cáo kế hoạch refactor để người dùng xem xét.
+
+Báo cáo kế hoạch phải bao gồm:
+
+- Cây thư mục hiện tại của màn hình đích và cây thư mục dự kiến sau refactor.
+- Bảng mapping giữa từng file/cấu trúc hiện tại của màn hình đích với file/cấu trúc tương ứng trong `BangCongNgay`.
+- Danh sách cụ thể file sẽ tạo mới, chỉnh sửa, tách, đổi tên hoặc xóa, kèm lý do.
+- Thứ tự thực hiện và các dependency liên quan.
+- Các rủi ro có thể ảnh hưởng đến nghiệp vụ, routing, authorization, API contract hoặc UI hiện tại.
+- Các điểm chưa rõ cần người dùng xác nhận.
+
+Chỉ bắt đầu refactor sau khi người dùng xác nhận rõ ràng kế hoạch. Nếu kế hoạch được yêu cầu điều chỉnh, hãy cập nhật và báo cáo lại trước khi thay đổi source code.
+
+### Thực hiện refactor sau khi kế hoạch được phê duyệt
+
+Sau khi nhận được xác nhận, refactor màn hình đích để có cấu trúc thư mục và cách phân tách file giống `BangCongNgay` tối đa có thể.
+
+### Nguyên tắc refactor
+
+- Ưu tiên tái cấu trúc code, không tự ý thay đổi nghiệp vụ, API contract, validation rule, quyền truy cập hoặc hành vi người dùng hiện có.
+- Tách component theo đúng trách nhiệm như màn hình chuẩn; không tạo component chỉ để chia nhỏ hình thức.
+- Giữ quy ước đặt tên file, component, parameter, event callback, injection và lifecycle method tương đồng với `BangCongNgay`.
+- Nếu màn hình chuẩn dùng code-behind, CSS isolation, dialog riêng hoặc component con, áp dụng cùng mô hình cho màn hình đích khi phù hợp.
+- Không copy nguyên văn tên nghiệp vụ, route, API endpoint, DTO hoặc logic của `BangCongNgay` sang màn hình đích.
+- Không để lại code chết, import không dùng, component không còn được tham chiếu hoặc logic bị trùng lặp sau refactor.
+- Không thay đổi các file ngoài phạm vi màn hình đích trừ khi thực sự cần thiết để build hoặc duy trì routing hiện có.
+- Tuân thủ toàn bộ rules và checklist đã đọc ở bước trước.
+
+### Kiểm tra bắt buộc
+
+Sau refactor:
+
+1. So sánh lại cấu trúc file giữa màn hình đích và `BangCongNgay`.
+2. Xác nhận mọi component, dialog và CSS vẫn được tham chiếu đúng.
+3. Build các project bị ảnh hưởng và xử lý toàn bộ lỗi compile phát sinh từ thay đổi.
+4. Kiểm tra các luồng chính: tải danh sách, tìm kiếm/lọc (nếu có), thêm, sửa, xem chi tiết, xóa, validation, loading và error state.
+5. Không tự commit hoặc push.
+
+### Báo cáo kết quả
+
+Cung cấp:
+
+- Cây thư mục trước và sau refactor của màn hình đích.
+- Bảng mapping giữa các file/cấu trúc của màn hình đích và `BangCongNgay`.
+- Danh sách file được tạo, tách, đổi tên hoặc xóa.
+- Các nghiệp vụ được giữ nguyên và các khác biệt bắt buộc so với màn hình chuẩn.
+- Kết quả build và các luồng đã kiểm tra.
+- Các điểm còn cần xác nhận trước khi tiếp tục refactor UI/UX sâu hơn.

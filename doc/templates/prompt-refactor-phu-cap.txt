@@ -1,0 +1,23 @@
+BỘ PROMPT REFACTOR PHỤ CẤP
+
+File này chỉ còn vai trò chỉ mục.
+Nội dung chi tiết đã được tách hoàn toàn sang từng file riêng theo giai đoạn:
+
+- Giai đoạn 1:
+  `doc/templates/prompt-refactor-phu-cap-giai-doan-1.txt`
+- Giai đoạn 2:
+  `doc/templates/prompt-refactor-phu-cap-giai-doan-2.txt`
+- Giai đoạn 3:
+  `doc/templates/prompt-refactor-phu-cap-giai-doan-3.txt`
+- Giai đoạn 4:
+  `doc/templates/prompt-refactor-phu-cap-giai-doan-4.txt`
+- Giai đoạn 5:
+  `doc/templates/prompt-refactor-phu-cap-giai-doan-5.txt`
+
+Tài liệu hướng dẫn tổng quan:
+- `doc/templates/README.md`
+
+Nguyên tắc sử dụng
+- Không viết prompt chi tiết trong file này nữa.
+- Khi dùng thực tế, mở đúng file theo giai đoạn tương ứng.
+- Nếu cần cập nhật nội dung, cập nhật trực tiếp trong file giai đoạn liên quan.

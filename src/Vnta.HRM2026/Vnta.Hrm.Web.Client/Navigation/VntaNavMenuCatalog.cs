@@ -37,6 +37,12 @@ public static class VntaNavMenuCatalog
     private static readonly IReadOnlyList<string> PayrollAdministrationRoles = InternalAccountRoles.PayrollAdministrationRoles;
     private static readonly IReadOnlyList<string> DeviceAdministrationRoles = InternalAccountRoles.DeviceAdministrationRoles;
     private static readonly IReadOnlyList<string> AdminGroupRoles = [AdminRole, SystemAdminRole, HrAdminRole, AttendanceAdminRole];
+    private static readonly IReadOnlySet<string> SidebarVisibleRootMenuKeys = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "implementation_progress",
+        "hr",
+        "admin"
+    };
 
     public static readonly IReadOnlyList<VntaNavMenuNode> All =
     [
@@ -307,6 +313,9 @@ public static class VntaNavMenuCatalog
             RestrictedMenuItem("adms_monitor", "Giám sát ADMS", "/Adms", VntaDevExpressIcons.AdmsMonitor, AdmsTone, DeviceAdministrationRoles),
             RestrictedMenuItem("adms_device_commands", "Lệnh máy chấm công", "/adms/device-commands", VntaDevExpressIcons.Command, AdmsTone, DeviceAdministrationRoles))
     ];
+
+    public static bool IsVisibleInSidebar(VntaNavMenuNode node)
+        => SidebarVisibleRootMenuKeys.Contains(node.Key);
 
     private static VntaNavMenuNode MenuGroup(
         string key,

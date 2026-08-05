@@ -21,7 +21,7 @@ else
                 UrlMatchMode="NavigationUrlMatchMode.CurrentPath"
                 CssClass="main-menu">
         <Nodes>
-            @foreach (var node in VisibleNodes)
+            @foreach (var node in VisibleNodes.Where(VntaNavMenuCatalog.IsVisibleInSidebar))
             {
                 <NavMenuTreeNode @key="node.Key" Node="@node" CurrentPath="@CurrentPath" />
             }

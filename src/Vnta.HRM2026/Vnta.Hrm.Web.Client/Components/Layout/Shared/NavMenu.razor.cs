@@ -29,7 +29,7 @@ public partial class NavMenu : IDisposable
 
     private bool ShowLoadingState => IsMenuLoading;
 
-    private bool ShowEmptyState => !IsMenuLoading && VisibleNodes.Count == 0;
+    private bool ShowEmptyState => !IsMenuLoading && !VisibleNodes.Any(VntaNavMenuCatalog.IsVisibleInSidebar);
 
     private string RenderKey => $"menu-{MenuTreeVersion}-{CurrentPath}";
 

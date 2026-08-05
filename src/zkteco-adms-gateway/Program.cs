@@ -125,6 +125,8 @@ if (string.IsNullOrWhiteSpace(connectionString))
     throw new InvalidOperationException("Database connection is required. Set ConnectionStrings__Postgres, ConnectionStrings__DefaultConnection, or VNTA_DB.");
 }
 
+Vnta.AttendanceGateway.Data.JifengHrmDatabaseTargetValidator.Validate(connectionString);
+
 builder.Services.AddDbContext<Vnta.AttendanceGateway.Data.ZktecoDbContext>(opts => 
     opts.UseNpgsql(connectionString));
 

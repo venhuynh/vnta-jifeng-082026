@@ -40,13 +40,12 @@ set +a
 BACKUP_DIR="${BACKUP_DIR:-/opt/vnta/shared/backups}"
 RESET_TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 RESET_BACKUP_NAME="${COMPOSE_PROJECT_NAME:-vnta}-before-business-data-reset-${RESET_TIMESTAMP}.dump"
+EXPECTED_DATABASE_NAME="jifeng_hrm"
 
-case "$DATABASE_NAME" in
-  postgres|template0|template1)
-    echo "Từ chối reset database hệ thống PostgreSQL: $DATABASE_NAME" >&2
-    exit 1
-    ;;
-esac
+if [[ "$DATABASE_NAME" != "$EXPECTED_DATABASE_NAME" ]]; then
+  echo "Refusing reset: DATABASE_NAME must be '$EXPECTED_DATABASE_NAME'." >&2
+  exit 1
+fi
 
 echo "Tạo backup trước khi reset database '$DATABASE_NAME'..."
 BACKUP_NAME="$RESET_BACKUP_NAME" "$SCRIPT_DIR/backup-db.sh" "$ENV_FILE"

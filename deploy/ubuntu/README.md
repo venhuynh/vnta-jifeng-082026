@@ -42,6 +42,8 @@ trước khi reset, xóa các dòng dữ liệu ứng dụng trong schema `publi
 `audit`, đồng thời giữ nguyên ASP.NET Core Identity và
 `__EFMigrationsHistory`.
 
+Script chỉ chạy khi `DATABASE_NAME=jifeng_hrm`, để tránh reset nhầm database khác.
+
 Trước khi chạy, dừng cả `hrm-web` và `adms-gateway` để gateway không ghi lại
 dữ liệu trong lúc reset. Chạy bằng DB owner hoặc một role có quyền `ALTER`,
 `TRUNCATE` trên các bảng HRM/ADMS:

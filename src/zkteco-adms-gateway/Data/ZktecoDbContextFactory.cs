@@ -30,6 +30,8 @@ public sealed class ZktecoDbContextFactory : IDesignTimeDbContextFactory<ZktecoD
             throw new InvalidOperationException("Database connection is required for design-time operations. Set it in appsettings.Local.json, an environment variable, or VNTA_DB.");
         }
 
+        JifengHrmDatabaseTargetValidator.Validate(connectionString);
+
         var optionsBuilder = new DbContextOptionsBuilder<ZktecoDbContext>();
         optionsBuilder.UseNpgsql(connectionString);
 

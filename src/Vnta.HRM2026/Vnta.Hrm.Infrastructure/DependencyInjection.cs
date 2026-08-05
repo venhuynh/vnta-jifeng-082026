@@ -20,7 +20,10 @@ using Identity;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructureServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        bool requireJifengDatabase = true)
     {
         var dataProtection = services
             .AddDataProtection()
@@ -34,22 +37,9 @@ public static class DependencyInjection
             dataProtection.PersistKeysToFileSystem(keyRingDirectory);
         }
 
-        var connectionString = configuration.GetConnectionString("Postgres");
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            connectionString = configuration.GetConnectionString("DefaultConnection");
-        }
-
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            connectionString = Environment.GetEnvironmentVariable("VNTA_DB");
-        }
-
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException(
-                "Missing database connection string. Configure ConnectionStrings:Postgres or VNTA_DB outside source control.");
-        }
+        var connectionString = DatabaseConnectionStringResolver.Resolve(
+            configuration,
+            requireJifengDatabase);
 
         // The scopes keep their data in AsyncLocal, so a singleton is safe and keeps one
         // logical audit context across the request or Interactive Server command.

@@ -1,0 +1,149 @@
+@page "/implementation/progress"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Models
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Tiến độ triển khai</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Tiến độ triển khai" CssClass="implementation-progress-toolbar" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Thêm hạng mục"
+                           Click="AddItemAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tạo hạng mục mới trong dữ liệu của phiên làm việc hiện tại"
+                           IconUrl="@VntaDevExpressIcons.Add" />
+            <DxToolbarItem Text="Đặt lại dữ liệu"
+                           Click="ResetItems"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Khôi phục dữ liệu mẫu và bỏ các chỉnh sửa trong phiên làm việc này"
+                           IconUrl="@VntaDevExpressIcons.Reset" />
+            <DxToolbarItem Tooltip="Chọn cột hiển thị"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Click="ShowColumnChooser"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="implementation-progress-search-item"
+                           Tooltip="Tìm kiếm hạng mục, phân hệ, người phụ trách hoặc ghi chú">
+                <Template>
+                    <div class="custom-item">
+                        <DxSearchBox CssClass="implementation-progress-searchbox"
+                                     NullText="Tìm kiếm"
+                                     BindValueMode="BindValueMode.OnDelayedInput"
+                                     InputDelay="400"
+                                     ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                     @bind-Text="SearchText" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+        </DxToolbar>
+    </div>
+
+    <div class="implementation-progress-root">
+        <div class="card implementation-progress-grid-card">
+            <div class="implementation-progress-grid-content">
+                <div class="implementation-progress-grid-header">
+                    <div class="implementation-progress-summary-strip" aria-label="Bộ lọc theo trạng thái tiến độ">
+                        <DxButtonGroup CssClass="implementation-progress-summary-button-group"
+                                       RenderStyle="ButtonRenderStyle.Secondary"
+                                       RenderStyleMode="ButtonRenderStyleMode.Outline"
+                                       SelectionMode="ButtonGroupSelectionMode.Single">
+                            <Items>
+                                @foreach(var badge in SummaryBadges)
+                                {
+                                    <DxButtonGroupItem Text="@($"{badge.ShortLabel} {badge.Count:N0}")"
+                                                       Tooltip="@badge.Label"
+                                                       CssClass="@($"implementation-progress-summary-button implementation-progress-summary-button-{badge.Key}")"
+                                                       Selected="@(badge.Key == ActiveSummaryBadgeKey)"
+                                                       Click="@(() => SelectSummary(badge.Key))" />
+                                }
+                            </Items>
+                        </DxButtonGroup>
+                        <DxButtonGroup CssClass="implementation-progress-average-button-group"
+                                       RenderStyle="ButtonRenderStyle.Primary"
+                                       RenderStyleMode="ButtonRenderStyleMode.Outline">
+                            <Items>
+                                <DxButtonGroupItem Text="@($"Tiến độ TB: {AverageProgress:N0}%")"
+                                                   Tooltip="Tiến độ trung bình của các hạng mục đang hiển thị"
+                                                   CssClass="implementation-progress-average-button" />
+                            </Items>
+                        </DxButtonGroup>
+                    </div>
+                    <div class="implementation-progress-session-note">
+                        <img src="@VntaDevExpressIcons.Info" alt="" aria-hidden="true" />
+                        <span>Dữ liệu chỉ được lưu trong phiên UI hiện tại.</span>
+                    </div>
+                </div>
+
+                <DxGrid @ref="Grid"
+                        Data="@FilteredItems"
+                        KeyFieldName="Id"
+                        CssClass="implementation-progress-grid"
+                        ShowSearchBox="false"
+                        PagerVisible="false"
+                        ShowAllRows="true"
+                        VirtualScrollingEnabled="true"
+                        EditMode="GridEditMode.EditRow"
+                        EditNewRowPosition="GridEditNewRowPosition.LastRow"
+                        ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                        FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                        TextWrapEnabled="false"
+                        FocusedRowEnabled="true"
+                        HighlightRowOnHover="true"
+                        CustomizeEditModel="OnCustomizeEditModel"
+                        EditModelSaving="OnEditModelSaving">
+                    <Columns>
+                        <DxGridDataColumn FieldName="Code" Caption="Mã" Width="6.5rem" MinWidth="96" />
+                        <DxGridDataColumn FieldName="WorkItem" Caption="Hạng mục triển khai" MinWidth="260">
+                            <CellDisplayTemplate>
+                                @{ var item = (ProjectImplementationProgressItem)context.DataItem; }
+                                <span class="implementation-progress-work-item" title="@item.WorkItem">@item.WorkItem</span>
+                            </CellDisplayTemplate>
+                        </DxGridDataColumn>
+                        <DxGridDataColumn FieldName="Module" Caption="Phân hệ" MinWidth="170" />
+                        <DxGridDataColumn FieldName="Owner" Caption="Phụ trách" MinWidth="150" />
+                        <DxGridDataColumn FieldName="StartDate" Caption="Bắt đầu" DisplayFormat="dd/MM/yyyy" Width="8.5rem" MinWidth="130" />
+                        <DxGridDataColumn FieldName="DueDate" Caption="Hạn hoàn thành" DisplayFormat="dd/MM/yyyy" Width="9.5rem" MinWidth="145" />
+                        <DxGridDataColumn FieldName="ProgressPercent" Caption="Tiến độ" Width="11rem" MinWidth="165" TextAlignment="GridTextAlignment.Right">
+                            <CellDisplayTemplate>
+                                @{ var item = (ProjectImplementationProgressItem)context.DataItem; }
+                                <div class="implementation-progress-value" title="@($"{item.ProgressPercent}% hoàn thành")">
+                                    <DxProgressBar CssClass="implementation-progress-bar"
+                                                   MaxValue="100"
+                                                   Value="@item.ProgressPercent"
+                                                   ShowLabel="false" />
+                                    <span class="@GetProgressValueCssClass(item.ProgressPercent)">@item.ProgressPercent%</span>
+                                </div>
+                            </CellDisplayTemplate>
+                        </DxGridDataColumn>
+                        <DxGridDataColumn FieldName="Status" Caption="Trạng thái" Width="9.5rem" MinWidth="145">
+                            <CellDisplayTemplate>
+                                @{ var item = (ProjectImplementationProgressItem)context.DataItem; }
+                                <span class="@GetStatusCssClass(item.Status)">@item.Status</span>
+                            </CellDisplayTemplate>
+                            <EditSettings>
+                                <DxComboBoxSettings Data="@StatusOptions" />
+                            </EditSettings>
+                        </DxGridDataColumn>
+                        <DxGridDataColumn FieldName="Note" Caption="Ghi chú" MinWidth="220" />
+                        <DxGridCommandColumn Width="6.5rem" DeleteButtonVisible="false" />
+                    </Columns>
+                    <EmptyDataAreaTemplate>
+                        <div class="empty-state">
+                            <div class="state-title">Không có hạng mục phù hợp</div>
+                            <div class="state-message">Thử chọn lại trạng thái, xoá từ khoá tìm kiếm hoặc thêm một hạng mục mới.</div>
+                            <DxButton Text="Hiển thị tất cả"
+                                      Click="ShowAllItems"
+                                      IconUrl="@VntaDevExpressIcons.Reset"
+                                      RenderStyle="ButtonRenderStyle.Primary"
+                                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                        </div>
+                    </EmptyDataAreaTemplate>
+                </DxGrid>
+            </div>
+        </div>
+    </div>
+</div>

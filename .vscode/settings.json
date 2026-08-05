@@ -1,0 +1,6 @@
+{
+  "dotnet.defaultSolution": "src/Vnta.HRM2026/Jifeng.Hrm.slnx",
+  "csharp.experimental.debug.hotReload": true,
+  "csharp.debug.hotReloadOnSave": true,
+  "csharp.debug.hotReloadVerbosity": "minimal"
+}

@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Vnta.Hrm.Web: dotnet watch",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "watch",
+        "--project",
+        "${workspaceFolder}/src/Vnta.HRM2026/Vnta.Hrm.Web/Vnta.Hrm.Web.csproj",
+        "run",
+        "--launch-profile",
+        "Vnta.Hrm.Web"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

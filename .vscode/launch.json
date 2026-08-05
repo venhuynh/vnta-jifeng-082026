@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Vnta.Hrm.Web (Debug + Hot Reload)",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/src/Vnta.HRM2026/Vnta.Hrm.Web/Vnta.Hrm.Web.csproj",
+      "launchSettingsProfile": "Vnta.Hrm.Web"
+    }
+  ]
+}

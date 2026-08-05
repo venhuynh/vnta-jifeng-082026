@@ -1,5 +1,5 @@
 .implementation-progress-phase-details {
-    margin: -0.1rem 0 0.75rem 3.6rem;
+    margin: -0.1rem 0 0.75rem;
     overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 24%, var(--dxds-color-border-neutral-default-rest));
     border-radius: 0.8rem;
@@ -181,10 +181,6 @@
 }
 
 @media (max-width: 720px) {
-    .implementation-progress-phase-details {
-        margin-left: 0;
-    }
-
     .implementation-progress-phase-details-header {
         align-items: flex-start;
         flex-direction: column;

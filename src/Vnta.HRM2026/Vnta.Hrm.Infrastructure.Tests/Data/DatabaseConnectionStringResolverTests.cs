@@ -19,6 +19,9 @@ public sealed class DatabaseConnectionStringResolverTests
             DatabaseConnectionStringResolver.EnsureExpectedDatabase(
                 "Host=localhost;Port=5432;Database=isolated_test_database;Username=test;Password=test"));
 
-        Assert.Equal("The configured database must be 'jifeng_hrm'.", exception.Message);
+        Assert.Equal(
+            "The configured database must be 'jifeng_hrm'. " +
+            "Update ConnectionStrings:Postgres, ConnectionStrings:DefaultConnection, or VNTA_DB outside source control.",
+            exception.Message);
     }
 }

@@ -44,7 +44,8 @@ public static class DatabaseConnectionStringResolver
         if (!string.Equals(databaseName, ExpectedDatabaseName, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
-                $"The configured database must be '{ExpectedDatabaseName}'.");
+                $"The configured database must be '{ExpectedDatabaseName}'. " +
+                "Update ConnectionStrings:Postgres, ConnectionStrings:DefaultConnection, or VNTA_DB outside source control.");
         }
     }
 }

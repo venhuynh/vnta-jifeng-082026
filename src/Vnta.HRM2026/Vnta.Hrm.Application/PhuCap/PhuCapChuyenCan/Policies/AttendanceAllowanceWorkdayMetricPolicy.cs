@@ -25,6 +25,7 @@ public sealed record AttendanceAllowanceWorkdayMetric(
 /// <summary>Chính sách tổng hợp số liệu phụ cấp từ các ngày công đã được đọc.</summary>
 public sealed class AttendanceAllowanceWorkdayMetricPolicy
 {
+    public const int WorkdayDecimalPlaces = 4;
     public const int LateEarlyMinutesPerWorkday = 480;
     public const string KpAttendanceStatusCode = "KP";
 
@@ -55,15 +56,15 @@ public sealed class AttendanceAllowanceWorkdayMetricPolicy
 
         var lateEarlyDeductionDays = Math.Round(
             lateEarlyMinutes / (decimal)LateEarlyMinutesPerWorkday,
-            4,
+            WorkdayDecimalPlaces,
             MidpointRounding.AwayFromZero);
         var attendanceWorkdayCount = Math.Round(
             Math.Max(administrativeWorkdayCount - lateEarlyDeductionDays, 0m),
-            4,
+            WorkdayDecimalPlaces,
             MidpointRounding.AwayFromZero);
 
         return new AttendanceAllowanceWorkdayMetric(
-            Math.Round(administrativeWorkdayCount, 4, MidpointRounding.AwayFromZero),
+            Math.Round(administrativeWorkdayCount, WorkdayDecimalPlaces, MidpointRounding.AwayFromZero),
             lateEarlyMinutes,
             lateEarlyDeductionDays,
             attendanceWorkdayCount,

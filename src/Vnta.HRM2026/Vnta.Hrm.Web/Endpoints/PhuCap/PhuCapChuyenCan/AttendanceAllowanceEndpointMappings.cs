@@ -17,6 +17,7 @@ public static class AttendanceAllowanceEndpointMappings
         group.MapPost("/refresh", AttendanceAllowanceCommandEndpoints.RefreshAsync);
         group.MapPost("/actual-workday", AttendanceAllowanceCommandEndpoints.UpdateActualWorkdayAsync);
         group.MapPost("/standard-workday", AttendanceAllowanceCommandEndpoints.UpdateStandardWorkdayAsync);
+        group.MapPost("/workdays", AttendanceAllowanceCommandEndpoints.UpdateWorkdaysAsync);
         group.MapPost("/lock-state", AttendanceAllowanceCommandEndpoints.SetLockStateAsync);
         group.MapPost("/lock-state/batch", AttendanceAllowanceCommandEndpoints.SetLockStateBatchAsync);
         return group;

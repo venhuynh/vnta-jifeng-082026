@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Policies;
 using Vnta.Hrm.Infrastructure.Data;
 using Vnta.Hrm.Infrastructure.Integrations.AttendanceGateway;
 
@@ -7,10 +8,6 @@ namespace Vnta.Hrm.Infrastructure.PhuCap.PhuCapChuyenCan.Queries;
 /// <summary>Single read-only projection shared by the query side and command result reloads.</summary>
 internal static class AttendanceAllowanceReadProjection
 {
-    internal const int MinimumSupportedMonth = 6;
-    internal const int MinimumSupportedYear = 2026;
-    internal const int MaximumSupportedYear = 2100;
-
     public static IQueryable<AttendanceAllowanceJoinedRow> BuildQuery(
         ApplicationDbContext dbContext,
         AttendanceAllowanceResultFilter filter,
@@ -20,7 +17,6 @@ internal static class AttendanceAllowanceReadProjection
         if(requirePeriod) ValidateRequiredPeriod(filter.PayrollYear, filter.PayrollMonth);
 
         var normalizedSearch = NormalizeOptional(filter.SearchText);
-        var attendanceClass = NormalizeOptional(filter.AttendanceClass)?.ToUpperInvariant();
         IQueryable<AttendanceAllowanceJoinedRow> query =
             from detail in dbContext.PayrollAttendanceAllowanceRecords.AsNoTracking()
             join summary in dbContext.PayrollAllowanceSummaryRecords.AsNoTracking()
@@ -46,10 +42,16 @@ internal static class AttendanceAllowanceReadProjection
         }
         if(filter.PayrollYear.HasValue)
         {
-            var year = requirePeriod ? (short)filter.PayrollYear.Value : (short)Math.Clamp(filter.PayrollYear.Value, MinimumSupportedYear, MaximumSupportedYear);
+            var year = requirePeriod
+                ? (short)filter.PayrollYear.Value
+                : (short)Math.Clamp(
+                    filter.PayrollYear.Value,
+                    AttendanceAllowancePayrollPeriodPolicy.MinimumSupportedYear,
+                    AttendanceAllowancePayrollPeriodPolicy.MaximumSupportedYear);
             query = query.Where(x => x.Summary.PayrollYear == year);
         }
-        if(!string.IsNullOrWhiteSpace(attendanceClass)) query = query.Where(x => x.Detail.AttendanceClass == attendanceClass);
+        if(filter.AttendanceClass is { } attendanceClass)
+            query = query.Where(x => x.Detail.AttendanceClass == attendanceClass.ToStorageValue());
         if(!string.IsNullOrWhiteSpace(normalizedSearch))
         {
             var pattern = $"%{normalizedSearch}%";
@@ -86,7 +88,7 @@ internal static class AttendanceAllowanceReadProjection
             row.Summary.PayrollMonth, row.Summary.PayrollYear, row.Detail.StandardAllowanceAmount,
             row.Detail.StandardWorkdayCount, row.Detail.ActualWorkdayCount, row.Detail.AttendanceRate,
             row.Detail.AllowanceAmount, row.Detail.IsLocked || row.Summary.IsLocked, row.Detail.CreatedAtUtc,
-            row.Detail.UpdatedAtUtc, row.Detail.AppliedRuleKey, row.Detail.AttendanceClass, row.Detail.CtlWorkdayCount,
+            row.Detail.UpdatedAtUtc, row.Detail.AppliedRuleKey, AttendanceAllowancePolicyStorageValues.FromStorageValue(row.Detail.AttendanceClass), row.Detail.CtlWorkdayCount,
             row.Detail.LateEarlyMinutes, row.Detail.Kqcc, row.Detail.HasKpViolation,
             row.Detail.AdministrativeWorkdayCount, row.Detail.LateEarlyDeductionDays);
 
@@ -103,11 +105,7 @@ internal static class AttendanceAllowanceReadProjection
     }
     public static void ValidateRequiredPeriod(int year, int month)
     {
-        if(year is < MinimumSupportedYear or > MaximumSupportedYear)
-            throw new InvalidOperationException($"Năm kỳ lương phải nằm trong khoảng từ {MinimumSupportedYear} đến {MaximumSupportedYear}.");
-        if(month is < 1 or > 12) throw new InvalidOperationException("Tháng kỳ lương phải nằm trong khoảng từ 1 đến 12.");
-        if(year == MinimumSupportedYear && month < MinimumSupportedMonth)
-            throw new InvalidOperationException($"Dữ liệu phụ cấp chuyên cần bắt đầu từ {MinimumSupportedMonth:00}/{MinimumSupportedYear}.");
+        AttendanceAllowancePayrollPeriodPolicy.EnsureSupported(month, year);
     }
     public static void EnsureSupportedAllowanceKind(PayrollAllowanceKind kind)
     {

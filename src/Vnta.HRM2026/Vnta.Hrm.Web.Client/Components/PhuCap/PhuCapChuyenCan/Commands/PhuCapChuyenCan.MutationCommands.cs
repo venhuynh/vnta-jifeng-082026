@@ -157,32 +157,12 @@ public partial class PhuCapChuyenCan
             CurrentLoadingText = $"Đang điều chỉnh ngày công của {EditModel.EmployeeDisplay}...";
             await InvokeAsync(StateHasChanged);
 
-            var version = EditModel.OriginalUpdatedAtUtc;
-            var actualChanged = EditModel.ActualWorkdayCount != EditModel.OriginalActualWorkdayCount;
-            var standardChanged = EditModel.StandardWorkdayCount != EditModel.OriginalStandardWorkdayCount;
-
-            // Lowering the standard below the old actual count must persist the
-            // new actual count first. Every command returns a new version, so
-            // the following command still has optimistic-concurrency coverage.
-            if(actualChanged && standardChanged && EditModel.StandardWorkdayCount < EditModel.OriginalActualWorkdayCount)
-            {
-                var updated = await ManualAdjustmentDataProvider.UpdateActualWorkdayAsync(EditModel.Id, EditModel.ActualWorkdayCount, version, disposalTokenSource.Token);
-                version = updated.UpdatedAtUtc;
-                await ManualAdjustmentDataProvider.UpdateStandardWorkdayAsync(EditModel.Id, EditModel.StandardWorkdayCount, version, disposalTokenSource.Token);
-            }
-            else
-            {
-                if(standardChanged)
-                {
-                    var updated = await ManualAdjustmentDataProvider.UpdateStandardWorkdayAsync(EditModel.Id, EditModel.StandardWorkdayCount, version, disposalTokenSource.Token);
-                    version = updated.UpdatedAtUtc;
-                }
-
-                if(actualChanged)
-                {
-                    await ManualAdjustmentDataProvider.UpdateActualWorkdayAsync(EditModel.Id, EditModel.ActualWorkdayCount, version, disposalTokenSource.Token);
-                }
-            }
+            await WorkdayAdjustmentDataProvider.UpdateWorkdaysAsync(
+                EditModel.Id,
+                EditModel.ActualWorkdayCount,
+                EditModel.StandardWorkdayCount,
+                EditModel.OriginalUpdatedAtUtc,
+                disposalTokenSource.Token);
 
             CloseEditPopupCore();
             await ReloadAsync();
@@ -255,7 +235,6 @@ public partial class PhuCapChuyenCan
         }
 
         AttendanceAllowanceResultRecord[]? targetRecords = null;
-        var targetRowCount = 0;
         if(!IsWholePeriodLockStateScope(scope))
         {
             var selectedRecords = GetSelectedResults()
@@ -269,7 +248,6 @@ public partial class PhuCapChuyenCan
             }
 
             targetRecords = selectedRecords;
-            targetRowCount = selectedRecords.Length;
         }
 
         try
@@ -280,12 +258,20 @@ public partial class PhuCapChuyenCan
             await InvokeAsync(StateHasChanged);
             await Task.Yield();
 
-            var result = await LockDataProvider.SetLockStateBatchAsync(
-                payrollYear,
-                payrollMonth,
-                shouldLock,
-                targetRecords,
-                disposalTokenSource.Token);
+            var result = IsWholePeriodLockStateScope(scope)
+                ? await LockDataProvider.SetLockStateForWholePeriodAsync(
+                    payrollYear,
+                    payrollMonth,
+                    shouldLock,
+                    disposalTokenSource.Token)
+                : await LockDataProvider.SetLockStateForRowsAsync(
+                    payrollYear,
+                    payrollMonth,
+                    shouldLock,
+                    targetRecords!
+                        .Select(record => new AttendanceAllowanceLockItem(record.Id, record.UpdatedAtUtc))
+                        .ToArray(),
+                    disposalTokenSource.Token);
 
             if(result.TargetRowCount == 0)
             {

@@ -1,4 +1,5 @@
 using Vnta.Hrm.Application.PhuCap.Common;
+using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Policies;
 using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Queries;
 using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapChuyenCan.State;
 using Xunit;
@@ -15,7 +16,7 @@ public sealed class AttendanceAllowanceFilterFactoryTests
             PayrollYear: 2026,
             SearchText: "NV001",
             LockState: AttendanceAllowanceLockState.Locked,
-            AttendanceClass: "B",
+            AttendanceClass: AttendanceAllowanceClass.B,
             PageIndex: 2,
             PageSize: 50);
 
@@ -26,7 +27,7 @@ public sealed class AttendanceAllowanceFilterFactoryTests
         Assert.Equal(2026, filter.PayrollYear);
         Assert.Equal("NV001", filter.SearchText);
         Assert.Equal(AttendanceAllowanceLockState.Locked, filter.LockState);
-        Assert.Equal("B", filter.AttendanceClass);
+        Assert.Equal(AttendanceAllowanceClass.B, filter.AttendanceClass);
         Assert.Equal(100, filter.Skip);
         Assert.Equal(50, filter.Take);
     }

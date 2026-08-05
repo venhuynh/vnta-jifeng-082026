@@ -8,7 +8,7 @@ public static class PayrollAllowanceSummaryManualAdjustmentPolicy
 {
     public static string? ValidateAndNormalizeNote(UpdatePayrollAllowanceSummaryManualNoteRequest request) =>
         ValidateAndNormalize(new UpdatePayrollAllowanceSummaryManualValuesRequest(
-            request.Id, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, request.Note,
+            request.Id, 0m, 0m, 0m, null, 0m, 0m, 0m, 0m, request.Note,
             IsLocked: false, request.OriginalUpdatedAtUtc, request.Actor));
 
     public static string? ValidateAndNormalize(UpdatePayrollAllowanceSummaryManualValuesRequest request)
@@ -25,7 +25,6 @@ public static class PayrollAllowanceSummaryManualAdjustmentPolicy
             ("Phụ cấp trách nhiệm", request.ResponsibilityAllowanceAmount),
             ("Phụ cấp trách nhiệm khác", request.ResponsibilityOtherAllowanceAmount),
             ("Phụ cấp thâm niên", request.SeniorityAllowanceAmount),
-            ("Phụ cấp chuyên cần", request.AttendanceAllowanceAmount),
             ("Phụ cấp cơm", request.MealAllowanceAmount),
             ("Phụ cấp độc hại", request.HazardAllowanceAmount),
             ("Phụ cấp khác", request.OtherAllowanceAmount),
@@ -44,5 +43,22 @@ public static class PayrollAllowanceSummaryManualAdjustmentPolicy
         }
 
         return note;
+    }
+
+    /// <summary>
+    /// Keeps the legacy attendance field read-only while older clients migrate away from it.
+    /// The allowance-summary aggregate may display this projection but cannot author it.
+    /// </summary>
+    public static void EnsureAttendanceProjectionIsNotOverridden(
+        decimal? legacyRequestedAmount,
+        decimal currentProjectionAmount)
+    {
+        if(legacyRequestedAmount is null || legacyRequestedAmount.Value == currentProjectionAmount)
+        {
+            return;
+        }
+
+        throw new PayrollAllowanceSummaryValidationException(
+            "Phụ cấp chuyên cần được tính và quản lý tại màn hình Phụ cấp chuyên cần, không thể điều chỉnh từ tổng hợp phụ cấp.");
     }
 }

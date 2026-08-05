@@ -9,6 +9,7 @@ internal sealed class HttpAttendanceAllowanceResultService(NavigationManager nav
       IAttendanceAllowanceExportService,
       IAttendanceAllowanceRefreshService,
       IAttendanceAllowanceManualAdjustmentService,
+      IAttendanceAllowanceWorkdayAdjustmentService,
       IAttendanceAllowanceLockService
 {
     private readonly HttpClient httpClient = new()
@@ -86,6 +87,18 @@ internal sealed class HttpAttendanceAllowanceResultService(NavigationManager nav
         return await response.ReadRequiredFromJsonAsync<AttendanceAllowanceResultListItemDto>(cancellationToken);
     }
 
+    public async Task<AttendanceAllowanceResultListItemDto> UpdateWorkdaysAsync(
+        UpdateAttendanceAllowanceWorkdaysRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.PostAsJsonAsync(
+            "api/payroll/attendance-allowance/workdays",
+            request,
+            cancellationToken);
+
+        return await response.ReadRequiredFromJsonAsync<AttendanceAllowanceResultListItemDto>(cancellationToken);
+    }
+
     public async Task<AttendanceAllowanceResultListItemDto> SetLockStateAsync(
         SetAttendanceAllowanceLockStateRequest request,
         CancellationToken cancellationToken = default)
@@ -127,6 +140,8 @@ public static class AttendanceAllowanceResultApiServiceCollectionExtensions
         services.AddScoped<IAttendanceAllowanceRefreshService>(sp =>
             sp.GetRequiredService<HttpAttendanceAllowanceResultService>());
         services.AddScoped<IAttendanceAllowanceManualAdjustmentService>(sp =>
+            sp.GetRequiredService<HttpAttendanceAllowanceResultService>());
+        services.AddScoped<IAttendanceAllowanceWorkdayAdjustmentService>(sp =>
             sp.GetRequiredService<HttpAttendanceAllowanceResultService>());
         services.AddScoped<IAttendanceAllowanceLockService>(sp =>
             sp.GetRequiredService<HttpAttendanceAllowanceResultService>());

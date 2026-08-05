@@ -95,7 +95,7 @@ public sealed class PayrollAllowanceSummaryCommandEndpointTests : IClassFixture<
     }
 
     [Fact]
-    public async Task Manual_adjustment_maps_all_values_and_lock_state_to_the_internal_command()
+    public async Task Manual_adjustment_maps_editable_values_and_omits_the_derived_attendance_projection()
     {
         var service = new CapturingManualService();
         var id = Guid.NewGuid();
@@ -103,7 +103,7 @@ public sealed class PayrollAllowanceSummaryCommandEndpointTests : IClassFixture<
 
         var response = await client.PostAsync(
             "/api/payroll/allowance-summary/manual-adjustment",
-            JsonContent($"{{\"id\":\"{id}\",\"responsibilityAllowanceAmount\":100000,\"responsibilityOtherAllowanceAmount\":150000,\"seniorityAllowanceAmount\":200000,\"attendanceAllowanceAmount\":300000,\"mealAllowanceAmount\":400000,\"hazardAllowanceAmount\":500000,\"otherAllowanceAmount\":600000,\"leaveHolidayAllowanceAmount\":700000,\"isLocked\":true,\"note\":\"manual adjustment\",\"actor\":\"forged-admin\"}}"));
+            JsonContent($"{{\"id\":\"{id}\",\"responsibilityAllowanceAmount\":100000,\"responsibilityOtherAllowanceAmount\":150000,\"seniorityAllowanceAmount\":200000,\"mealAllowanceAmount\":400000,\"hazardAllowanceAmount\":500000,\"otherAllowanceAmount\":600000,\"leaveHolidayAllowanceAmount\":700000,\"isLocked\":true,\"note\":\"manual adjustment\",\"actor\":\"forged-admin\"}}"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(service.Request);
@@ -111,9 +111,26 @@ public sealed class PayrollAllowanceSummaryCommandEndpointTests : IClassFixture<
         Assert.Equal(100000m, service.Request.ResponsibilityAllowanceAmount);
         Assert.Equal(150000m, service.Request.ResponsibilityOtherAllowanceAmount);
         Assert.Equal(700000m, service.Request.LeaveHolidayAllowanceAmount);
+        Assert.Null(service.Request.AttendanceAllowanceAmount);
         Assert.True(service.Request.IsLocked);
         Assert.Equal("manual adjustment", service.Request.Note);
         Assert.Equal("security-boundary-test-user", service.Request.Actor);
+    }
+
+    [Fact]
+    public async Task Manual_adjustment_forwards_a_legacy_attendance_value_for_server_side_ownership_validation()
+    {
+        var service = new CapturingManualService();
+        var id = Guid.NewGuid();
+        using var client = CreateClient(manualService: service);
+
+        var response = await client.PostAsync(
+            "/api/payroll/allowance-summary/manual-adjustment",
+            JsonContent($"{{\"id\":\"{id}\",\"attendanceAllowanceAmount\":300000}}"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(service.Request);
+        Assert.Equal(300000m, service.Request!.AttendanceAllowanceAmount);
     }
 
     [Fact]

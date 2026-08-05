@@ -8,15 +8,24 @@ public sealed record AttendanceAllowanceWorkdaySourceRequest(
     short PayrollMonth,
     IReadOnlyCollection<Guid> EmployeeIds);
 
-/// <summary>
-/// Boundary đọc cấu hình mã chấm công và dữ liệu bảng công. Adapter hạ tầng chịu
-/// trách nhiệm hiện thực; policy không phụ thuộc EF hay nguồn dữ liệu bên ngoài.
-/// </summary>
-public interface IAttendanceAllowanceWorkdaySource
+/// <summary>Loads workday inputs required to calculate an attendance-allowance snapshot.</summary>
+public interface IAttendanceAllowanceWorkdayInputSource
 {
     Task<IReadOnlyDictionary<Guid, IReadOnlyList<AttendanceAllowanceWorkdayInput>>> LoadByEmployeeIdAsync(
         AttendanceAllowanceWorkdaySourceRequest request,
         CancellationToken cancellationToken = default);
+}
 
+/// <summary>Loads configured attendance-status codes eligible for attendance allowance.</summary>
+public interface IAttendanceAllowanceEligibleStatusCodeSource
+{
     Task<IReadOnlyList<string>> LoadEligibleStatusCodesAsync(CancellationToken cancellationToken = default);
 }
+
+/// <summary>
+/// Backwards-compatible aggregate boundary for adapters that provide both workday inputs and eligible
+/// status codes. New consumers should depend on the narrower capability they require.
+/// </summary>
+public interface IAttendanceAllowanceWorkdaySource :
+    IAttendanceAllowanceWorkdayInputSource,
+    IAttendanceAllowanceEligibleStatusCodeSource;

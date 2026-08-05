@@ -2,7 +2,7 @@ using Vnta.Hrm.Web.Client.Models.Payroll;
 
 namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTongHop;
 
-/// <summary>Owns the note-edit popup lifecycle and its save workflow.</summary>
+/// <summary>Owns the manual-adjustment popup lifecycle and its save workflow.</summary>
 public partial class PhuCapTongHop
 {
     private Task OpenManualEditPopupAsync()

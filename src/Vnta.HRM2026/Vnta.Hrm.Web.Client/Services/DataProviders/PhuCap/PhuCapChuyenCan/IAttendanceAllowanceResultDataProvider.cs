@@ -57,14 +57,34 @@ public interface IAttendanceAllowanceManualAdjustmentDataProvider
         CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// Updates the two workday inputs as one attendance-allowance aggregate command.
+/// New UI workflows should use this capability so they cannot leave a partially
+/// persisted pair of actual and standard workdays.
+/// </summary>
+public interface IAttendanceAllowanceWorkdayAdjustmentDataProvider
+{
+    Task<AttendanceAllowanceResultRecord> UpdateWorkdaysAsync(
+        Guid id,
+        decimal actualWorkdayCount,
+        decimal standardWorkdayCount,
+        DateTime? originalUpdatedAtUtc,
+        CancellationToken cancellationToken = default);
+}
+
 public interface IAttendanceAllowanceLockDataProvider
 {
-
-    Task<SetAttendanceAllowanceBatchLockStateResult> SetLockStateBatchAsync(
+    Task<SetAttendanceAllowanceBatchLockStateResult> SetLockStateForWholePeriodAsync(
         int payrollYear,
         int payrollMonth,
         bool isLocked,
-        IEnumerable<AttendanceAllowanceResultRecord>? records = null,
+        CancellationToken cancellationToken = default);
+
+    Task<SetAttendanceAllowanceBatchLockStateResult> SetLockStateForRowsAsync(
+        int payrollYear,
+        int payrollMonth,
+        bool isLocked,
+        IReadOnlyList<AttendanceAllowanceLockItem> items,
         CancellationToken cancellationToken = default);
 }
 
@@ -77,6 +97,7 @@ public interface IAttendanceAllowanceResultDataProvider :
     IAttendanceAllowanceExportDataProvider,
     IAttendanceAllowanceRefreshDataProvider,
     IAttendanceAllowanceManualAdjustmentDataProvider,
+    IAttendanceAllowanceWorkdayAdjustmentDataProvider,
     IAttendanceAllowanceLockDataProvider
 {
 }

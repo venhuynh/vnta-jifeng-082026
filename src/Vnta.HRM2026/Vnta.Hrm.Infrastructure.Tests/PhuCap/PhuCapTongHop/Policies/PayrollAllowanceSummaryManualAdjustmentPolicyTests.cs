@@ -59,4 +59,20 @@ public sealed class PayrollAllowanceSummaryManualAdjustmentPolicyTests
             PayrollAllowanceSummaryManualAdjustmentPolicy.ValidateAndNormalizeNote(
                 new UpdatePayrollAllowanceSummaryManualNoteRequest(Guid.Empty, "note", null, "tester")));
     }
+
+    [Fact]
+    public void EnsureAttendanceProjectionIsNotOverridden_accepts_new_and_compatible_legacy_requests()
+    {
+        PayrollAllowanceSummaryManualAdjustmentPolicy.EnsureAttendanceProjectionIsNotOverridden(null, 600_000m);
+        PayrollAllowanceSummaryManualAdjustmentPolicy.EnsureAttendanceProjectionIsNotOverridden(600_000m, 600_000m);
+    }
+
+    [Fact]
+    public void EnsureAttendanceProjectionIsNotOverridden_rejects_a_legacy_override()
+    {
+        var exception = Assert.Throws<PayrollAllowanceSummaryValidationException>(() =>
+            PayrollAllowanceSummaryManualAdjustmentPolicy.EnsureAttendanceProjectionIsNotOverridden(300_000m, 600_000m));
+
+        Assert.Contains("Phụ cấp chuyên cần", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
 }

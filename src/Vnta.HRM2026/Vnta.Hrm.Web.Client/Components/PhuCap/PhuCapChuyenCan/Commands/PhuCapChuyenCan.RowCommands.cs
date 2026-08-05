@@ -9,8 +9,9 @@ public partial class PhuCapChuyenCan
     /// <summary>Đặt lại cho luồng <c>ResetFiltersAsync</c>.</summary>
     private async Task ResetFiltersAsync()
     {
-        ToolbarMonth = DefaultPayrollPeriod.Month;
-        ToolbarYear = DefaultPayrollPeriod.Year;
+        var defaultPeriod = DefaultPayrollPeriod;
+        ToolbarMonth = defaultPeriod.Month;
+        ToolbarYear = defaultPeriod.Year;
         SearchText = null;
         ActiveSummaryBadgeKey = SummaryAllKey;
 
@@ -166,8 +167,9 @@ public partial class PhuCapChuyenCan
     private async Task LoadMonthlyWorkPopupDataAsync()
     {
         if(MonthlyWorkPopupEmployeeId == Guid.Empty
-            || MonthlyWorkPopupMonth is < 1 or > 12
-            || MonthlyWorkPopupYear is < MinimumSupportedYear or > MaximumSupportedYear)
+            || !AttendanceAllowancePayrollPeriodPolicy.IsSupported(
+                MonthlyWorkPopupMonth,
+                MonthlyWorkPopupYear))
         {
             return;
         }

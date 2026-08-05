@@ -1,3 +1,5 @@
+using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Policies;
+
 namespace Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Queries;
 
 public sealed record AttendanceAllowanceResultFilter(
@@ -12,4 +14,4 @@ public sealed record AttendanceAllowanceResultFilter(
     int Take = 0,
     int Skip = 0,
     AttendanceAllowanceLockState LockState = AttendanceAllowanceLockState.All,
-    string? AttendanceClass = null);
+    AttendanceAllowanceClass? AttendanceClass = null);

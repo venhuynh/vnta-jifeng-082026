@@ -63,16 +63,9 @@
                     </DxMaskedInput>
                     <ValidationMessage For="@(() => Model.SeniorityAllowanceAmount)" />
                 </DxFormLayoutItem>
-                <DxFormLayoutItem Caption="Chuyên cần" ColSpanMd="6">
-                    <DxMaskedInput T="decimal"
-                                   @bind-Value="Model.AttendanceAllowanceAmount"
-                                   Mask="n0"
-                                   MaskMode="MaskMode.Numeric"
-                                   Enabled="@(!IsSaving)"
-                                   CssClass="w-100">
-                        <DxNumericMaskProperties Culture="@DisplayCulture" />
-                    </DxMaskedInput>
-                    <ValidationMessage For="@(() => Model.AttendanceAllowanceAmount)" />
+                <DxFormLayoutItem Caption="Chuyên cần (từ Phụ cấp chuyên cần)" ColSpanMd="6">
+                    <div class="allowance-summary-manual-edit-derived-value">@(Model.AttendanceAllowanceAmount == 0m ? "0 đ" : FormatMoney(Model.AttendanceAllowanceAmount))</div>
+                    <div class="allowance-summary-manual-edit-derived-hint">Giá trị được tính từ dữ liệu chấm công, không chỉnh sửa tại đây.</div>
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Cơm (từ Phụ cấp cơm)" ColSpanMd="6">
                     <DxMaskedInput T="decimal"

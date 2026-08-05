@@ -37,11 +37,11 @@ public partial class PhuCapChuyenCan
     };
 
     /// <summary>Lấy cho luồng <c>GetAttendanceClassForBadge</c>.</summary>
-    private static string? GetAttendanceClassForBadge(string badgeKey) => badgeKey switch
+    private static AttendanceAllowanceClass? GetAttendanceClassForBadge(string badgeKey) => badgeKey switch
     {
-        SummaryAttendanceClassAKey => AttendanceAllowanceClass.A.ToStorageValue(),
-        SummaryAttendanceClassBKey => AttendanceAllowanceClass.B.ToStorageValue(),
-        SummaryAttendanceClassCKey => AttendanceAllowanceClass.C.ToStorageValue(),
+        SummaryAttendanceClassAKey => AttendanceAllowanceClass.A,
+        SummaryAttendanceClassBKey => AttendanceAllowanceClass.B,
+        SummaryAttendanceClassCKey => AttendanceAllowanceClass.C,
         _ => null
     };
 
@@ -241,21 +241,27 @@ public partial class PhuCapChuyenCan
     /// <summary>Thành viên hỗ trợ xử lý dữ liệu phụ cấp chuyên cần.</summary>
     private static (int Month, int Year) NormalizeSelectedPeriod(int month, int year)
     {
-        var normalizedMonth = Math.Clamp(month, 1, 12);
-        var normalizedYear = Math.Clamp(year, MinimumSupportedYear, MaximumSupportedYear);
-
-        if(normalizedYear == MinimumSupportedYear && normalizedMonth < MinimumSupportedMonth)
-        {
-            return (MinimumSupportedMonth, MinimumSupportedYear);
-        }
-
-        return (normalizedMonth, normalizedYear);
+        var normalizedPeriod = AttendanceAllowancePayrollPeriodPolicy.Normalize(month, year);
+        return (normalizedPeriod.Month, normalizedPeriod.Year);
     }
 
     /// <summary>Thành viên hỗ trợ xử lý dữ liệu phụ cấp chuyên cần.</summary>
-    private static (int Month, int Year) GetDefaultPayrollPeriod()
+    private (int Month, int Year) GetDefaultPayrollPeriod()
     {
-        var localNow = DateTime.UtcNow.AddHours(7);
-        return NormalizeSelectedPeriod(localNow.Month, localNow.Year);
+        var payrollNow = TimeZoneInfo.ConvertTime(TimeProvider.GetUtcNow(), ResolvePayrollTimeZone());
+        var period = AttendanceAllowancePayrollPeriodPolicy.GetDefaultPayrollPeriod(payrollNow);
+        return (period.Month, period.Year);
+    }
+
+    private static TimeZoneInfo ResolvePayrollTimeZone()
+    {
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(PayrollTimeZoneId);
+        }
+        catch(TimeZoneNotFoundException)
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(PayrollTimeZoneWindowsId);
+        }
     }
 }

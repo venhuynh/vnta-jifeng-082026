@@ -7,9 +7,9 @@ namespace Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Policies;
 public sealed class AttendanceAllowanceRequestValidator : IAttendanceAllowanceRequestValidator
 {
     public AttendanceAllowanceValidationResult ValidatePeriod(int payrollMonth, int payrollYear) =>
-        payrollMonth is >= 1 and <= 12 && payrollYear is >= 2000 and <= 2100
-            ? Valid()
-            : Invalid("Kỳ lương không hợp lệ.");
+        AttendanceAllowancePayrollPeriodPolicy.GetValidationError(payrollMonth, payrollYear) is { } errorMessage
+            ? Invalid(errorMessage)
+            : Valid();
 
     public AttendanceAllowanceValidationResult Validate(RefreshAttendanceAllowanceRequest request) =>
         ValidatePeriod(request.TargetPayrollMonth, request.TargetPayrollYear);
@@ -45,11 +45,20 @@ public sealed class AttendanceAllowanceRequestValidator : IAttendanceAllowanceRe
         if(!periodResult.IsValid)
             return periodResult;
 
-        if(request.Items is not null && request.Items.Any(item => item.Id == Guid.Empty))
-            return Invalid("Dữ liệu khóa phụ cấp chuyên cần không hợp lệ.");
+        if(!Enum.IsDefined(request.Scope))
+            return Invalid("Phạm vi khóa phụ cấp chuyên cần không hợp lệ.");
 
-        return request.AttendanceAllowanceRecordIds is not null
-               && request.AttendanceAllowanceRecordIds.Any(id => id == Guid.Empty)
+        if(request.Scope == AttendanceAllowanceBatchLockScope.WholePeriod)
+        {
+            return request.Items is null
+                ? Valid()
+                : Invalid("Khóa toàn kỳ không được kèm danh sách dòng.");
+        }
+
+        if(request.Items is not { Count: > 0 })
+            return Invalid("Phải chọn ít nhất một dòng phụ cấp chuyên cần để khóa hoặc mở khóa.");
+
+        return request.Items.Any(item => item.Id == Guid.Empty)
             ? Invalid("Dữ liệu khóa phụ cấp chuyên cần không hợp lệ.")
             : Valid();
     }

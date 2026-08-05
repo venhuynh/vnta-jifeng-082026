@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Commands;
 using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Contracts;
 using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Exceptions;
+using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Policies;
 using Vnta.Hrm.Application.QuanTri.AuditTrail;
 
 namespace Vnta.Hrm.Web.Endpoints.PhuCap.PhuCapChuyenCan;
@@ -12,7 +13,7 @@ internal static class AttendanceAllowanceCommandEndpoints
     internal static async Task<IResult> RefreshAsync(
         [FromBody] RefreshAttendanceAllowanceRequest? request,
         [FromServices] IAttendanceAllowanceRefreshService commandService,
-        [FromServices] IAttendanceAllowanceRequestValidator requestValidator,
+        [FromServices] IAttendanceAllowanceRefreshRequestValidator requestValidator,
         HttpContext httpContext,
         [FromServices] IAuditScope auditScope,
         [FromServices] IAuditCorrelationAccessor correlationAccessor,
@@ -44,7 +45,7 @@ internal static class AttendanceAllowanceCommandEndpoints
     internal static async Task<IResult> UpdateActualWorkdayAsync(
         [FromBody] UpdateAttendanceAllowanceActualWorkdayRequest? request,
         [FromServices] IAttendanceAllowanceManualAdjustmentService commandService,
-        [FromServices] IAttendanceAllowanceRequestValidator requestValidator,
+        [FromServices] IAttendanceAllowanceManualAdjustmentRequestValidator requestValidator,
         HttpContext httpContext,
         [FromServices] IAuditScope auditScope,
         [FromServices] IAuditCorrelationAccessor correlationAccessor,
@@ -64,7 +65,7 @@ internal static class AttendanceAllowanceCommandEndpoints
     internal static async Task<IResult> UpdateStandardWorkdayAsync(
         [FromBody] UpdateAttendanceAllowanceStandardWorkdayRequest? request,
         [FromServices] IAttendanceAllowanceManualAdjustmentService commandService,
-        [FromServices] IAttendanceAllowanceRequestValidator requestValidator,
+        [FromServices] IAttendanceAllowanceManualAdjustmentRequestValidator requestValidator,
         HttpContext httpContext,
         [FromServices] IAuditScope auditScope,
         [FromServices] IAuditCorrelationAccessor correlationAccessor,
@@ -81,10 +82,31 @@ internal static class AttendanceAllowanceCommandEndpoints
             token => commandService.UpdateStandardWorkdayAsync(request, token), cancellationToken);
     }
 
+    internal static async Task<IResult> UpdateWorkdaysAsync(
+        [FromBody] UpdateAttendanceAllowanceWorkdaysRequest? request,
+        [FromServices] IAttendanceAllowanceWorkdayAdjustmentService commandService,
+        [FromServices] AttendanceAllowanceWorkdayAdjustmentPolicy workdayAdjustmentPolicy,
+        HttpContext httpContext,
+        [FromServices] IAuditScope auditScope,
+        [FromServices] IAuditCorrelationAccessor correlationAccessor,
+        CancellationToken cancellationToken)
+    {
+        if(request is null)
+            return Results.BadRequest(new { message = "Thiếu payload điều chỉnh ngày công phụ cấp chuyên cần." });
+
+        var validation = workdayAdjustmentPolicy.Validate(request);
+        if(!validation.IsValid)
+            return Results.BadRequest(new { message = validation.ErrorMessage });
+
+        return await ExecuteAsync(
+            httpContext, auditScope, correlationAccessor, AuditActions.AttendanceAllowance.Save,
+            token => commandService.UpdateWorkdaysAsync(request, token), cancellationToken);
+    }
+
     internal static async Task<IResult> SetLockStateAsync(
         [FromBody] SetAttendanceAllowanceLockStateRequest? request,
         [FromServices] IAttendanceAllowanceLockService commandService,
-        [FromServices] IAttendanceAllowanceRequestValidator requestValidator,
+        [FromServices] IAttendanceAllowanceLockStateRequestValidator requestValidator,
         HttpContext httpContext,
         [FromServices] IAuditScope auditScope,
         [FromServices] IAuditCorrelationAccessor correlationAccessor,
@@ -104,7 +126,7 @@ internal static class AttendanceAllowanceCommandEndpoints
     internal static async Task<IResult> SetLockStateBatchAsync(
         [FromBody] SetAttendanceAllowanceBatchLockStateRequest? request,
         [FromServices] IAttendanceAllowanceLockService commandService,
-        [FromServices] IAttendanceAllowanceRequestValidator requestValidator,
+        [FromServices] IAttendanceAllowanceBatchLockRequestValidator requestValidator,
         HttpContext httpContext,
         [FromServices] IAuditScope auditScope,
         [FromServices] IAuditCorrelationAccessor correlationAccessor,

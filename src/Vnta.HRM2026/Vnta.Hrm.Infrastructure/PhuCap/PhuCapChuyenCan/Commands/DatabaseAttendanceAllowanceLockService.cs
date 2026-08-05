@@ -10,18 +10,19 @@ public sealed class DatabaseAttendanceAllowanceLockService(
     ApplicationDbContext dbContext,
     IAuditScope auditScope,
     IAuditedMutation auditedMutation,
-    IAttendanceAllowanceRequestValidator requestValidator) : IAttendanceAllowanceLockService
+    IAttendanceAllowanceLockStateRequestValidator lockStateRequestValidator,
+    IAttendanceAllowanceBatchLockRequestValidator batchLockRequestValidator) : IAttendanceAllowanceLockService
 {
     public Task<SetAttendanceAllowanceBatchLockStateResult> SetLockStateBatchAsync(SetAttendanceAllowanceBatchLockStateRequest request, CancellationToken cancellationToken = default)
     {
-        requestValidator.Validate(request).ThrowIfInvalid();
+        batchLockRequestValidator.Validate(request).ThrowIfInvalid();
         return auditedMutation.ExecuteAsync(AttendanceAllowanceCommandSupport.CreateOperationAuditCommand(auditScope, AuditActions.AttendanceAllowance.SetLockStateBatch), token => SetBatchCoreAsync(request, token), AttendanceAllowanceCommandSupport.LockAudit, cancellationToken);
     }
 
     public async Task<AttendanceAllowanceResultListItemDto> SetLockStateAsync(SetAttendanceAllowanceLockStateRequest request, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        requestValidator.Validate(request).ThrowIfInvalid();
+        lockStateRequestValidator.Validate(request).ThrowIfInvalid();
         return await auditedMutation.ExecuteAsync(AttendanceAllowanceCommandSupport.CreateOperationAuditCommand(auditScope, AuditActions.AttendanceAllowance.SetLockState), token => SetCoreAsync(request, token), AttendanceAllowanceCommandSupport.LockAudit, cancellationToken);
     }
 
@@ -41,20 +42,33 @@ public sealed class DatabaseAttendanceAllowanceLockService(
     private async Task<SetAttendanceAllowanceBatchLockStateResult> SetBatchCoreAsync(SetAttendanceAllowanceBatchLockStateRequest request, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        var versioned = request.Items?.Where(x => x.Id != Guid.Empty).GroupBy(x => x.Id).Select(x => x.First()).ToArray();
-        var hasVersioned = request.Items is not null; var explicitIds = hasVersioned || request.AttendanceAllowanceRecordIds is not null;
-        var ids = hasVersioned ? versioned!.Select(x => x.Id).ToArray() : request.AttendanceAllowanceRecordIds?.Where(x => x != Guid.Empty).Distinct().ToArray();
-        if(explicitIds && (ids is null || ids.Length == 0)) return new(request.PayrollYear, request.PayrollMonth, 0, 0, IsLocked: request.IsLocked, IsWholePeriod: false);
-        var year = (short)request.PayrollYear; var month = (short)request.PayrollMonth;
-        if(hasVersioned) return await SetVersionedAsync(request, versioned!, year, month, token);
+        if(request.Scope == AttendanceAllowanceBatchLockScope.SelectedRows)
+        {
+            var items = request.Items!
+                .Where(item => item.Id != Guid.Empty)
+                .GroupBy(item => item.Id)
+                .Select(group => group.First())
+                .ToArray();
+
+            return await SetVersionedAsync(request, items, (short)request.PayrollYear, (short)request.PayrollMonth, token);
+        }
+
+        return await SetWholePeriodAsync(request, token);
+    }
+
+    private async Task<SetAttendanceAllowanceBatchLockStateResult> SetWholePeriodAsync(
+        SetAttendanceAllowanceBatchLockStateRequest request,
+        CancellationToken token)
+    {
+        var year = (short)request.PayrollYear;
+        var month = (short)request.PayrollMonth;
         var query = dbContext.PayrollAttendanceAllowanceRecords.Where(d => dbContext.PayrollAllowanceSummaryRecords.Any(s => s.Id == d.PayrollAllowanceSummaryRecordId && s.PayrollMonth == month && s.PayrollYear == year));
-        if(explicitIds) query = query.Where(d => ids!.Contains(d.PayrollAllowanceSummaryRecordId));
         var targeted = await query.CountAsync(token);
         var skipped = await query.CountAsync(d => dbContext.PayrollAllowanceSummaryRecords.Any(s => s.Id == d.PayrollAllowanceSummaryRecordId && s.IsLocked), token);
         var unchanged = await query.CountAsync(d => d.IsLocked == request.IsLocked && dbContext.PayrollAllowanceSummaryRecords.Any(s => s.Id == d.PayrollAllowanceSummaryRecordId && !s.IsLocked), token);
         var now = AttendanceAllowanceCommandSupport.ToDatabaseTimestamp(DateTime.UtcNow); var actor = AttendanceAllowanceCommandSupport.CurrentActorId(auditScope);
         var updated = await query.Where(d => d.IsLocked != request.IsLocked).Where(d => dbContext.PayrollAllowanceSummaryRecords.Any(s => s.Id == d.PayrollAllowanceSummaryRecordId && !s.IsLocked)).ExecuteUpdateAsync(s => s.SetProperty(d => d.IsLocked, request.IsLocked).SetProperty(d => d.UpdatedAtUtc, now).SetProperty(d => d.UpdatedBy, actor), token);
-        return new(request.PayrollYear, request.PayrollMonth, targeted, updated, unchanged, skipped, request.IsLocked, !explicitIds);
+        return new(request.PayrollYear, request.PayrollMonth, targeted, updated, unchanged, skipped, request.IsLocked, IsWholePeriod: true);
     }
 
     private async Task<SetAttendanceAllowanceBatchLockStateResult> SetVersionedAsync(SetAttendanceAllowanceBatchLockStateRequest request, IReadOnlyList<AttendanceAllowanceLockItem> items, short year, short month, CancellationToken token)

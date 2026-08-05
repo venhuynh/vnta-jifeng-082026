@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Policies;
 using Vnta.Hrm.Web.Client.Validation;
 namespace Vnta.Hrm.Web.Client.Models.Payroll;
 
@@ -34,7 +35,10 @@ public sealed class AttendanceAllowanceResultRecord : IValidatableObject
         set => payrollMonth = value;
     }
 
-    [Range(2000, 2100, ErrorMessage = "Năm kỳ lương không hợp lệ.")]
+    [Range(
+        AttendanceAllowancePayrollPeriodPolicy.MinimumSupportedYear,
+        AttendanceAllowancePayrollPeriodPolicy.MaximumSupportedYear,
+        ErrorMessage = "Năm kỳ lương không hợp lệ.")]
     public int PayrollYear
     {
         get => payrollYear;
@@ -68,7 +72,7 @@ public sealed class AttendanceAllowanceResultRecord : IValidatableObject
 
     public string? AppliedRuleKey { get; private set; }
 
-    public string? AttendanceClass { get; private set; }
+    public AttendanceAllowanceClass? AttendanceClass { get; private set; }
 
     public decimal? CtlWorkdayCount { get; private set; }
 
@@ -124,7 +128,7 @@ public sealed class AttendanceAllowanceResultRecord : IValidatableObject
         decimal attendanceRate,
         decimal actualAllowanceAmount,
         string? appliedRuleKey = null,
-        string? attendanceClass = null,
+        AttendanceAllowanceClass? attendanceClass = null,
         decimal? ctlWorkdayCount = null,
         int? lateEarlyMinutes = null,
         decimal? kqcc = null,
@@ -146,18 +150,12 @@ public sealed class AttendanceAllowanceResultRecord : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if(PayrollYear < 2026)
+        var payrollPeriodError = AttendanceAllowancePayrollPeriodPolicy.GetValidationError(PayrollMonth, PayrollYear);
+        if(payrollPeriodError is not null)
         {
             yield return new ValidationResult(
-                "Năm kỳ lương phải từ 2026 trở đi.",
-                [nameof(PayrollYear)]);
-        }
-
-        if(PayrollYear == 2026 && PayrollMonth < 6)
-        {
-            yield return new ValidationResult(
-                "Tháng kỳ lương phải từ 06/2026 trở đi.",
-                [nameof(PayrollMonth)]);
+                payrollPeriodError,
+                [nameof(PayrollMonth), nameof(PayrollYear)]);
         }
 
         if(EmployeeId.HasValue && EmployeeId.Value == Guid.Empty)

@@ -11,11 +11,11 @@ public sealed class DatabaseAttendanceAllowanceRefreshService(
     ApplicationDbContext dbContext,
     IAuditScope auditScope,
     IAuditedMutation auditedMutation,
-    IAttendanceAllowanceWorkdaySource workdaySource,
+    IAttendanceAllowanceWorkdayInputSource workdaySource,
     IBasicSalaryWorkdaySource basicSalaryWorkdaySource,
     AttendanceAllowanceWorkdayMetricPolicy workdayMetricPolicy,
     AttendanceAllowanceCalculationPolicy calculationPolicy,
-    IAttendanceAllowanceRequestValidator requestValidator) : IAttendanceAllowanceRefreshService
+    IAttendanceAllowanceRefreshRequestValidator requestValidator) : IAttendanceAllowanceRefreshService
 {
     public async Task<RefreshAttendanceAllowanceResult> RefreshAsync(RefreshAttendanceAllowanceRequest request, CancellationToken cancellationToken = default)
     {

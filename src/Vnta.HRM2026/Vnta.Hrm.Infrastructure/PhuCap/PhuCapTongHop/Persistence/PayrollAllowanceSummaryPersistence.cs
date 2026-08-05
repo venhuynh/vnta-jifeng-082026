@@ -661,17 +661,13 @@ internal sealed class PayrollAllowanceSummaryPersistence(
             targetPayrollYear,
             targetPayrollMonth,
             DateTime.DaysInMonth(targetPayrollYear, targetPayrollMonth));
-        var attendanceRows = await dbContext.AttendanceWorkdaySummaries
+        var attendanceEmployeeIds = await dbContext.AttendanceWorkdaySummaries
             .AsNoTracking()
             .Where(row => row.WorkDate >= targetPeriodStart && row.WorkDate <= targetPeriodEnd)
-            .Select(row => new { row.EmployeeId })
-            .ToListAsync(cancellationToken);
-        var attendanceWorkdayCountByEmployeeId = attendanceRows
-            .GroupBy(row => row.EmployeeId)
-            .ToDictionary(group => group.Key, group => group.Count());
-        var attendanceEmployeeIds = attendanceWorkdayCountByEmployeeId.Keys
+            .Select(row => row.EmployeeId)
+            .Distinct()
             .OrderBy(id => id)
-            .ToArray();
+            .ToArrayAsync(cancellationToken);
         var attendanceEmployeeIdSet = attendanceEmployeeIds.ToHashSet();
 
         var sourceRows = await dbContext.PayrollAllowanceSummaryRecords
@@ -744,7 +740,6 @@ internal sealed class PayrollAllowanceSummaryPersistence(
         await EnsureDependentAllowanceRowsAsync(
             targetRows,
             sourceRowsByEmployeeId,
-            attendanceWorkdayCountByEmployeeId,
             targetPayrollYear,
             targetPayrollMonth,
             actor,
@@ -1258,10 +1253,13 @@ internal sealed class PayrollAllowanceSummaryPersistence(
             throw new InvalidOperationException("Dòng phụ cấp tổng hợp đã khóa, không thể cập nhật giá trị nhập tay.");
         }
 
+        PayrollAllowanceSummaryManualAdjustmentPolicy.EnsureAttendanceProjectionIsNotOverridden(
+            request.AttendanceAllowanceAmount,
+            row.AttendanceAllowanceAmount);
+
         row.ResponsibilityAllowanceAmount = request.ResponsibilityAllowanceAmount;
         row.ResponsibilityOtherAllowanceAmount = request.ResponsibilityOtherAllowanceAmount;
         row.SeniorityAllowanceAmount = request.SeniorityAllowanceAmount;
-        row.AttendanceAllowanceAmount = request.AttendanceAllowanceAmount;
         row.MealAllowanceAmount = request.MealAllowanceAmount;
         row.HazardAllowanceAmount = request.HazardAllowanceAmount;
         row.OtherAllowanceAmount = request.OtherAllowanceAmount;
@@ -1292,7 +1290,7 @@ internal sealed class PayrollAllowanceSummaryPersistence(
                 current.ResponsibilityAllowanceAmount,
                 current.ResponsibilityOtherAllowanceAmount,
                 current.SeniorityAllowanceAmount,
-                current.AttendanceAllowanceAmount,
+                null,
                 current.MealAllowanceAmount,
                 current.HazardAllowanceAmount,
                 current.OtherAllowanceAmount,
@@ -1386,6 +1384,10 @@ internal sealed class PayrollAllowanceSummaryPersistence(
             source.IsLocked,
             SanitizeExportText(source.Note));
 
+    /// <summary>
+    /// Copies only values owned by the summary workflow. Attendance is a derived projection owned
+    /// by Phụ cấp chuyên cần, so a previous-period snapshot must never overwrite it.
+    /// </summary>
     private static void ApplySummaryValues(
         PayrollAllowanceSummaryRecordRow sourceRow,
         PayrollAllowanceSummaryRecordRow targetRow,
@@ -1400,7 +1402,6 @@ internal sealed class PayrollAllowanceSummaryPersistence(
         targetRow.ResponsibilityAllowanceAmount = sourceRow.ResponsibilityAllowanceAmount;
         targetRow.ResponsibilityOtherAllowanceAmount = sourceRow.ResponsibilityOtherAllowanceAmount;
         targetRow.SeniorityAllowanceAmount = sourceRow.SeniorityAllowanceAmount;
-        targetRow.AttendanceAllowanceAmount = sourceRow.AttendanceAllowanceAmount;
         targetRow.MealAllowanceAmount = sourceRow.MealAllowanceAmount;
         targetRow.HazardAllowanceAmount = sourceRow.HazardAllowanceAmount;
         targetRow.OtherAllowanceAmount = sourceRow.OtherAllowanceAmount;
@@ -1425,6 +1426,9 @@ internal sealed class PayrollAllowanceSummaryPersistence(
             CreatedBy = actor
         };
         ApplySummaryValues(sourceRow, targetRow, targetPayrollMonth, targetPayrollYear, actor, now);
+        // A new period has no authoritative attendance calculation yet. The attendance feature
+        // will populate this projection from the target period's workday data on refresh.
+        targetRow.AttendanceAllowanceAmount = 0m;
         targetRow.UpdatedAtUtc = null;
         targetRow.UpdatedBy = null;
         return targetRow;
@@ -1537,7 +1541,6 @@ internal sealed class PayrollAllowanceSummaryPersistence(
     private async Task EnsureDependentAllowanceRowsAsync(
         IReadOnlyList<PayrollAllowanceSummaryRecordRow> targetSummaryRows,
         IReadOnlyDictionary<Guid, PayrollAllowanceSummaryRecordRow> sourceSummariesByEmployeeId,
-        IReadOnlyDictionary<Guid, int> attendanceWorkdayCountByEmployeeId,
         short targetPayrollYear,
         short targetPayrollMonth,
         string actor,
@@ -1562,12 +1565,6 @@ internal sealed class PayrollAllowanceSummaryPersistence(
             dbContext.PayrollResponsibilityAllowanceAbcRows
                 .Where(row => targetSummaryIds.Contains(row.PayrollAllowanceSummaryRecordId)),
             targetSummaryIds,
-            row => row.PayrollAllowanceSummaryRecordId,
-            cancellationToken);
-        var sourceAttendanceBySummaryId = await LoadBySummaryIdAsync(
-            dbContext.PayrollAttendanceAllowanceRecords
-                .Where(row => sourceSummaryIds.Contains(row.PayrollAllowanceSummaryRecordId)),
-            sourceSummaryIds,
             row => row.PayrollAllowanceSummaryRecordId,
             cancellationToken);
         var targetAttendanceBySummaryId = await LoadBySummaryIdAsync(
@@ -1653,14 +1650,8 @@ internal sealed class PayrollAllowanceSummaryPersistence(
 
             if(!targetAttendanceBySummaryId.ContainsKey(targetSummary.Id))
             {
-                sourceAttendanceBySummaryId.TryGetValue(sourceSummaryId ?? Guid.Empty, out var sourceRow);
                 dbContext.PayrollAttendanceAllowanceRecords.Add(
-                    CreateAttendanceRow(
-                        targetSummary,
-                        sourceRow,
-                        attendanceWorkdayCountByEmployeeId.GetValueOrDefault(targetSummary.EmployeeId),
-                        actor,
-                        now));
+                    CreateUnresolvedAttendanceRow(targetSummary, actor, now));
             }
 
             if(!targetHazardBySummaryId.ContainsKey(targetSummary.Id))
@@ -1758,30 +1749,35 @@ internal sealed class PayrollAllowanceSummaryPersistence(
             Note = sourceRow?.Note
         };
 
-    private static PayrollAttendanceAllowanceRecordRow CreateAttendanceRow(
+    /// <summary>
+    /// Creates a neutral attendance snapshot for a new summary row. It intentionally does not
+    /// copy any previous-period calculation because standard workdays, KP violations and other
+    /// inputs are specific to the target period and are owned by Phụ cấp chuyên cần.
+    /// </summary>
+    private static PayrollAttendanceAllowanceRecordRow CreateUnresolvedAttendanceRow(
         PayrollAllowanceSummaryRecordRow targetSummary,
-        PayrollAttendanceAllowanceRecordRow? sourceRow,
-        int attendanceWorkdayCount,
         string actor,
         DateTime now) =>
         new()
         {
             PayrollAllowanceSummaryRecordId = targetSummary.Id,
-            StandardAllowanceAmount = sourceRow?.StandardAllowanceAmount ?? 0m,
-            StandardWorkdayCount = sourceRow?.StandardWorkdayCount ?? Math.Max(1m, attendanceWorkdayCount),
-            ActualWorkdayCount = sourceRow?.ActualWorkdayCount ?? 0m,
-            AttendanceRate = sourceRow?.AttendanceRate ?? 0m,
-            AllowanceAmount = sourceRow?.AllowanceAmount ?? 0m,
-            AppliedRuleKey = sourceRow?.AppliedRuleKey,
-            AttendanceClass = sourceRow?.AttendanceClass,
-            CtlWorkdayCount = sourceRow?.CtlWorkdayCount,
-            LateEarlyMinutes = sourceRow?.LateEarlyMinutes,
-            Kqcc = sourceRow?.Kqcc,
-            HasKpViolation = sourceRow?.HasKpViolation ?? false,
-            Note = sourceRow?.Note,
+            StandardAllowanceAmount = 0m,
+            StandardWorkdayCount = 0m,
+            ActualWorkdayCount = 0m,
+            AdministrativeWorkdayCount = 0m,
+            LateEarlyDeductionDays = 0m,
+            AttendanceRate = 0m,
+            AllowanceAmount = 0m,
+            AppliedRuleKey = null,
+            AttendanceClass = null,
+            CtlWorkdayCount = null,
+            LateEarlyMinutes = null,
+            Kqcc = null,
+            HasKpViolation = false,
+            Note = null,
             IsLocked = false,
-            RefreshedAtUtc = now,
-            RefreshedBy = actor,
+            RefreshedAtUtc = null,
+            RefreshedBy = null,
             CreatedAtUtc = now,
             CreatedBy = actor
         };

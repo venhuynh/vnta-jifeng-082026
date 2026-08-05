@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Vnta.Hrm.Application.PhuCap.PhuCapTongHop.Commands;
+using Vnta.Hrm.Application.PhuCap.PhuCapTongHop.Exceptions;
 using Vnta.Hrm.Application.QuanTri.AuditTrail;
 using Vnta.Hrm.Infrastructure.Data;
 using Vnta.Hrm.Infrastructure.DangTrienKhai.BangCongNgay;
 using Vnta.Hrm.Infrastructure.PhuCap.PhuCapCom;
+using Vnta.Hrm.Infrastructure.PhuCap.PhuCapChuyenCan;
 using Vnta.Hrm.Infrastructure.PhuCap.PhuCapKhac;
 using Vnta.Hrm.Infrastructure.PhuCap.PhuCapTrachNhiem;
 using Vnta.Hrm.Infrastructure.PhuCap.PhuCapTongHop;
@@ -56,9 +58,24 @@ public sealed class PayrollAllowanceSummaryMutationWorkflowTests
         source.EmployeeId = employeeId;
         source.PayrollMonth = 6;
         source.ResponsibilityAllowanceAmount = 12m;
+        source.AttendanceAllowanceAmount = 600_000m;
         source.MealAllowanceAmount = 36_000m;
         source.Note = "sao chép từ kỳ trước";
         dbContext.PayrollAllowanceSummaryRecords.Add(source);
+        dbContext.PayrollAttendanceAllowanceRecords.Add(new PayrollAttendanceAllowanceRecordRow
+        {
+            PayrollAllowanceSummaryRecordId = source.Id,
+            StandardWorkdayCount = 26m,
+            ActualWorkdayCount = 25m,
+            AttendanceRate = 0.9615m,
+            AllowanceAmount = 600_000m,
+            AppliedRuleKey = "attendance-cc-a",
+            AttendanceClass = "A",
+            RefreshedAtUtc = new DateTime(2026, 6, 30),
+            RefreshedBy = "source-calculation",
+            CreatedAtUtc = new DateTime(2026, 6, 30),
+            CreatedBy = "source-calculation"
+        });
         dbContext.AttendanceWorkdaySummaries.Add(new AttendanceWorkdaySummaryRow
         {
             Id = Guid.NewGuid(),
@@ -79,8 +96,71 @@ public sealed class PayrollAllowanceSummaryMutationWorkflowTests
         Assert.Equal(1, result.CreatedCount);
         Assert.Equal(employeeId, copied.EmployeeId);
         Assert.Equal(12m, copied.ResponsibilityAllowanceAmount);
+        Assert.Equal(0m, copied.AttendanceAllowanceAmount);
         Assert.Equal(36_000m, copied.MealAllowanceAmount);
         Assert.Equal("sao chép từ kỳ trước", copied.Note);
+        var copiedAttendance = await dbContext.PayrollAttendanceAllowanceRecords
+            .SingleAsync(row => row.PayrollAllowanceSummaryRecordId == copied.Id);
+        Assert.Equal(0m, copiedAttendance.StandardWorkdayCount);
+        Assert.Equal(0m, copiedAttendance.ActualWorkdayCount);
+        Assert.Equal(0m, copiedAttendance.AllowanceAmount);
+        Assert.Null(copiedAttendance.AppliedRuleKey);
+        Assert.Null(copiedAttendance.RefreshedAtUtc);
+    }
+
+    [Fact]
+    public async Task Sync_from_previous_month_preserves_an_existing_target_attendance_projection()
+    {
+        await using var dbContext = CreateDbContext();
+        var employeeId = Guid.NewGuid();
+        var source = CreateSummary();
+        source.EmployeeId = employeeId;
+        source.PayrollMonth = 6;
+        source.ResponsibilityAllowanceAmount = 12m;
+        source.AttendanceAllowanceAmount = 600_000m;
+        var target = CreateSummary();
+        target.EmployeeId = employeeId;
+        target.PayrollMonth = 7;
+        target.ResponsibilityAllowanceAmount = 1m;
+        target.AttendanceAllowanceAmount = 300_000m;
+        dbContext.PayrollAllowanceSummaryRecords.AddRange(source, target);
+        dbContext.PayrollAttendanceAllowanceRecords.AddRange(
+            new PayrollAttendanceAllowanceRecordRow
+            {
+                PayrollAllowanceSummaryRecordId = source.Id,
+                AllowanceAmount = 600_000m,
+                CreatedAtUtc = new DateTime(2026, 6, 30),
+                CreatedBy = "source-calculation"
+            },
+            new PayrollAttendanceAllowanceRecordRow
+            {
+                PayrollAllowanceSummaryRecordId = target.Id,
+                AllowanceAmount = 300_000m,
+                AppliedRuleKey = "attendance-cc-b",
+                CreatedAtUtc = new DateTime(2026, 7, 1),
+                CreatedBy = "target-calculation"
+            });
+        dbContext.AttendanceWorkdaySummaries.Add(new AttendanceWorkdaySummaryRow
+        {
+            Id = Guid.NewGuid(),
+            EmployeeId = employeeId,
+            WorkDate = new DateOnly(2026, 7, 1),
+            DayType = "Regular",
+            ComputedAtUtc = new DateTime(2026, 7, 1),
+            CreatedAtUtc = new DateTime(2026, 7, 1)
+        });
+        await dbContext.SaveChangesAsync();
+
+        await CreatePersistence(dbContext).SyncFromPreviousMonthAsync(
+            new SyncPayrollAllowanceSummaryFromPreviousMonthRequest(7, 2026, "payroll-admin"));
+
+        var syncedTarget = await dbContext.PayrollAllowanceSummaryRecords.SingleAsync(row => row.Id == target.Id);
+        var targetAttendance = await dbContext.PayrollAttendanceAllowanceRecords
+            .SingleAsync(row => row.PayrollAllowanceSummaryRecordId == target.Id);
+        Assert.Equal(12m, syncedTarget.ResponsibilityAllowanceAmount);
+        Assert.Equal(300_000m, syncedTarget.AttendanceAllowanceAmount);
+        Assert.Equal(300_000m, targetAttendance.AllowanceAmount);
+        Assert.Equal("attendance-cc-b", targetAttendance.AppliedRuleKey);
     }
 
     [Fact]
@@ -228,11 +308,12 @@ public sealed class PayrollAllowanceSummaryMutationWorkflowTests
     }
 
     [Fact]
-    public async Task Manual_adjustment_updates_all_amounts_note_and_lock_state_atomically()
+    public async Task Manual_adjustment_updates_editable_values_note_and_lock_state_without_overwriting_attendance()
     {
         await using var dbContext = CreateDbContext();
         var summary = CreateSummary();
         summary.ResponsibilityAllowanceAmount = 12.5m;
+        summary.AttendanceAllowanceAmount = 400m;
         summary.MealAllowanceAmount = 36_000m;
         dbContext.PayrollAllowanceSummaryRecords.Add(summary);
         await dbContext.SaveChangesAsync();
@@ -243,7 +324,7 @@ public sealed class PayrollAllowanceSummaryMutationWorkflowTests
                 100m,
                 200m,
                 300m,
-                400m,
+                null,
                 500m,
                 600m,
                 700m,
@@ -265,6 +346,42 @@ public sealed class PayrollAllowanceSummaryMutationWorkflowTests
         Assert.Equal(800m, saved.LeaveHolidayAllowanceAmount);
         Assert.True(saved.IsLocked);
         Assert.Equal("payroll-admin", saved.UpdatedBy);
+    }
+
+    [Fact]
+    public async Task Manual_adjustment_rejects_a_legacy_attendance_override_without_mutating_the_summary()
+    {
+        await using var dbContext = CreateDbContext();
+        var summary = CreateSummary();
+        summary.ResponsibilityAllowanceAmount = 12.5m;
+        summary.AttendanceAllowanceAmount = 400m;
+        summary.Note = "ghi chú gốc";
+        dbContext.PayrollAllowanceSummaryRecords.Add(summary);
+        await dbContext.SaveChangesAsync();
+
+        var exception = await Assert.ThrowsAsync<PayrollAllowanceSummaryValidationException>(() =>
+            CreatePersistence(dbContext).UpdateManualValuesAsync(
+                new UpdatePayrollAllowanceSummaryManualValuesRequest(
+                    summary.Id,
+                    100m,
+                    200m,
+                    300m,
+                    401m,
+                    500m,
+                    600m,
+                    700m,
+                    800m,
+                    "ghi chú mới",
+                    IsLocked: true,
+                    OriginalUpdatedAtUtc: null,
+                    Actor: "payroll-admin")));
+
+        Assert.Contains("Phụ cấp chuyên cần", exception.Message, StringComparison.OrdinalIgnoreCase);
+        var saved = await dbContext.PayrollAllowanceSummaryRecords.SingleAsync();
+        Assert.Equal(12.5m, saved.ResponsibilityAllowanceAmount);
+        Assert.Equal(400m, saved.AttendanceAllowanceAmount);
+        Assert.Equal("ghi chú gốc", saved.Note);
+        Assert.False(saved.IsLocked);
     }
 
     [Fact]

@@ -26,32 +26,42 @@
                 {
                     <div>Đang tải cấu hình mã chuyên cần...</div>
                 }
-                else if(Rule is { EligibleStatusCodes.Count: > 0 } rule)
+                else if(Rule is { } rule)
                 {
-                    <div>Các mã đang được cấu hình cho phụ cấp chuyên cần: <strong>@string.Join(", ", rule.EligibleStatusCodes)</strong>.</div>
+                    @if(rule.EligibleStatusCodes.Count > 0)
+                    {
+                        <div>Các mã đang được cấu hình cho phụ cấp chuyên cần: <strong>@string.Join(", ", rule.EligibleStatusCodes)</strong>.</div>
+                    }
+                    else
+                    {
+                        <div>Chưa có mã nào được cấu hình cho phụ cấp chuyên cần.</div>
+                    }
+                    <ol class="attendance-rules-list">
+                        <li>Các code áp dụng để tính 1 công HC là bảng <strong>Code kết quả tính công</strong> - cột <strong>Chuyên cần</strong>. Mỗi record có nằm trong các code này thì tính là 1 ngày công HC. Kết quả là ngày công HC (viết tắt <strong>Công HC</strong>).</li>
+                        <li>Tìm trong bảng công tháng tổng số phút đi trễ, về sớm và chia cho <strong>@rule.Metadata.LateEarlyMinutesPerWorkday</strong>. Kết quả là <strong>Số ngày ĐTVS</strong>, số thập phân lấy @rule.Metadata.WorkdayDecimalPlaces chữ số.</li>
+                        <li>Tìm công tính lương (<strong>CTL</strong>) = <strong>Công HC − Tổng đi trễ về sớm</strong>. Kết quả lấy @rule.Metadata.CalculationDecimalPlaces chữ số thập phân.</li>
+                    </ol>
                 }
                 else
                 {
-                    <div>Chưa có mã nào được cấu hình cho phụ cấp chuyên cần.</div>
+                    <div>Chưa tải được cấu hình quy tắc phụ cấp chuyên cần.</div>
                 }
-                <ol class="attendance-rules-list">
-                    <li>Các code áp dụng để tính 1 công HC là bảng <strong>Code kết quả tính công</strong> - cột <strong>Chuyên cần</strong>. Mỗi record có nằm trong các code này thì tính là 1 ngày công HC. Kết quả là ngày công HC (viết tắt <strong>Công HC</strong>).</li>
-                    <li>Tìm trong bảng công tháng tổng số phút đi trễ, về sớm và chia cho <strong>480</strong>. Kết quả là <strong>Số ngày ĐTVS</strong>, số thập phân lấy 4 chữ số.</li>
-                    <li>Tìm công tính lương (<strong>CTL</strong>) = <strong>Công HC − Tổng đi trễ về sớm</strong>. Kết quả lấy 4 chữ số thập phân.</li>
-                </ol>
             </div>
 
             <div class="attendance-rules-section">
                 <div class="attendance-rules-title">Xếp mức chuyên cần</div>
-                <ol class="attendance-rules-list" start="4">
-                    <li>
-                        <strong>Ưu tiên 1 (cao nhất):</strong> nếu trong bảng công tháng có <strong>CODE = KP</strong> (nghỉ không phép), số tiền chuyên cần <strong>C = 0 đồng</strong>.
-                    </li>
-                    <li>Tìm <strong>Số ngày thiếu công (Thiếu công)</strong> = <strong>Công chuẩn − CTL</strong> (giống quy tắc của Trách nhiệm).</li>
-                    <li>Nếu <strong>Thiếu công ≤ 1.0625</strong> thì Chuyên cần <strong>A = 600.000 đồng</strong>.</li>
-                    <li>Nếu <strong>Thiếu công &gt; 1.0625</strong> và <strong>≤ 3.0625</strong> thì Chuyên cần <strong>B = 300.000 đồng</strong>.</li>
-                    <li>Còn lại, Chuyên cần <strong>C = 0 đồng</strong>.</li>
-                </ol>
+                @if(Rule is { } attendanceRule)
+                {
+                    <ol class="attendance-rules-list" start="4">
+                        <li>
+                            <strong>Ưu tiên 1 (cao nhất):</strong> nếu trong bảng công tháng có <strong>CODE = @attendanceRule.Metadata.KpAttendanceStatusCode</strong> (nghỉ không phép), số tiền chuyên cần <strong>C = @FormatMoney(attendanceRule.Metadata.AttendanceClassCAmount)</strong>.
+                        </li>
+                        <li>Tìm <strong>Số ngày thiếu công (Thiếu công)</strong> = <strong>Công chuẩn − CTL</strong> (giống quy tắc của Trách nhiệm).</li>
+                        <li>Nếu <strong>Thiếu công ≤ @FormatDecimal(attendanceRule.Metadata.AttendanceClassAMissingWorkdayThreshold, attendanceRule.Metadata.CalculationDecimalPlaces)</strong> thì Chuyên cần <strong>A = @FormatMoney(attendanceRule.Metadata.AttendanceClassAAmount)</strong>.</li>
+                        <li>Nếu <strong>Thiếu công &gt; @FormatDecimal(attendanceRule.Metadata.AttendanceClassAMissingWorkdayThreshold, attendanceRule.Metadata.CalculationDecimalPlaces)</strong> và <strong>≤ @FormatDecimal(attendanceRule.Metadata.AttendanceClassBMissingWorkdayThreshold, attendanceRule.Metadata.CalculationDecimalPlaces)</strong> thì Chuyên cần <strong>B = @FormatMoney(attendanceRule.Metadata.AttendanceClassBAmount)</strong>.</li>
+                        <li>Còn lại, Chuyên cần <strong>C = @FormatMoney(attendanceRule.Metadata.AttendanceClassCAmount)</strong>.</li>
+                    </ol>
+                }
             </div>
         </div>
     </BodyContentTemplate>

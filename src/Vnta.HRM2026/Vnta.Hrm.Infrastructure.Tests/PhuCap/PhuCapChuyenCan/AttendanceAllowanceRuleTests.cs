@@ -52,5 +52,9 @@ public sealed class AttendanceAllowanceRuleTests
         var rule = await service.GetRuleAsync();
 
         Assert.Equal(["ATTENDANCE"], rule.EligibleStatusCodes);
+        Assert.Equal(AttendanceAllowancePayrollPeriodPolicy.MinimumSupportedMonth, rule.Metadata.MinimumSupportedPayrollMonth);
+        Assert.Equal(AttendanceAllowancePayrollPeriodPolicy.MinimumSupportedYear, rule.Metadata.MinimumSupportedPayrollYear);
+        Assert.Equal(AttendanceAllowanceWorkdayMetricPolicy.LateEarlyMinutesPerWorkday, rule.Metadata.LateEarlyMinutesPerWorkday);
+        Assert.Equal(AttendanceAllowanceCalculationPolicy.AttendanceClassAAmount, rule.Metadata.AttendanceClassAAmount);
     }
 }

@@ -5,13 +5,13 @@ namespace Vnta.Hrm.Infrastructure.PhuCap.PhuCapChuyenCan.Queries;
 
 public sealed class DatabaseAttendanceAllowanceReadService(
     ApplicationDbContext dbContext,
-    IAttendanceAllowanceWorkdaySource workdaySource) : IAttendanceAllowanceReadService
+    IAttendanceAllowanceEligibleStatusCodeSource eligibleStatusCodeSource) : IAttendanceAllowanceReadService
 {
     private const int DefaultPageSize = 20;
     private const int MaximumPageSize = 5000;
 
     public async Task<AttendanceAllowanceRuleDto> GetRuleAsync(CancellationToken cancellationToken = default) =>
-        new(await workdaySource.LoadEligibleStatusCodesAsync(cancellationToken));
+        new(await eligibleStatusCodeSource.LoadEligibleStatusCodesAsync(cancellationToken), AttendanceAllowanceRuleMetadataDto.Current);
 
     public async Task<AttendanceAllowanceResultPageDto> SearchPageAsync(AttendanceAllowanceResultFilter filter, CancellationToken cancellationToken = default)
     {

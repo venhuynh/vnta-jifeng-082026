@@ -1,6 +1,7 @@
 using Vnta.Hrm.Application.PhuCap.Common;
 using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Commands;
 using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Contracts;
+using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Policies;
 using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Queries;
 using Vnta.Hrm.Application.QuanTri.AuditTrail;
 using Vnta.Hrm.Web.Client.Audit;
@@ -17,11 +18,11 @@ public sealed class AttendanceAllowanceResultDataProviderTests
         var source = new AttendanceAllowanceResultListItemDto(
             Guid.NewGuid(), PayrollAllowanceKind.Attendance, Guid.NewGuid(), "NV001", "Nguyen Van A", "Workshop", "Operator",
             7, 2026, 600_000m, 26m, 24.5m, 0.9423m, 300_000m, true, DateTime.UnixEpoch, DateTime.UnixEpoch,
-            "attendance-ratio", "B", 24.5m, 15, 1.5m, true, 25m, 0.5m);
+            "attendance-ratio", AttendanceAllowanceClass.B, 24.5m, 15, 1.5m, true, 25m, 0.5m);
         var readService = new CapturingReadService(source);
         var provider = new AttendanceAllowanceResultDataProvider(
             readService, new UnsupportedExportService(), new UnsupportedRefreshService(), new UnsupportedManualService(),
-            new UnsupportedLockService(), new PassthroughAuditScopeFactory());
+            new UnsupportedWorkdayAdjustmentService(), new UnsupportedLockService(), new PassthroughAuditScopeFactory());
         var filter = new AttendanceAllowanceResultFilter(PayrollAllowanceKind.Attendance, 7, 2026, "NV001", Take: 20, Skip: 0);
 
         var page = await provider.SearchPageAsync(filter);
@@ -41,6 +42,26 @@ public sealed class AttendanceAllowanceResultDataProviderTests
         Assert.True(record.IsLocked);
         Assert.Equal(3, page.OpenCount);
         Assert.Equal(2, page.LockedCount);
+    }
+
+    [Fact]
+    public async Task UpdateWorkdays_forwards_the_editable_pair_as_one_atomic_command()
+    {
+        var commandService = new CapturingWorkdayAdjustmentService();
+        var provider = new AttendanceAllowanceResultDataProvider(
+            new CapturingReadService(CreateRow(Guid.NewGuid())),
+            new UnsupportedExportService(),
+            new UnsupportedRefreshService(),
+            new UnsupportedManualService(),
+            commandService,
+            new UnsupportedLockService(),
+            new PassthroughAuditScopeFactory());
+        var id = Guid.NewGuid();
+        var originalVersion = DateTime.UtcNow;
+
+        await provider.UpdateWorkdaysAsync(id, 24m, 26m, originalVersion);
+
+        Assert.Equal(new UpdateAttendanceAllowanceWorkdaysRequest(id, 24m, 26m, originalVersion), commandService.Request);
     }
 
     private sealed class CapturingReadService(AttendanceAllowanceResultListItemDto row) : IAttendanceAllowanceReadService
@@ -76,9 +97,49 @@ public sealed class AttendanceAllowanceResultDataProviderTests
         public Task<AttendanceAllowanceResultListItemDto> UpdateStandardWorkdayAsync(UpdateAttendanceAllowanceStandardWorkdayRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
     }
 
+    private sealed class UnsupportedWorkdayAdjustmentService : IAttendanceAllowanceWorkdayAdjustmentService
+    {
+        public Task<AttendanceAllowanceResultListItemDto> UpdateWorkdaysAsync(
+            UpdateAttendanceAllowanceWorkdaysRequest request,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
+    }
+
+    private sealed class CapturingWorkdayAdjustmentService : IAttendanceAllowanceWorkdayAdjustmentService
+    {
+        public UpdateAttendanceAllowanceWorkdaysRequest? Request { get; private set; }
+
+        public Task<AttendanceAllowanceResultListItemDto> UpdateWorkdaysAsync(
+            UpdateAttendanceAllowanceWorkdaysRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            Request = request;
+            return Task.FromResult(CreateRow(request.Id));
+        }
+    }
+
     private sealed class UnsupportedLockService : IAttendanceAllowanceLockService
     {
         public Task<AttendanceAllowanceResultListItemDto> SetLockStateAsync(SetAttendanceAllowanceLockStateRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<SetAttendanceAllowanceBatchLockStateResult> SetLockStateBatchAsync(SetAttendanceAllowanceBatchLockStateRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
     }
+
+    private static AttendanceAllowanceResultListItemDto CreateRow(Guid id) => new(
+        id,
+        PayrollAllowanceKind.Attendance,
+        Guid.NewGuid(),
+        "NV001",
+        "Nguyen Van A",
+        null,
+        null,
+        7,
+        2026,
+        600_000m,
+        26m,
+        24m,
+        0.9231m,
+        300_000m,
+        false,
+        DateTime.UnixEpoch,
+        DateTime.UnixEpoch,
+        AttendanceClass: AttendanceAllowanceClass.B);
 }

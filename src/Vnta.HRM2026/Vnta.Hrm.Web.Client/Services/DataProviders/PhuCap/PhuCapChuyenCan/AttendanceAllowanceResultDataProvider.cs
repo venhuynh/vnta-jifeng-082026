@@ -14,6 +14,7 @@ public sealed class AttendanceAllowanceResultDataProvider(
     IAttendanceAllowanceExportService exportService,
     IAttendanceAllowanceRefreshService refreshService,
     IAttendanceAllowanceManualAdjustmentService manualAdjustmentService,
+    IAttendanceAllowanceWorkdayAdjustmentService workdayAdjustmentService,
     IAttendanceAllowanceLockService lockService,
     IInteractiveAuditCommandScopeFactory auditCommandScopeFactory)
     : IAttendanceAllowanceResultDataProvider
@@ -124,36 +125,78 @@ public sealed class AttendanceAllowanceResultDataProvider(
         return AttendanceAllowanceResultRecordMapper.MapRecord(updated);
     }
 
-    public Task<SetAttendanceAllowanceBatchLockStateResult> SetLockStateBatchAsync(
+    /// <summary>
+    /// Keeps the editable workday pair inside one server-side transaction and
+    /// one optimistic-concurrency check.
+    /// </summary>
+    public async Task<AttendanceAllowanceResultRecord> UpdateWorkdaysAsync(
+        Guid id,
+        decimal actualWorkdayCount,
+        decimal standardWorkdayCount,
+        DateTime? originalUpdatedAtUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var updated = await auditCommandScopeFactory.ExecuteAsync(
+            AuditActions.AttendanceAllowance.Save,
+            token => workdayAdjustmentService.UpdateWorkdaysAsync(
+                new UpdateAttendanceAllowanceWorkdaysRequest(
+                    id,
+                    actualWorkdayCount,
+                    standardWorkdayCount,
+                    originalUpdatedAtUtc),
+                token),
+            cancellationToken: cancellationToken);
+
+        return AttendanceAllowanceResultRecordMapper.MapRecord(updated);
+    }
+
+    public Task<SetAttendanceAllowanceBatchLockStateResult> SetLockStateForWholePeriodAsync(
         int payrollYear,
         int payrollMonth,
         bool isLocked,
-        IEnumerable<AttendanceAllowanceResultRecord>? records = null,
         CancellationToken cancellationToken = default)
     {
-        // null biểu thị thao tác toàn kỳ; mảng rỗng vẫn là tập dòng đã chọn rỗng để không vô tình khóa toàn kỳ.
-        var targetRecords = records?
-            .Where(record => record.Id != Guid.Empty)
-            .DistinctBy(record => record.Id)
-            .Where(record => record.IsLocked != isLocked)
+        return ExecuteLockStateAsync(
+            new SetAttendanceAllowanceBatchLockStateRequest(
+                payrollYear,
+                payrollMonth,
+                isLocked,
+                AttendanceAllowanceBatchLockScope.WholePeriod),
+            cancellationToken);
+    }
+
+    public Task<SetAttendanceAllowanceBatchLockStateResult> SetLockStateForRowsAsync(
+        int payrollYear,
+        int payrollMonth,
+        bool isLocked,
+        IReadOnlyList<AttendanceAllowanceLockItem> items,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+
+        var targetItems = items
+            .Where(item => item.Id != Guid.Empty)
+            .GroupBy(item => item.Id)
+            .Select(group => group.First())
             .ToArray();
 
-        return auditCommandScopeFactory.ExecuteAsync(
-            AuditActions.AttendanceAllowance.SetLockStateBatch,
-            token => lockService.SetLockStateBatchAsync(
-                new SetAttendanceAllowanceBatchLockStateRequest(
-                    payrollYear,
-                    payrollMonth,
-                    isLocked,
-                    targetRecords?.Select(record => record.Id).ToArray(),
-                    targetRecords?
-                        .Select(record => new AttendanceAllowanceLockItem(
-                            record.Id,
-                            record.UpdatedAtUtc))
-                        .ToArray()),
-                token),
-            cancellationToken: cancellationToken);
+        return ExecuteLockStateAsync(
+            new SetAttendanceAllowanceBatchLockStateRequest(
+                payrollYear,
+                payrollMonth,
+                isLocked,
+                AttendanceAllowanceBatchLockScope.SelectedRows,
+                targetItems),
+            cancellationToken);
     }
+
+    private Task<SetAttendanceAllowanceBatchLockStateResult> ExecuteLockStateAsync(
+        SetAttendanceAllowanceBatchLockStateRequest request,
+        CancellationToken cancellationToken) =>
+        auditCommandScopeFactory.ExecuteAsync(
+            AuditActions.AttendanceAllowance.SetLockStateBatch,
+            token => lockService.SetLockStateBatchAsync(request, token),
+            cancellationToken: cancellationToken);
 
 }
 
@@ -176,6 +219,8 @@ public static class AttendanceAllowanceResultDataProviderServiceCollectionExtens
         services.AddScoped<IAttendanceAllowanceRefreshDataProvider>(sp =>
             sp.GetRequiredService<AttendanceAllowanceResultDataProvider>());
         services.AddScoped<IAttendanceAllowanceManualAdjustmentDataProvider>(sp =>
+            sp.GetRequiredService<AttendanceAllowanceResultDataProvider>());
+        services.AddScoped<IAttendanceAllowanceWorkdayAdjustmentDataProvider>(sp =>
             sp.GetRequiredService<AttendanceAllowanceResultDataProvider>());
         services.AddScoped<IAttendanceAllowanceLockDataProvider>(sp =>
             sp.GetRequiredService<AttendanceAllowanceResultDataProvider>());

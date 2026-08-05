@@ -8,6 +8,6 @@ internal sealed record AttendanceAllowanceReloadSnapshot(
     int PayrollYear,
     string? SearchText,
     AttendanceAllowanceLockState LockState,
-    string? AttendanceClass,
+    AttendanceAllowanceClass? AttendanceClass,
     int PageIndex,
     int PageSize);

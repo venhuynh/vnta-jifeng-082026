@@ -23,11 +23,11 @@ public partial class PhuCapChuyenCan
                 : $"Đang mở khóa phụ cấp chuyên cần của {record.EmployeeDisplay}...";
             await InvokeAsync(StateHasChanged);
 
-            var result = await LockDataProvider.SetLockStateBatchAsync(
+            var result = await LockDataProvider.SetLockStateForRowsAsync(
                 AppliedYear,
                 AppliedMonth,
                 shouldLock,
-                [record],
+                [new AttendanceAllowanceLockItem(record.Id, record.UpdatedAtUtc)],
                 disposalTokenSource.Token);
 
             if(result.UpdatedCount > 0)

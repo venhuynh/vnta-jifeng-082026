@@ -1,3 +1,5 @@
+using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Policies;
+
 namespace Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Queries;
 
 public sealed record AttendanceAllowanceResultListItemDto(
@@ -19,7 +21,7 @@ public sealed record AttendanceAllowanceResultListItemDto(
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc,
     string? AppliedRuleKey = null,
-    string? AttendanceClass = null,
+    AttendanceAllowanceClass? AttendanceClass = null,
     decimal? CtlWorkdayCount = null,
     int? LateEarlyMinutes = null,
     decimal? Kqcc = null,

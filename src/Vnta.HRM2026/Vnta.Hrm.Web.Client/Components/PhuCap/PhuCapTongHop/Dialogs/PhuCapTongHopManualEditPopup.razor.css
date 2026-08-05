@@ -58,6 +58,24 @@
     font-variant-numeric: tabular-nums;
 }
 
+.allowance-summary-manual-edit-derived-value {
+    min-height: 2.25rem;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+    background-color: var(--dxds-color-surface-neutral-subtle-rest);
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-variant-numeric: tabular-nums;
+}
+
+.allowance-summary-manual-edit-derived-hint {
+    margin-top: 0.25rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.8125rem;
+}
+
 .allowance-summary-manual-edit-error {
     padding: 0.75rem 1rem;
     border-radius: 0.5rem;

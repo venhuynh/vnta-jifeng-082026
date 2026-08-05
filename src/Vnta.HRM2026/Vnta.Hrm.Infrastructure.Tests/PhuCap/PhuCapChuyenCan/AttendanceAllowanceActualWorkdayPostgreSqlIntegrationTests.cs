@@ -39,7 +39,7 @@ public sealed class AttendanceAllowanceActualWorkdayPostgreSqlIntegrationTests(
         await using var context = fixture.CreateDbContext();
         var auditScope = new AsyncLocalAuditScope();
         var service = new DatabaseAttendanceAllowanceManualAdjustmentService(
-            context, auditScope, new AttendanceAllowanceCalculationPolicy(), new AttendanceAllowanceRequestValidator());
+            context, auditScope, new AttendanceAllowanceCalculationPolicy(), new AttendanceAllowanceRequestValidator(), new AttendanceAllowanceWorkdayAdjustmentPolicy());
 
         var result = await service.UpdateActualWorkdayAsync(
             new UpdateAttendanceAllowanceActualWorkdayRequest(
@@ -61,13 +61,13 @@ public sealed class AttendanceAllowanceActualWorkdayPostgreSqlIntegrationTests(
         await using var firstContext = fixture.CreateDbContext();
         var firstScope = new AsyncLocalAuditScope();
         var first = new DatabaseAttendanceAllowanceManualAdjustmentService(
-            firstContext, firstScope, new AttendanceAllowanceCalculationPolicy(), new AttendanceAllowanceRequestValidator());
+            firstContext, firstScope, new AttendanceAllowanceCalculationPolicy(), new AttendanceAllowanceRequestValidator(), new AttendanceAllowanceWorkdayAdjustmentPolicy());
         await first.UpdateActualWorkdayAsync(new UpdateAttendanceAllowanceActualWorkdayRequest(
             seed.SummaryId, 20m, seed.OriginalUpdatedAtUtc));
 
         await using var staleContext = fixture.CreateDbContext();
         var stale = new DatabaseAttendanceAllowanceManualAdjustmentService(
-            staleContext, new AsyncLocalAuditScope(), new AttendanceAllowanceCalculationPolicy(), new AttendanceAllowanceRequestValidator());
+            staleContext, new AsyncLocalAuditScope(), new AttendanceAllowanceCalculationPolicy(), new AttendanceAllowanceRequestValidator(), new AttendanceAllowanceWorkdayAdjustmentPolicy());
         var exception = await Assert.ThrowsAsync<AttendanceAllowanceCommandException>(() =>
             stale.UpdateActualWorkdayAsync(new UpdateAttendanceAllowanceActualWorkdayRequest(
                 seed.SummaryId, 10m, seed.OriginalUpdatedAtUtc)));
@@ -81,6 +81,83 @@ public sealed class AttendanceAllowanceActualWorkdayPostgreSqlIntegrationTests(
     }
 
     [PostgreSqlAttendanceAllowanceFact]
+    public async Task Save_workdays_updates_both_values_and_aggregate_in_one_versioned_command()
+    {
+        fixture.RequireDatabase();
+        var seed = await SeedAsync(fixture);
+
+        await using var context = fixture.CreateDbContext();
+        var service = new DatabaseAttendanceAllowanceManualAdjustmentService(
+            context,
+            new AsyncLocalAuditScope(),
+            new AttendanceAllowanceCalculationPolicy(),
+            new AttendanceAllowanceRequestValidator(),
+            new AttendanceAllowanceWorkdayAdjustmentPolicy());
+
+        var result = await service.UpdateWorkdaysAsync(new UpdateAttendanceAllowanceWorkdaysRequest(
+            seed.SummaryId,
+            20.5m,
+            27m,
+            seed.OriginalUpdatedAtUtc));
+
+        Assert.Equal(20.5m, result.ActualWorkdayCount);
+        Assert.Equal(27m, result.StandardWorkdayCount);
+        Assert.NotEqual(seed.OriginalUpdatedAtUtc, result.UpdatedAtUtc);
+
+        var detail = await context.PayrollAttendanceAllowanceRecords.SingleAsync(row => row.PayrollAllowanceSummaryRecordId == seed.SummaryId);
+        var summary = await context.PayrollAllowanceSummaryRecords.SingleAsync(row => row.Id == seed.SummaryId);
+        Assert.Equal(20.5m, detail.ActualWorkdayCount);
+        Assert.Equal(27m, detail.StandardWorkdayCount);
+        Assert.Equal(detail.AllowanceAmount, summary.AttendanceAllowanceAmount);
+        Assert.Equal(detail.UpdatedAtUtc, result.UpdatedAtUtc);
+    }
+
+    [PostgreSqlAttendanceAllowanceFact]
+    public async Task Save_workdays_rejects_a_stale_single_version_without_partial_update()
+    {
+        fixture.RequireDatabase();
+        var seed = await SeedAsync(fixture);
+
+        await using(var firstContext = fixture.CreateDbContext())
+        {
+            var first = new DatabaseAttendanceAllowanceManualAdjustmentService(
+                firstContext,
+                new AsyncLocalAuditScope(),
+                new AttendanceAllowanceCalculationPolicy(),
+                new AttendanceAllowanceRequestValidator(),
+                new AttendanceAllowanceWorkdayAdjustmentPolicy());
+            await first.UpdateWorkdaysAsync(new UpdateAttendanceAllowanceWorkdaysRequest(
+                seed.SummaryId,
+                20m,
+                27m,
+                seed.OriginalUpdatedAtUtc));
+        }
+
+        await using var staleContext = fixture.CreateDbContext();
+        var stale = new DatabaseAttendanceAllowanceManualAdjustmentService(
+            staleContext,
+            new AsyncLocalAuditScope(),
+            new AttendanceAllowanceCalculationPolicy(),
+            new AttendanceAllowanceRequestValidator(),
+            new AttendanceAllowanceWorkdayAdjustmentPolicy());
+
+        var exception = await Assert.ThrowsAsync<AttendanceAllowanceCommandException>(() =>
+            stale.UpdateWorkdaysAsync(new UpdateAttendanceAllowanceWorkdaysRequest(
+                seed.SummaryId,
+                10m,
+                26m,
+                seed.OriginalUpdatedAtUtc)));
+
+        Assert.Equal(AttendanceAllowanceCommandFailure.Concurrency, exception.Failure);
+        await using var verificationContext = fixture.CreateDbContext();
+        var detail = await verificationContext.PayrollAttendanceAllowanceRecords.SingleAsync(row => row.PayrollAllowanceSummaryRecordId == seed.SummaryId);
+        var summary = await verificationContext.PayrollAllowanceSummaryRecords.SingleAsync(row => row.Id == seed.SummaryId);
+        Assert.Equal(20m, detail.ActualWorkdayCount);
+        Assert.Equal(27m, detail.StandardWorkdayCount);
+        Assert.Equal(detail.AllowanceAmount, summary.AttendanceAllowanceAmount);
+    }
+
+    [PostgreSqlAttendanceAllowanceFact]
     public async Task Save_standard_workday_persists_the_adjustment()
     {
         fixture.RequireDatabase();
@@ -89,7 +166,7 @@ public sealed class AttendanceAllowanceActualWorkdayPostgreSqlIntegrationTests(
         await using var context = fixture.CreateDbContext();
         var auditScope = new AsyncLocalAuditScope();
         var service = new DatabaseAttendanceAllowanceManualAdjustmentService(
-            context, auditScope, new AttendanceAllowanceCalculationPolicy(), new AttendanceAllowanceRequestValidator());
+            context, auditScope, new AttendanceAllowanceCalculationPolicy(), new AttendanceAllowanceRequestValidator(), new AttendanceAllowanceWorkdayAdjustmentPolicy());
 
         var result = await service.UpdateStandardWorkdayAsync(
             new UpdateAttendanceAllowanceStandardWorkdayRequest(
@@ -251,13 +328,21 @@ public sealed class AttendanceAllowanceActualWorkdayPostgreSqlIntegrationTests(
         var seed = await SeedAsync(fixture);
         await using var context = fixture.CreateDbContext();
         var auditScope = new AsyncLocalAuditScope();
-        var service = new DatabaseAttendanceAllowanceLockService(context, auditScope, new AuditedMutation(context, auditScope), new AttendanceAllowanceRequestValidator());
+        var requestValidator = new AttendanceAllowanceRequestValidator();
+        var service = new DatabaseAttendanceAllowanceLockService(
+            context,
+            auditScope,
+            new AuditedMutation(context, auditScope),
+            requestValidator,
+            requestValidator);
 
         var locked = await service.SetLockStateBatchAsync(new SetAttendanceAllowanceBatchLockStateRequest(
-            2026, 7, true, Items: [new AttendanceAllowanceLockItem(seed.SummaryId, seed.OriginalUpdatedAtUtc)]));
+            2026, 7, true, AttendanceAllowanceBatchLockScope.SelectedRows,
+            Items: [new AttendanceAllowanceLockItem(seed.SummaryId, seed.OriginalUpdatedAtUtc)]));
         var lockedRow = await context.PayrollAttendanceAllowanceRecords.AsNoTracking().SingleAsync(row => row.PayrollAllowanceSummaryRecordId == seed.SummaryId);
         var unlocked = await service.SetLockStateBatchAsync(new SetAttendanceAllowanceBatchLockStateRequest(
-            2026, 7, false, Items: [new AttendanceAllowanceLockItem(seed.SummaryId, lockedRow.UpdatedAtUtc)]));
+            2026, 7, false, AttendanceAllowanceBatchLockScope.SelectedRows,
+            Items: [new AttendanceAllowanceLockItem(seed.SummaryId, lockedRow.UpdatedAtUtc)]));
 
         Assert.Equal(1, locked.TargetRowCount);
         Assert.Equal(1, locked.UpdatedCount);

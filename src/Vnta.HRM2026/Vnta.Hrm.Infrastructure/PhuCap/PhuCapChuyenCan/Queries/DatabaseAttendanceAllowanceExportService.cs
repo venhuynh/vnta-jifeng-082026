@@ -9,7 +9,7 @@ public sealed class DatabaseAttendanceAllowanceExportService(
     ApplicationDbContext dbContext,
     IAuditScope auditScope,
     IAuditedMutation auditedMutation,
-    IAttendanceAllowanceRequestValidator requestValidator) : IAttendanceAllowanceExportService
+    IAttendanceAllowanceExportRequestValidator requestValidator) : IAttendanceAllowanceExportService
 {
     private const int MaximumExportRowCount = 10000;
 

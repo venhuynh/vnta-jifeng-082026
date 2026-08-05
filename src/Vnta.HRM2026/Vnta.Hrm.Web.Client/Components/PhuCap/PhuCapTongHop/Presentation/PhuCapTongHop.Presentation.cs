@@ -129,7 +129,6 @@ public partial class PhuCapTongHop
         {
             ("Phụ cấp trách nhiệm", model.ResponsibilityAllowanceAmount),
             ("Phụ cấp thâm niên", model.SeniorityAllowanceAmount),
-            ("Phụ cấp chuyên cần", model.AttendanceAllowanceAmount),
             ("Phụ cấp cơm", model.MealAllowanceAmount),
             ("Phụ cấp độc hại", model.HazardAllowanceAmount),
             ("Phụ cấp khác", model.OtherAllowanceAmount),

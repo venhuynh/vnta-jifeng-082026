@@ -1,6 +1,9 @@
+using System.Text.Json.Serialization;
+
 namespace Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Policies;
 
 /// <summary>Phân loại phụ cấp chuyên cần được lưu trong snapshot kỳ lương.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum AttendanceAllowanceClass
 {
     Unresolved = 0,
@@ -47,10 +50,12 @@ public sealed record AttendanceAllowanceCalculationResult(
 /// </summary>
 public sealed class AttendanceAllowanceCalculationPolicy
 {
+    public const int CalculationDecimalPlaces = 4;
     public const decimal AttendanceClassAMissingWorkdayThreshold = 1.0625m;
     public const decimal AttendanceClassBMissingWorkdayThreshold = 3.0625m;
     public const decimal AttendanceClassAAmount = 600_000m;
     public const decimal AttendanceClassBAmount = 300_000m;
+    public const decimal AttendanceClassCAmount = 0m;
 
     public AttendanceAllowanceCalculationResult Calculate(AttendanceAllowanceCalculationInput input)
     {
@@ -76,7 +81,7 @@ public sealed class AttendanceAllowanceCalculationPolicy
 
         return Math.Round(
             Math.Clamp(attendanceWorkdayCount / standardWorkdayCount, 0m, 1m),
-            4,
+            CalculationDecimalPlaces,
             MidpointRounding.AwayFromZero);
     }
 
@@ -91,7 +96,7 @@ public sealed class AttendanceAllowanceCalculationPolicy
         // become negative when attendance workdays exceed the salary standard.
         var rawMissingWorkdayCount = input.MissingWorkdayCount
             ?? input.StandardWorkdayCount - input.AttendanceWorkdayCount;
-        return Math.Round(Math.Max(rawMissingWorkdayCount, 0m), 4, MidpointRounding.AwayFromZero);
+        return Math.Round(Math.Max(rawMissingWorkdayCount, 0m), CalculationDecimalPlaces, MidpointRounding.AwayFromZero);
     }
 
     private static AttendanceAllowanceClass ResolveAttendanceClass(
@@ -122,7 +127,7 @@ public sealed class AttendanceAllowanceCalculationPolicy
     {
         AttendanceAllowanceClass.A => AttendanceClassAAmount,
         AttendanceAllowanceClass.B => AttendanceClassBAmount,
-        _ => 0m
+        _ => AttendanceClassCAmount
     };
 
     private static AttendanceAllowanceAppliedRule ResolveAppliedRule(
@@ -146,6 +151,16 @@ public sealed class AttendanceAllowanceCalculationPolicy
 
 public static class AttendanceAllowancePolicyStorageValues
 {
+    /// <summary>Maps the persistence representation at the infrastructure boundary.</summary>
+    public static AttendanceAllowanceClass? FromStorageValue(string? value) =>
+        value?.Trim().ToUpperInvariant() switch
+        {
+            "A" => AttendanceAllowanceClass.A,
+            "B" => AttendanceAllowanceClass.B,
+            "C" => AttendanceAllowanceClass.C,
+            _ => null
+        };
+
     public static string? ToStorageValue(this AttendanceAllowanceClass attendanceClass) => attendanceClass switch
     {
         AttendanceAllowanceClass.A => "A",

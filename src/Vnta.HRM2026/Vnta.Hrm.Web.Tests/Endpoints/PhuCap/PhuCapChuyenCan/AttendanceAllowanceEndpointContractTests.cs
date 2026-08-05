@@ -50,6 +50,7 @@ public sealed class AttendanceAllowanceEndpointContractTests : IClassFixture<Web
     [InlineData("/api/payroll/attendance-allowance/refresh")]
     [InlineData("/api/payroll/attendance-allowance/actual-workday")]
     [InlineData("/api/payroll/attendance-allowance/standard-workday")]
+    [InlineData("/api/payroll/attendance-allowance/workdays")]
     [InlineData("/api/payroll/attendance-allowance/lock-state")]
     [InlineData("/api/payroll/attendance-allowance/lock-state/batch")]
     [InlineData("/api/payroll/attendance-allowance/search")]
@@ -166,13 +167,47 @@ public sealed class AttendanceAllowanceEndpointContractTests : IClassFixture<Web
     }
 
     [Fact]
+    public async Task Atomic_workday_command_rejects_an_invalid_pair_before_calling_the_service()
+    {
+        var service = new CapturingWorkdayAdjustmentService();
+        using var client = CreateClient(workdayAdjustmentService: service);
+
+        var response = await client.PostAsync(
+            "/api/payroll/attendance-allowance/workdays",
+            JsonContent($"{{\"id\":\"{Guid.NewGuid()}\",\"actualWorkdayCount\":27,\"standardWorkdayCount\":26}}"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Null(service.Request);
+    }
+
+    [Fact]
+    public async Task Atomic_workday_command_passes_both_values_and_one_version_to_the_use_case()
+    {
+        var service = new CapturingWorkdayAdjustmentService();
+        using var client = CreateClient(workdayAdjustmentService: service);
+        var id = Guid.NewGuid();
+        var version = DateTime.UnixEpoch;
+
+        var response = await client.PostAsync(
+            "/api/payroll/attendance-allowance/workdays",
+            JsonContent($"{{\"id\":\"{id}\",\"actualWorkdayCount\":20.5,\"standardWorkdayCount\":26,\"originalUpdatedAtUtc\":\"{version:O}\"}}"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(service.Request);
+        Assert.Equal(id, service.Request!.Id);
+        Assert.Equal(20.5m, service.Request.ActualWorkdayCount);
+        Assert.Equal(26m, service.Request.StandardWorkdayCount);
+        Assert.Equal(version, service.Request.OriginalUpdatedAtUtc);
+    }
+
+    [Fact]
     public async Task Batch_lock_command_maps_concurrency_conflict_to_http_409()
     {
         using var client = CreateClient(lockService: new CapturingLockService { ThrowConflict = true });
 
         var response = await client.PostAsync(
             "/api/payroll/attendance-allowance/lock-state/batch",
-            JsonContent("{\"payrollYear\":2026,\"payrollMonth\":7,\"isLocked\":true,\"actor\":\"forged-actor\"}"));
+            JsonContent("{\"payrollYear\":2026,\"payrollMonth\":7,\"isLocked\":true,\"scope\":1,\"actor\":\"forged-actor\"}"));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
@@ -182,6 +217,7 @@ public sealed class AttendanceAllowanceEndpointContractTests : IClassFixture<Web
         string role = "PayrollAdmin",
         RecordingAuditScope? auditScope = null,
         CapturingManualAdjustmentService? manualAdjustmentService = null,
+        CapturingWorkdayAdjustmentService? workdayAdjustmentService = null,
         CapturingLockService? lockService = null)
     {
         var customizedFactory = factory.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
@@ -195,6 +231,11 @@ public sealed class AttendanceAllowanceEndpointContractTests : IClassFixture<Web
             {
                 services.RemoveAll<IAttendanceAllowanceManualAdjustmentService>();
                 services.AddSingleton<IAttendanceAllowanceManualAdjustmentService>(manualAdjustmentService);
+            }
+            if(workdayAdjustmentService is not null)
+            {
+                services.RemoveAll<IAttendanceAllowanceWorkdayAdjustmentService>();
+                services.AddSingleton<IAttendanceAllowanceWorkdayAdjustmentService>(workdayAdjustmentService);
             }
             if(lockService is not null)
             {
@@ -287,6 +328,19 @@ public sealed class AttendanceAllowanceEndpointContractTests : IClassFixture<Web
         }
     }
 
+    private sealed class CapturingWorkdayAdjustmentService : IAttendanceAllowanceWorkdayAdjustmentService
+    {
+        public UpdateAttendanceAllowanceWorkdaysRequest? Request { get; private set; }
+
+        public Task<AttendanceAllowanceResultListItemDto> UpdateWorkdaysAsync(
+            UpdateAttendanceAllowanceWorkdaysRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            Request = request;
+            return Task.FromResult(CreateRow(request.Id));
+        }
+    }
+
     private sealed class CapturingLockService : IAttendanceAllowanceLockService
     {
         public bool ThrowConflict { get; init; }
@@ -297,7 +351,13 @@ public sealed class AttendanceAllowanceEndpointContractTests : IClassFixture<Web
         public Task<SetAttendanceAllowanceBatchLockStateResult> SetLockStateBatchAsync(SetAttendanceAllowanceBatchLockStateRequest request, CancellationToken cancellationToken = default)
         {
             if(ThrowConflict) throw new AttendanceAllowanceCommandException(AttendanceAllowanceCommandFailure.Concurrency, "conflict");
-            return Task.FromResult(new SetAttendanceAllowanceBatchLockStateResult(request.PayrollYear, request.PayrollMonth, 0, 0, IsLocked: request.IsLocked, IsWholePeriod: request.Items is null && request.AttendanceAllowanceRecordIds is null));
+            return Task.FromResult(new SetAttendanceAllowanceBatchLockStateResult(
+                request.PayrollYear,
+                request.PayrollMonth,
+                0,
+                0,
+                IsLocked: request.IsLocked,
+                IsWholePeriod: request.Scope == AttendanceAllowanceBatchLockScope.WholePeriod));
         }
     }
 

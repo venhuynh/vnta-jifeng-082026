@@ -36,8 +36,11 @@ public sealed class PhuCapTongHopManualEditModel
     [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "Phụ cấp thâm niên không được nhỏ hơn 0.")]
     public decimal SeniorityAllowanceAmount { get; set; }
 
-    [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "Phụ cấp chuyên cần không được nhỏ hơn 0.")]
-    public decimal AttendanceAllowanceAmount { get; set; }
+    /// <summary>
+    /// Read-only projection owned by Phụ cấp chuyên cần. It remains on the view model so the
+    /// operator can see the current total, but it is deliberately omitted from the save command.
+    /// </summary>
+    public decimal AttendanceAllowanceAmount { get; init; }
 
     [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "Phụ cấp cơm không được nhỏ hơn 0.")]
     public decimal MealAllowanceAmount { get; set; }
@@ -72,7 +75,7 @@ public sealed class PhuCapTongHopManualEditModel
             ResponsibilityAllowanceAmount,
             ResponsibilityOtherAllowanceAmount,
             SeniorityAllowanceAmount,
-            AttendanceAllowanceAmount,
+            AttendanceAllowanceAmount: null,
             MealAllowanceAmount,
             HazardAllowanceAmount,
             OtherAllowanceAmount,

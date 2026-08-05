@@ -22,11 +22,15 @@ namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapChuyenCan;
 public partial class PhuCapChuyenCan : IDisposable
 {
     /// <summary>Thành viên hỗ trợ xử lý dữ liệu phụ cấp chuyên cần.</summary>
-    private const int MinimumSupportedMonth = 6;
+    private const int MinimumSupportedMonth = AttendanceAllowancePayrollPeriodPolicy.MinimumSupportedMonth;
     /// <summary>Thành viên hỗ trợ xử lý dữ liệu phụ cấp chuyên cần.</summary>
-    private const int MinimumSupportedYear = 2026;
+    private const int MinimumSupportedYear = AttendanceAllowancePayrollPeriodPolicy.MinimumSupportedYear;
     /// <summary>Thành viên hỗ trợ xử lý dữ liệu phụ cấp chuyên cần.</summary>
-    private const int MaximumSupportedYear = 2100;
+    private const int MaximumSupportedYear = AttendanceAllowancePayrollPeriodPolicy.MaximumSupportedYear;
+    /// <summary>IANA identifier used by browser-hosted clients for the payroll local clock.</summary>
+    private const string PayrollTimeZoneId = "Asia/Ho_Chi_Minh";
+    /// <summary>Windows fallback identifier used by server-hosted clients for the payroll local clock.</summary>
+    private const string PayrollTimeZoneWindowsId = "SE Asia Standard Time";
     /// <summary>Thành viên hỗ trợ xử lý dữ liệu phụ cấp chuyên cần.</summary>
     private const int AllPageSize = 5000;
     /// <summary>Thành viên hỗ trợ xử lý dữ liệu phụ cấp chuyên cần.</summary>
@@ -47,8 +51,12 @@ public partial class PhuCapChuyenCan : IDisposable
     private const string SummaryLockedKey = "locked";
     /// <summary>Thành viên hỗ trợ xử lý dữ liệu phụ cấp chuyên cần.</summary>
     private static readonly CultureInfo DisplayCulture = CultureInfo.GetCultureInfo("vi-VN");
-    /// <summary>Thực hiện xử lý cho luồng <c>readonly</c>.</summary>
-    private static readonly (int Month, int Year) DefaultPayrollPeriod = GetDefaultPayrollPeriod();
+    /// <summary>
+    /// Kỳ mặc định được xác định tại thời điểm màn hình cần dùng, thay vì tại
+    /// thời điểm CLR nạp type. Nhờ đó màn hình không giữ kỳ cũ khi ứng dụng
+    /// chạy qua tháng mới.
+    /// </summary>
+    private (int Month, int Year) DefaultPayrollPeriod => GetDefaultPayrollPeriod();
     /// <summary>Thành viên hỗ trợ xử lý dữ liệu phụ cấp chuyên cần.</summary>
     private static readonly IReadOnlyList<MonthOption> MonthOptions =
         Enumerable.Range(1, 12)
@@ -80,7 +88,7 @@ public partial class PhuCapChuyenCan : IDisposable
     private IAttendanceAllowanceRefreshDataProvider RefreshDataProvider { get; set; } = default!;
 
     [Inject]
-    private IAttendanceAllowanceManualAdjustmentDataProvider ManualAdjustmentDataProvider { get; set; } = default!;
+    private IAttendanceAllowanceWorkdayAdjustmentDataProvider WorkdayAdjustmentDataProvider { get; set; } = default!;
 
     [Inject]
     private IAttendanceAllowanceLockDataProvider LockDataProvider { get; set; } = default!;
@@ -89,8 +97,11 @@ public partial class PhuCapChuyenCan : IDisposable
     private IAttendanceAllowanceFilterFactory FilterFactory { get; set; } = default!;
 
     [Inject]
-    /// <summary>Giá trị <c>MonthlyWorkSummaryDataProvider</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
-    private MonthlyWorkSummaryDataProvider MonthlyWorkSummaryDataProvider { get; set; } = default!;
+    private TimeProvider TimeProvider { get; set; } = default!;
+
+    [Inject]
+    /// <summary>Boundary đọc bảng công tháng được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
+    private IMonthlyWorkSummaryDataProvider MonthlyWorkSummaryDataProvider { get; set; } = default!;
 
     [Inject]
     /// <summary>Giá trị <c>ToastService</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
@@ -124,13 +135,13 @@ public partial class PhuCapChuyenCan : IDisposable
     /// <summary>Giá trị <c>CurrentLoadingText</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
     private string CurrentLoadingText { get; set; } = HrmUiDefaults.LoadingText;
     /// <summary>Giá trị <c>ToolbarMonth</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
-    private int ToolbarMonth { get; set; } = DefaultPayrollPeriod.Month;
+    private int ToolbarMonth { get; set; } = MinimumSupportedMonth;
     /// <summary>Giá trị <c>ToolbarYear</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
-    private int ToolbarYear { get; set; } = DefaultPayrollPeriod.Year;
+    private int ToolbarYear { get; set; } = MinimumSupportedYear;
     /// <summary>Giá trị <c>AppliedMonth</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
-    private int AppliedMonth { get; set; } = DefaultPayrollPeriod.Month;
+    private int AppliedMonth { get; set; } = MinimumSupportedMonth;
     /// <summary>Giá trị <c>AppliedYear</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
-    private int AppliedYear { get; set; } = DefaultPayrollPeriod.Year;
+    private int AppliedYear { get; set; } = MinimumSupportedYear;
     /// <summary>Thành viên hỗ trợ xử lý dữ liệu phụ cấp chuyên cần.</summary>
     private int pageSize = PageSizeOptions[0].Value;
     /// <summary>Giá trị <c>currentPageIndex</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
@@ -188,9 +199,9 @@ public partial class PhuCapChuyenCan : IDisposable
     /// <summary>Giá trị <c>PendingLockActionState</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
     private bool PendingLockActionState { get; set; }
     /// <summary>Giá trị <c>PendingLockActionMonth</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
-    private int PendingLockActionMonth { get; set; } = DefaultPayrollPeriod.Month;
+    private int PendingLockActionMonth { get; set; } = MinimumSupportedMonth;
     /// <summary>Giá trị <c>PendingLockActionYear</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
-    private int PendingLockActionYear { get; set; } = DefaultPayrollPeriod.Year;
+    private int PendingLockActionYear { get; set; } = MinimumSupportedYear;
     /// <summary>Giá trị <c>SelectedLockActionScope</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
     private string SelectedLockActionScope { get; set; } = LockScopeSelectedRows;
     /// <summary>Giá trị <c>EditModel</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
@@ -246,13 +257,24 @@ public partial class PhuCapChuyenCan : IDisposable
         !IsSavingEdit
         && !HasPendingPeriodChange
         && EditModel.Id != Guid.Empty
-        && !EditModel.IsLocked;
+        && !EditModel.IsLocked
+        && HasWorkdayChanges;
+    /// <summary>Whether either editable workday value differs from the loaded aggregate snapshot.</summary>
+    private bool HasWorkdayChanges =>
+        EditModel.ActualWorkdayCount != EditModel.OriginalActualWorkdayCount
+        || EditModel.StandardWorkdayCount != EditModel.OriginalStandardWorkdayCount;
     /// <summary>Giá trị <c>CanResetFilters</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
-    private bool CanResetFilters =>
-        ToolbarMonth != DefaultPayrollPeriod.Month
-        || ToolbarYear != DefaultPayrollPeriod.Year
-        || !string.IsNullOrWhiteSpace(SearchText)
-        || ActiveSummaryBadgeKey != SummaryAllKey;
+    private bool CanResetFilters
+    {
+        get
+        {
+            var defaultPeriod = DefaultPayrollPeriod;
+            return ToolbarMonth != defaultPeriod.Month
+                || ToolbarYear != defaultPeriod.Year
+                || !string.IsNullOrWhiteSpace(SearchText)
+                || ActiveSummaryBadgeKey != SummaryAllKey;
+        }
+    }
     /// <summary>Giá trị <c>PageSize</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
     private int PageSize => pageSize;
     /// <summary>Giá trị <c>AvailablePageSizeOptions</c> được sử dụng bởi màn hình phụ cấp chuyên cần.</summary>
@@ -324,7 +346,17 @@ public partial class PhuCapChuyenCan : IDisposable
         PeriodSummaryLockedCount);
 
     /// <summary>Xử lý sự kiện cho luồng <c>OnInitializedAsync</c>.</summary>
-    protected override Task OnInitializedAsync() => base.OnInitializedAsync();
+    protected override Task OnInitializedAsync()
+    {
+        var defaultPeriod = DefaultPayrollPeriod;
+        ToolbarMonth = defaultPeriod.Month;
+        ToolbarYear = defaultPeriod.Year;
+        AppliedMonth = defaultPeriod.Month;
+        AppliedYear = defaultPeriod.Year;
+        PendingLockActionMonth = defaultPeriod.Month;
+        PendingLockActionYear = defaultPeriod.Year;
+        return base.OnInitializedAsync();
+    }
 
     /// <summary>Đánh dấu nguồn xuất tệp sẵn sàng sau render.</summary>
     private Task OnExportSourceRendered()

@@ -7,7 +7,8 @@ public sealed record ProjectImplementationPhase(
     string Title,
     int DurationWeeks,
     DateOnly? StartDate,
-    IReadOnlyList<ProjectImplementationMilestone> Milestones)
+    IReadOnlyList<ProjectImplementationMilestone> Milestones,
+    IReadOnlyList<string> AcceptanceCriteria)
 {
     public string DurationText => $"Tổng thời gian: {DurationWeeks} tuần";
 
@@ -16,6 +17,8 @@ public sealed record ProjectImplementationPhase(
     public int DetailedDurationWeeks => Milestones.Sum(milestone => milestone.DurationWeeks);
 
     public int RemainingDurationWeeks => Math.Max(0, DurationWeeks - DetailedDurationWeeks);
+
+    public bool HasAcceptanceCriteria => AcceptanceCriteria.Count > 0;
 
     public IReadOnlyList<ProjectImplementationTask> DetailTasks => Milestones
         .SelectMany(milestone => milestone.Tasks)

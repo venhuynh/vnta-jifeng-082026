@@ -125,6 +125,22 @@
         </DxGrid>
     </div>
 
+    @if(Phase.HasAcceptanceCriteria)
+    {
+        <section class="implementation-progress-phase-acceptance" aria-labelledby="@AcceptanceTitleId">
+            <header>
+                <p>Tiêu chí bàn giao</p>
+                <h5 id="@AcceptanceTitleId">Điều kiện nghiệm thu bàn giao</h5>
+            </header>
+            <ul>
+                @foreach(var criterion in Phase.AcceptanceCriteria)
+                {
+                    <li>@criterion</li>
+                }
+            </ul>
+        </section>
+    }
+
     @if(Phase.RemainingDurationWeeks > 0)
     {
         <p class="implementation-progress-phase-remaining-detail">

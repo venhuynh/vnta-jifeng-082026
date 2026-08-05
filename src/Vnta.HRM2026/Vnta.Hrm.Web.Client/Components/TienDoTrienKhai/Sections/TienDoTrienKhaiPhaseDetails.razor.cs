@@ -34,6 +34,8 @@ public partial class TienDoTrienKhaiPhaseDetails
 
     private string DetailsTitleId => $"implementation-progress-phase-{Phase.Sequence}-details";
 
+    private string AcceptanceTitleId => $"implementation-progress-phase-{Phase.Sequence}-acceptance";
+
     private void OnEditModelSaving(GridEditModelSavingEventArgs e)
     {
         if(!e.IsNew)

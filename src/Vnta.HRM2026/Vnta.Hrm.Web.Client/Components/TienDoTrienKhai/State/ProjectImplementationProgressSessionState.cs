@@ -60,13 +60,19 @@ internal sealed class ProjectImplementationProgressSessionState
             "Lắp đặt các vị trí mới của máy chấm công, dữ liệu sinh trắc học, quy tắc ca kíp",
             4,
             new DateOnly(2026, 8, 3),
-            CreatePhaseOneMilestones()),
+            CreatePhaseOneMilestones(),
+            [
+                "Ứng dụng web app có thể giao tiếp được và tải được dữ liệu chấm công, thông tin nhân viên.",
+                "Nhập thông tin từ file excel.",
+                "Xuất dữ liệu chấm công ra file template cho khách hàng nhập vào phần mềm đang chạy."
+            ]),
         new(
             Guid.Parse("996ff665-bf80-4c6a-badf-63adc3c4ab67"),
             2,
             "Tính công hàng ngày, chốt công tháng.",
             4,
             null,
+            [],
             []),
         new(
             Guid.Parse("cc3e48fc-eca4-4c18-8f91-dbaf736f529d"),
@@ -74,6 +80,7 @@ internal sealed class ProjectImplementationProgressSessionState
             "Tính lương.",
             4,
             null,
+            [],
             []),
         new(
             Guid.Parse("bdfd29f2-a8dc-4c83-a08d-e9024f2389f6"),
@@ -81,6 +88,7 @@ internal sealed class ProjectImplementationProgressSessionState
             "Ứng dụng mobile cho phép nhân viên truy cập",
             3,
             null,
+            [],
             []),
         new(
             Guid.Parse("6b927efe-9598-4c6a-812f-b1f69377a1a2"),
@@ -88,6 +96,7 @@ internal sealed class ProjectImplementationProgressSessionState
             "Áp dụng các quy tắc hành chính.",
             2,
             null,
+            [],
             [])
     ];
 

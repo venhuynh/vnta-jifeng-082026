@@ -154,6 +154,72 @@
     min-width: 4.6rem;
 }
 
+.implementation-progress-phase-acceptance {
+    display: grid;
+    gap: 0.62rem;
+    padding: 0.92rem 1rem 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--dxds-color-content-success-default-rest, #15803d) 22%, var(--dxds-color-border-neutral-default-rest));
+    background: color-mix(in srgb, var(--dxds-color-content-success-default-rest, #15803d) 3%, var(--dxds-color-surface-neutral-default-rest));
+}
+
+.implementation-progress-phase-acceptance header {
+    display: grid;
+    gap: 0.18rem;
+}
+
+.implementation-progress-phase-acceptance p,
+.implementation-progress-phase-acceptance h5 {
+    margin: 0;
+}
+
+.implementation-progress-phase-acceptance p {
+    color: var(--dxds-color-content-success-default-rest, #15803d);
+    font-size: 0.69rem;
+    font-weight: 800;
+    letter-spacing: 0.095em;
+    text-transform: uppercase;
+}
+
+.implementation-progress-phase-acceptance h5 {
+    color: var(--dxds-color-content-neutral-default-rest, #172033);
+    font-size: 0.92rem;
+    font-weight: 740;
+    line-height: 1.35;
+}
+
+.implementation-progress-phase-acceptance ul {
+    display: grid;
+    gap: 0.42rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.implementation-progress-phase-acceptance li {
+    position: relative;
+    padding-left: 1.35rem;
+    color: var(--dxds-color-content-neutral-default-rest, #334155);
+    font-size: 0.84rem;
+    line-height: 1.45;
+}
+
+.implementation-progress-phase-acceptance li::before {
+    position: absolute;
+    top: 0.3rem;
+    left: 0;
+    display: grid;
+    width: 0.88rem;
+    height: 0.88rem;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    content: "✓";
+    background: var(--dxds-color-content-success-default-rest, #15803d);
+    font-size: 0.63rem;
+    font-weight: 850;
+    line-height: 1;
+}
+
 .implementation-progress-phase-remaining-detail {
     display: flex;
     align-items: flex-start;

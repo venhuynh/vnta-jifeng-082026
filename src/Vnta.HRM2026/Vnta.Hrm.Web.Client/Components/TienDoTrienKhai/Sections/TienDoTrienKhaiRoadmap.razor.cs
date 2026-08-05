@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Models;
 
@@ -23,4 +24,7 @@ public partial class TienDoTrienKhaiRoadmap
 
     private static string GetTimelineSegmentStyle(ProjectImplementationPhase phase) =>
         $"grid-column: span {phase.DurationWeeks};";
+
+    private static string FormatDate(DateOnly value) =>
+        value.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
 }

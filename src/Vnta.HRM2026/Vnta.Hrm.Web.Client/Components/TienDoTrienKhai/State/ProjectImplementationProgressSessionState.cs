@@ -5,33 +5,90 @@ namespace Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.State;
 /// <summary>Sở hữu lộ trình triển khai cố định trong phiên UI hiện tại.</summary>
 internal sealed class ProjectImplementationProgressSessionState
 {
+    private static readonly IReadOnlyList<ProjectImplementationMilestone> PhaseOneMilestones =
+    [
+        new(
+            "1.1",
+            "Lắp đặt MCC",
+            1,
+            [
+                "Bàn giao 2 máy chấm công khuyến mãi V5L"
+            ],
+            [
+                "Xác định vị trí lắp đặt phù hợp và không ngược sáng.",
+                "Chịu trách nhiệm lắp đặt.",
+                "Khuyến cáo cần thêm UPS lưu trữ cho trường hợp cúp điện thì MCC vẫn hoạt động được."
+            ]),
+        new(
+            "1.2",
+            "Triển khai máy chủ giao tiếp với các MCC",
+            1,
+            [
+                "Cài đặt máy chủ ADMS để giao tiếp với các máy chấm công và tải được dữ liệu sinh trắc học."
+            ],
+            [
+                "Tạo máy ảo Ubuntu và cung cấp các thông tin đăng nhập.",
+                "Cài đặt các MCC trỏ về địa chỉ IP của máy chủ."
+            ]),
+        new(
+            "1.3",
+            "Quản lý thông tin nhân viên, dữ liệu sinh trắc học",
+            1,
+            [
+                "Quản lý danh mục nhân viên.",
+                "Quản lý danh mục phòng ban.",
+                "Quản lý danh mục chức vụ.",
+                "Quản lý danh mục dữ liệu sinh trắc học, đồng bộ được với các máy mới."
+            ],
+            [
+                "Danh sách phòng ban.",
+                "Danh sách chức vụ.",
+                "Danh sách nhân viên.",
+                "Danh sách các ca làm việc.",
+                "Danh sách xếp ca theo tháng.",
+                "Quy tắc xếp ca cho nhân viên mới.",
+                "Quy tắc tính tăng ca."
+            ],
+            "Cung cấp file dữ liệu")
+    ];
+
     private static readonly IReadOnlyList<ProjectImplementationPhase> DefaultPhases =
     [
         new(
             Guid.Parse("f6abcc03-8545-4d19-b41b-1098590ca152"),
             1,
             "Lắp đặt các vị trí mới của máy chấm công, dữ liệu sinh trắc học, quy tắc ca kíp",
-            4),
+            4,
+            new DateOnly(2026, 8, 3),
+            PhaseOneMilestones),
         new(
             Guid.Parse("996ff665-bf80-4c6a-badf-63adc3c4ab67"),
             2,
             "Tính công hàng ngày, chốt công tháng.",
-            4),
+            4,
+            null,
+            []),
         new(
             Guid.Parse("cc3e48fc-eca4-4c18-8f91-dbaf736f529d"),
             3,
             "Tính lương.",
-            4),
+            4,
+            null,
+            []),
         new(
             Guid.Parse("bdfd29f2-a8dc-4c83-a08d-e9024f2389f6"),
             4,
             "Ứng dụng mobile cho phép nhân viên truy cập",
-            3),
+            3,
+            null,
+            []),
         new(
             Guid.Parse("6b927efe-9598-4c6a-812f-b1f69377a1a2"),
             5,
             "Áp dụng các quy tắc hành chính.",
-            2)
+            2,
+            null,
+            [])
     ];
 
     internal IReadOnlyList<ProjectImplementationPhase> Phases { get; } = DefaultPhases;

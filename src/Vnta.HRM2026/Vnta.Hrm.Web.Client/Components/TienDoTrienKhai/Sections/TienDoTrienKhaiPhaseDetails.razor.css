@@ -1,0 +1,211 @@
+.implementation-progress-phase-details {
+    margin: -0.1rem 0 0.75rem 3.6rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 24%, var(--dxds-color-border-neutral-default-rest));
+    border-radius: 0.8rem;
+    background: color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 2.5%, var(--dxds-color-surface-neutral-default-rest));
+}
+
+.implementation-progress-phase-details-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+    padding: 0.88rem 1rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 16%, var(--dxds-color-border-neutral-default-rest));
+}
+
+.implementation-progress-phase-details-header p {
+    margin: 0;
+    color: var(--dxds-color-content-info-default-rest, #2563eb);
+    font-size: 0.69rem;
+    font-weight: 800;
+    letter-spacing: 0.095em;
+    text-transform: uppercase;
+}
+
+.implementation-progress-phase-details-header h4 {
+    margin: 0.28rem 0 0;
+    color: var(--dxds-color-content-neutral-default-rest, #172033);
+    font-size: 0.98rem;
+    font-weight: 740;
+}
+
+.implementation-progress-phase-details-meta {
+    display: inline-flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.42rem;
+}
+
+.implementation-progress-phase-details-meta span {
+    padding: 0.32rem 0.48rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 17%, transparent);
+    border-radius: 999px;
+    color: var(--dxds-color-content-neutral-subtle-rest, #64748b);
+    background: var(--dxds-color-surface-neutral-default-rest, #fff);
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+
+.implementation-progress-phase-details-meta strong {
+    color: var(--dxds-color-content-neutral-default-rest, #172033);
+    font-variant-numeric: tabular-nums;
+}
+
+.implementation-progress-milestone-table-scroll {
+    overflow-x: auto;
+    scrollbar-color: color-mix(in srgb, var(--dxds-color-content-neutral-subtle-rest, #64748b) 40%, transparent) transparent;
+    scrollbar-width: thin;
+}
+
+.implementation-progress-milestone-table {
+    width: 100%;
+    min-width: 45rem;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.implementation-progress-milestone-table caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.implementation-progress-milestone-table th,
+.implementation-progress-milestone-table td {
+    padding: 0.82rem 0.95rem;
+    border-right: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    vertical-align: top;
+    text-align: left;
+}
+
+.implementation-progress-milestone-table th:last-child,
+.implementation-progress-milestone-table td:last-child {
+    border-right: 0;
+}
+
+.implementation-progress-milestone-table tbody tr:last-child th,
+.implementation-progress-milestone-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.implementation-progress-milestone-table thead th {
+    padding-top: 0.62rem;
+    padding-bottom: 0.62rem;
+    color: var(--dxds-color-content-neutral-default-rest, #172033);
+    background: color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 6%, var(--dxds-color-surface-neutral-default-rest));
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+}
+
+.implementation-progress-milestone-table thead th:first-child {
+    width: 25%;
+}
+
+.implementation-progress-milestone-table thead th:nth-child(2),
+.implementation-progress-milestone-table thead th:nth-child(3) {
+    width: 37.5%;
+}
+
+.implementation-progress-milestone-table tbody th {
+    color: var(--dxds-color-content-neutral-default-rest, #172033);
+    font-weight: 650;
+}
+
+.implementation-progress-milestone-code,
+.implementation-progress-milestone-title,
+.implementation-progress-milestone-duration {
+    display: block;
+}
+
+.implementation-progress-milestone-code {
+    color: var(--dxds-color-content-info-default-rest, #2563eb);
+    font-size: 0.75rem;
+    font-weight: 820;
+    font-variant-numeric: tabular-nums;
+}
+
+.implementation-progress-milestone-title {
+    margin-top: 0.28rem;
+    font-size: 0.9rem;
+    line-height: 1.38;
+}
+
+.implementation-progress-milestone-duration {
+    margin-top: 0.46rem;
+    color: var(--dxds-color-content-neutral-subtle-rest, #64748b);
+    font-size: 0.74rem;
+    font-weight: 500;
+}
+
+.implementation-progress-milestone-table ul {
+    display: grid;
+    gap: 0.32rem;
+    padding: 0 0 0 1.05rem;
+    margin: 0;
+    color: var(--dxds-color-content-neutral-default-rest, #334155);
+    font-size: 0.84rem;
+    line-height: 1.42;
+}
+
+.implementation-progress-milestone-table li::marker {
+    color: var(--dxds-color-content-info-default-rest, #2563eb);
+}
+
+.implementation-progress-jifeng-lead-in {
+    margin: 0 0 0.45rem;
+    color: var(--dxds-color-content-neutral-default-rest, #172033);
+    font-size: 0.84rem;
+    font-weight: 740;
+}
+
+.implementation-progress-phase-remaining-detail {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0.78rem 1rem;
+    border-top: 1px dashed color-mix(in srgb, var(--dxds-color-content-warning-default-rest, #b45309) 32%, transparent);
+    color: var(--dxds-color-content-neutral-subtle-rest, #64748b);
+    font-size: 0.8rem;
+    line-height: 1.42;
+}
+
+.implementation-progress-phase-remaining-detail > span:first-child {
+    display: block;
+    flex: 0 0 auto;
+    width: 0.42rem;
+    height: 0.42rem;
+    margin-top: 0.35rem;
+    border-radius: 50%;
+    background: var(--dxds-color-content-warning-default-rest, #b45309);
+}
+
+.implementation-progress-phase-remaining-detail strong {
+    color: var(--dxds-color-content-neutral-default-rest, #172033);
+}
+
+@media (max-width: 720px) {
+    .implementation-progress-phase-details {
+        margin-left: 0;
+    }
+
+    .implementation-progress-phase-details-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .implementation-progress-phase-details-meta {
+        justify-content: flex-start;
+    }
+}

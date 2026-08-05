@@ -45,15 +45,35 @@
                     <div class="implementation-progress-phase-content">
                         <div class="implementation-progress-phase-topline">
                             <span class="implementation-progress-phase-label">Giai đoạn @phase.Sequence</span>
-                            <span class="implementation-progress-phase-duration">@phase.DurationText</span>
+                            <div class="implementation-progress-phase-meta">
+                                @if(phase.StartDate is { } startDate)
+                                {
+                                    <span class="implementation-progress-phase-start-date">Bắt đầu @FormatDate(startDate)</span>
+                                }
+                                <span class="implementation-progress-phase-duration">@phase.DurationText</span>
+                            </div>
                         </div>
                         <h3>Giai đoạn @phase.Sequence: @phase.Title</h3>
-                        <div class="implementation-progress-phase-pending-detail">
-                            <span aria-hidden="true"></span>
-                            <p>Nội dung chi tiết sẽ được cập nhật.</p>
-                        </div>
+                        @if(phase.HasMilestones)
+                        {
+                            <div class="implementation-progress-phase-detail-summary">
+                                <span aria-hidden="true"></span>
+                                <p>@phase.Milestones.Count mốc công việc · @phase.DetailedDurationWeeks/@phase.DurationWeeks tuần đã có nội dung.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="implementation-progress-phase-pending-detail">
+                                <span aria-hidden="true"></span>
+                                <p>Nội dung chi tiết sẽ được cập nhật.</p>
+                            </div>
+                        }
                     </div>
                 </article>
+                @if(phase.HasMilestones)
+                {
+                    <TienDoTrienKhaiPhaseDetails Phase="@phase" />
+                }
             }
         </div>
     </div>

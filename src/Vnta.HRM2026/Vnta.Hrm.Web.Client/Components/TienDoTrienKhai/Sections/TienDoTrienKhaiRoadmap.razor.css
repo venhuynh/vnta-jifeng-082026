@@ -210,6 +210,13 @@
     gap: 0.75rem;
 }
 
+.implementation-progress-phase-meta {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.45rem;
+}
+
 .implementation-progress-phase-label {
     color: var(--dxds-color-content-neutral-subtle-rest, #64748b);
     font-size: 0.76rem;
@@ -217,13 +224,23 @@
 }
 
 .implementation-progress-phase-duration {
-    flex: 0 0 auto;
     padding: 0.27rem 0.48rem;
     border-radius: 999px;
     color: var(--dxds-color-content-utility-purple-default-rest, #7c3aed);
     background: color-mix(in srgb, var(--dxds-color-content-utility-purple-default-rest, #7c3aed) 8%, transparent);
     font-size: 0.71rem;
     font-weight: 760;
+    white-space: nowrap;
+}
+
+.implementation-progress-phase-start-date {
+    padding: 0.27rem 0.48rem;
+    border-radius: 999px;
+    color: var(--dxds-color-content-info-default-rest, #2563eb);
+    background: color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 8%, transparent);
+    font-size: 0.71rem;
+    font-weight: 760;
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
 
@@ -244,6 +261,15 @@
     border-top: 1px dashed color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 82%, transparent);
 }
 
+.implementation-progress-phase-detail-summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.42rem;
+    margin-top: 0.72rem;
+    padding-top: 0.68rem;
+    border-top: 1px dashed color-mix(in srgb, var(--dxds-color-content-info-default-rest, #2563eb) 30%, transparent);
+}
+
 .implementation-progress-phase-pending-detail > span {
     display: block;
     flex: 0 0 auto;
@@ -255,11 +281,29 @@
     opacity: 0.55;
 }
 
+.implementation-progress-phase-detail-summary > span {
+    display: block;
+    flex: 0 0 auto;
+    width: 0.42rem;
+    height: 0.42rem;
+    margin-top: 0.36rem;
+    border-radius: 50%;
+    background: var(--dxds-color-content-info-default-rest, #2563eb);
+}
+
 .implementation-progress-phase-pending-detail p {
     margin: 0;
     color: var(--dxds-color-content-neutral-subtle-rest, #64748b);
     font-size: 0.82rem;
     font-style: italic;
+    line-height: 1.45;
+}
+
+.implementation-progress-phase-detail-summary p {
+    margin: 0;
+    color: var(--dxds-color-content-info-default-rest, #2563eb);
+    font-size: 0.82rem;
+    font-weight: 650;
     line-height: 1.45;
 }
 
@@ -391,6 +435,10 @@
         align-items: flex-start;
         flex-direction: column;
         gap: 0.38rem;
+    }
+
+    .implementation-progress-phase-meta {
+        flex-wrap: wrap;
     }
 
     .implementation-progress-roadmap-aside {

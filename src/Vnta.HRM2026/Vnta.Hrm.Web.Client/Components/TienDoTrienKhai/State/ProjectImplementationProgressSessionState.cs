@@ -52,6 +52,56 @@ internal sealed class ProjectImplementationProgressSessionState
             "Cung cấp file dữ liệu")
     ];
 
+    private static IReadOnlyList<ProjectImplementationMilestone> CreatePhaseTwoMilestones() =>
+    [
+        CreateMilestone(
+            "2.1",
+            "Tính được công, tăng ca từng ngày",
+            new DateOnly(2026, 8, 31),
+            [
+                "Dựa vào các quy tắc tính công được mô tả ở mục 1.3 tính được công của nhân viên có chấm công"
+            ],
+            [
+                "Đối soát hằng ngày để chốt công",
+                "Chốt quy tắc tính tăng ca cho từng ca làm việc",
+                "Chốt quy tắc xử lý bảng xếp ca"
+            ]),
+        CreateMilestone(
+            "2.1",
+            "Xử lý được các trường hợp chấm công bất thường",
+            new DateOnly(2026, 9, 7),
+            [
+                "Áp dụng các CODE kết quả chấm công.",
+                "Xử lý các trường hợp bất thường và lưu lịch sử xử lý"
+            ],
+            [
+                "Xác nhận rõ quy tắc xử lý của từng CODE để tổng hợp công tháng",
+                "Giải thích kỹ và cách tính công, đi trễ về sớm, khấu trừ ngày làm việc của từng nhân viên khi xử lý các log bất thường"
+            ]),
+        CreateMilestone(
+            "2.2",
+            "Theo dõi được các trường hợp nghỉ thai sản, được phép đi trễ về sớm, nghỉ phép",
+            new DateOnly(2026, 9, 14),
+            [
+                "Có bảng quản lý các trường hợp đặc biệt đang nghỉ thai sản, nghỉ ốm, nghỉ phép",
+                "Quản lý và chạy được quy tắc nghỉ phép từng nhân viên"
+            ],
+            [
+                "Cung cấp quy tắc tính nghỉ phép",
+                "Cung cấp quy tắc đăng ký nghỉ phép"
+            ]),
+        CreateMilestone(
+            "2.3",
+            "Chốt công tháng",
+            new DateOnly(2026, 9, 21),
+            [
+                "Dựa vào quy tắc tính công hằng ngày để ra được bảng chốt công tháng sẵn sàng cho việc tính lương"
+            ],
+            [
+                "Phối hợp với VNS để đối soát việc chốt công hằng ngày trong 2 tháng"
+            ])
+    ];
+
     private static IReadOnlyList<ProjectImplementationPhase> CreateDefaultPhases() =>
     [
         new(
@@ -71,9 +121,13 @@ internal sealed class ProjectImplementationProgressSessionState
             2,
             "Tính công hàng ngày, chốt công tháng.",
             4,
-            null,
-            [],
-            []),
+            new DateOnly(2026, 8, 31),
+            CreatePhaseTwoMilestones(),
+            [
+                "Ứng dụng WebApp tính công hằng ngày đúng theo quy tắc được mô tả.",
+                "Chốt công hằng ngày và xuất được bảng công tổng hợp tháng theo quy tắc của khách hàng đã mô tả.",
+                "Kết quả tính công tháng của 2 tháng trước phải đúng với kết quả của công ty."
+            ]),
         new(
             Guid.Parse("cc3e48fc-eca4-4c18-8f91-dbaf736f529d"),
             3,

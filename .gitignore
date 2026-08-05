@@ -13,6 +13,7 @@
 # Local runtime configuration and secrets
 src/Vnta.HRM2026/Vnta.Hrm.Web/appsettings.Local.json
 src/zkteco-adms-gateway/appsettings.Local.json
+src/Vnta.PostgresSync/Vnta.PostgresSync.Console/appsettings.Local.json
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -65,6 +66,8 @@ BenchmarkDotNet.Artifacts/
 # .NET Core
 project.lock.json
 project.fragment.lock.json
+# The restore graph is machine-generated and contains absolute local paths.
+**/restore-graph.json
 artifacts/
 **/tmp/
 

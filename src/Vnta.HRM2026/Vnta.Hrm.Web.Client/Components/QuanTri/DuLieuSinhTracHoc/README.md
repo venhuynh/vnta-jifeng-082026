@@ -11,27 +11,27 @@ Tài liệu này chốt lại:
 - trạng thái triển khai hiện tại trong repo HRM;
 - các điểm cần lưu ý khi mở rộng hoặc bảo trì màn hình.
 
-## Nguồn tham chiếu đã đối chiếu
+## Nguồn tham chiếu trong repo Jifeng
 
-Các nguồn dưới đây nằm trong repo tham chiếu do user chỉ định trực tiếp cho lượt rà soát:
+Tài liệu này chỉ liên kết tới các nguồn đang được version-control trong repo Jifeng,
+để không phụ thuộc vào đường dẫn workspace của một máy cụ thể:
 
-- `C:\Users\Admin\source\Workspaces\2026\Vnta2026figmadesign\src\app\components\biometric\BiometricManagementPage.tsx`
-- `C:\Users\Admin\source\Workspaces\2026\Vnta2026figmadesign\src\app\components\biometric\BiometricDataGrid.tsx`
-- `C:\Users\Admin\source\Workspaces\2026\Vnta2026figmadesign\src\services\api\biometric-data-api.ts`
-- `C:\Users\Admin\source\Workspaces\2026\Vnta2026figmadesign\backend\src\HyperTech.Api\Controllers\BioMetricDataController.cs`
-- `C:\Users\Admin\source\Workspaces\2026\Vnta2026figmadesign\backend\src\HyperTech.Infrastructure\Services\BioMetricDataRefreshService.cs`
-- `C:\Users\Admin\source\Workspaces\2026\Vnta2026figmadesign\docs\05_delivery-plan\sprints\_OLD\sprint-36-biometric-refresh-database-refactor\implementation-plan.md`
+- `src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/QuanTri/DuLieuSinhTracHoc/DuLieuSinhTracHoc.razor`
+- `src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/QuanTri/DuLieuSinhTracHoc/DuLieuSinhTracHoc.razor.cs`
+- `src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Services/Api/HttpAttendanceBiometricDataReadService.cs`
+- `src/Vnta.HRM2026/Vnta.Hrm.Web/Endpoints/AttendanceGatewayIntegrationEndpoints.cs`
+- `src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/DangTrienKhai/DuLieuSinhTracHoc/DatabaseAttendanceBiometricDataRefreshService.cs`
+- `src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/DangTrienKhai/DuLieuSinhTracHoc/DatabaseAttendanceBiometricDataReadService.cs`
 
 ## Nguồn tham chiếu thêm cho hướng refactor avatar
 
-Các nguồn dưới đây được dùng trong lượt rà soát ngày `2026-07-05` theo chỉ định trực tiếp của user:
+Các nguồn hiện hành trong repo Jifeng:
 
-- `C:\Users\Admin\source\Workspaces\2026\Vnta2026figmadesign\src\app\components\nhansu\danh_muc_nhan_vien\EmployeeGrid.tsx`
-- `C:\Users\Admin\source\Workspaces\2026\Vnta2026figmadesign\src\app\components\nhansu\shared\employee-api-mappers.ts`
-- `C:\Users\Admin\source\Workspaces\2026\Vnta2026figmadesign\src\services\api\employees-api.ts`
-- `C:\Users\Admin\source\Workspaces\2026\Vnta2026figmadesign\backend\src\HyperTech.Application\Employees\EmployeeService.cs`
-- `C:\Users\Admin\source\Workspaces\2026\Vnta2026figmadesign\backend\src\HyperTech.Infrastructure\Services\PostgresEmployeePhotoSyncService.cs`
-- `C:\Users\Admin\source\Workspaces\2026\Vnta2026figmadesign\backend\src\HyperTech.Api\Controllers\BioMetricDataController.cs`
+- `src/Vnta.HRM2026/Vnta.Hrm.Application/Common/AvatarImageSourceHelper.cs`
+- `src/Vnta.HRM2026/Vnta.Hrm.Application/NhanSu/NhanVien/EmployeeListItemDto.cs`
+- `src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/NhanSu/NhanVien/DatabaseEmployeeService.cs`
+- `src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Services/Api/HttpEmployeeApiService.cs`
+- `src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/Layout/Shared/UserAvatar.razor`
 
 ## Kết luận nghiệp vụ
 

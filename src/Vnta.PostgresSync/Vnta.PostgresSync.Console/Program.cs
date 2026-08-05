@@ -76,7 +76,7 @@ try
     var logsPath = ResolveLogPath(
         builder.Configuration,
         builder.Environment,
-        "Logs/vnta-postgres-sync");
+        "Logs/jifeng-postgres-sync");
     Directory.CreateDirectory(logsPath);
 
     var retainedFileCountLimit = builder.Configuration.GetValue("Serilog:RetainedFileCountLimit", 14);
@@ -172,6 +172,7 @@ static void ConfigureAppConfiguration(HostApplicationBuilder builder)
             $"appsettings.{builder.Environment.EnvironmentName}.json",
             optional: true,
             reloadOnChange: true)
+        .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables();
 }
 

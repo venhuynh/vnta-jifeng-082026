@@ -44,7 +44,7 @@ public sealed class AttendanceGatewayRawCommunicationLogger
             Directory.CreateDirectory(_logDirectory);
 
             var now = DateTimeOffset.Now;
-            var filePath = Path.Combine(_logDirectory, $"vnta-attendance-gateway-raw-{now:yyyyMMdd}.log");
+            var filePath = Path.Combine(_logDirectory, $"jifeng-attendance-gateway-raw-{now:yyyyMMdd}.log");
             var text = BuildLogBlock(now, direction, flowId, connectionId, payload);
 
             await _writeLock.WaitAsync(cancellationToken);
@@ -81,7 +81,7 @@ public sealed class AttendanceGatewayRawCommunicationLogger
     {
         if (string.IsNullOrWhiteSpace(configuredPath))
         {
-            configuredPath = "Logs/vnta-attendance-gateway-raw";
+            configuredPath = "Logs/jifeng-attendance-gateway-raw";
         }
 
         return Path.IsPathRooted(configuredPath)

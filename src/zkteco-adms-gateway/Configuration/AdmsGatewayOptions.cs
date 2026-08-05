@@ -14,7 +14,7 @@ public sealed class AttendanceGatewayOptions
 
     public bool RawCommunicationLogEnabled { get; set; } = true;
 
-    public string RawCommunicationLogPath { get; set; } = "Logs/vnta-attendance-gateway-raw";
+    public string RawCommunicationLogPath { get; set; } = "Logs/jifeng-attendance-gateway-raw";
 
     public int RealtimeRawBodyMaxLength { get; set; } = DefaultRealtimeRawBodyMaxLength;
 

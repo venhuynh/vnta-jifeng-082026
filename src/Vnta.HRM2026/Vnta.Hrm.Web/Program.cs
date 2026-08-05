@@ -67,7 +67,7 @@ try
     var logsPath = ResolveLogPath(
         builder.Configuration,
         builder.Environment,
-        "Logs/vnta-hrm");
+        "Logs/jifeng-hrm");
     Directory.CreateDirectory(logsPath);
     var retainedFileCountLimit = builder.Configuration.GetValue("Serilog:RetainedFileCountLimit", 14);
     var fileSizeLimitBytes = builder.Configuration.GetValue<long?>("Serilog:FileSizeLimitBytes") ?? 104_857_600;

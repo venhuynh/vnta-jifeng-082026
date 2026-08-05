@@ -1,0 +1,133 @@
+::deep .implementation-progress-grid {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    max-height: 100%;
+    border-radius: 0.25rem;
+}
+
+::deep .implementation-progress-grid .dxbl-grid-table {
+    border-top: none;
+}
+
+.implementation-progress-work-item {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-weight: 650;
+}
+
+.implementation-progress-row-menu-host {
+    display: inline-flex;
+    justify-content: center;
+    width: 100%;
+}
+
+::deep .implementation-progress-row-menu-btn.dxbl-btn {
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+}
+
+::deep .implementation-progress-row-menu-btn.dxbl-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--dxds-color-content-info-default-rest) 10%, transparent);
+}
+
+.implementation-progress-value {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    min-width: 8.5rem;
+}
+
+::deep .implementation-progress-bar {
+    flex: 1 1 auto;
+    min-width: 4.8rem;
+}
+
+.implementation-progress-value > span {
+    min-width: 2.6rem;
+    font-size: 0.82rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.implementation-progress-value-completed {
+    color: var(--dxds-color-content-success-default-rest, #15803d);
+}
+
+.implementation-progress-value-on-track {
+    color: var(--dxds-color-content-info-default-rest, #2563eb);
+}
+
+.implementation-progress-value-at-risk {
+    color: var(--dxds-color-content-warning-default-rest, #b45309);
+}
+
+.implementation-progress-value-delayed {
+    color: var(--dxds-color-content-danger-default-rest, #dc2626);
+}
+
+.implementation-progress-status {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.implementation-progress-status::before {
+    width: 0.6em;
+    height: 0.6em;
+    margin-right: 0.35rem;
+    content: "";
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+.implementation-progress-status-info {
+    color: var(--dxds-color-content-utility-blue-default-rest, #2563eb);
+}
+
+.implementation-progress-status-progress {
+    color: var(--dxds-color-content-utility-purple-default-rest, #7c3aed);
+}
+
+.implementation-progress-status-warning {
+    color: var(--dxds-color-content-warning-default-rest, #b45309);
+}
+
+.implementation-progress-status-success {
+    color: var(--dxds-color-content-success-default-rest, #15803d);
+}
+
+.implementation-progress-status-neutral {
+    color: var(--dxds-color-content-neutral-subtle-rest, #6b7280);
+}
+
+.implementation-progress-status-danger {
+    color: var(--dxds-color-content-danger-default-rest, #dc2626);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 18rem;
+    height: 100%;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.state-title {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.state-message {
+    max-width: 38rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}

@@ -1,0 +1,47 @@
+@using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Models
+
+<div class="implementation-progress-grid-header">
+    <div class="implementation-progress-summary-strip" aria-label="Bộ lọc theo trạng thái tiến độ">
+        <DxButtonGroup CssClass="implementation-progress-summary-button-group"
+                       RenderStyle="ButtonRenderStyle.Secondary"
+                       RenderStyleMode="ButtonRenderStyleMode.Outline"
+                       SelectionMode="ButtonGroupSelectionMode.Single"
+                       Enabled="@CanInteract">
+            <Items>
+                @foreach(var badge in SummaryBadges)
+                {
+                    <DxButtonGroupItem Text="@($"{badge.ShortLabel} {badge.Count:N0}")"
+                                       Tooltip="@badge.Label"
+                                       CssClass="@($"implementation-progress-summary-button implementation-progress-summary-button-{badge.Tone.ToString().ToLowerInvariant()}")"
+                                       Selected="@(badge.Key == ActiveSummaryBadgeKey)"
+                                       Click="@(() => SummaryBadgeSelected.InvokeAsync(badge.Key))" />
+                }
+            </Items>
+        </DxButtonGroup>
+        <DxButtonGroup CssClass="implementation-progress-average-button-group"
+                       RenderStyle="ButtonRenderStyle.Primary"
+                       RenderStyleMode="ButtonRenderStyleMode.Outline">
+            <Items>
+                <DxButtonGroupItem Text="@($"Tiến độ TB: {AverageProgress:N0}%")"
+                                   Tooltip="Tiến độ trung bình của các hạng mục trên trang hiện tại"
+                                   CssClass="implementation-progress-average-button" />
+            </Items>
+        </DxButtonGroup>
+    </div>
+    <div class="implementation-progress-summary-tools">
+        <div class="implementation-progress-grid-search">
+            <DxSearchBox CssClass="implementation-progress-grid-searchbox"
+                         NullText="Tìm kiếm hạng mục, phân hệ, phụ trách"
+                         BindValueMode="BindValueMode.OnDelayedInput"
+                         InputDelay="400"
+                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                         Text="@SearchText"
+                         TextChanged="SearchTextChanged"
+                         Enabled="@CanInteract" />
+        </div>
+        <div class="implementation-progress-session-note">
+            <img src="@VntaDevExpressIcons.Info" alt="" aria-hidden="true" />
+            <span>Dữ liệu chỉ được lưu trong phiên UI hiện tại.</span>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,19 @@
+<DxToolbar Title="Tiến độ triển khai" CssClass="implementation-progress-toolbar" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+    <DxToolbarItem Text="Thêm hạng mục"
+                   Click="AddRequested"
+                   Enabled="@CanInteract"
+                   Alignment="ToolbarItemAlignment.Right"
+                   Tooltip="Tạo hạng mục mới trong dữ liệu của phiên làm việc hiện tại"
+                   IconUrl="@VntaDevExpressIcons.Add" />
+    <DxToolbarItem Text="Đặt lại dữ liệu"
+                   Click="ResetRequested"
+                   Enabled="@CanInteract"
+                   Alignment="ToolbarItemAlignment.Right"
+                   Tooltip="Khôi phục dữ liệu mẫu và bỏ các chỉnh sửa trong phiên làm việc này"
+                   IconUrl="@VntaDevExpressIcons.Reset" />
+    <DxToolbarItem Tooltip="Chọn cột hiển thị"
+                   Enabled="@CanInteract"
+                   Alignment="ToolbarItemAlignment.Right"
+                   Click="ColumnChooserRequested"
+                   IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+</DxToolbar>

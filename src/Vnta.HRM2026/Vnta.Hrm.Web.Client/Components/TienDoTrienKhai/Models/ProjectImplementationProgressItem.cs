@@ -19,7 +19,7 @@ public sealed class ProjectImplementationProgressItem
 
     public int ProgressPercent { get; set; }
 
-    public string Status { get; set; } = string.Empty;
+    public ProjectImplementationProgressStatus Status { get; set; }
 
     public string Note { get; set; } = string.Empty;
 }

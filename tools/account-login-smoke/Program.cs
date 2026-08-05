@@ -8,13 +8,18 @@ using Vnta.Hrm.Infrastructure;
 using Vnta.Hrm.Infrastructure.Data;
 using Vnta.Hrm.Infrastructure.Identity;
 
-const string defaultConnectionString =
-    "Host=192.168.1.199;Port=5432;Database=vnta-2026;Username=postgres;Password=postgres;Include Error Detail=true;Timezone=Asia/Ho_Chi_Minh";
-
 var options = ParseOptions(args);
 var connectionString = string.IsNullOrWhiteSpace(options.ConnectionString)
-    ? Environment.GetEnvironmentVariable("VNTA_DB") ?? defaultConnectionString
+    ? Environment.GetEnvironmentVariable("VNTA_DB")
     : options.ConnectionString;
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "A jifeng_hrm connection string is required. Pass --connection or set VNTA_DB.");
+}
+
+DatabaseConnectionStringResolver.EnsureExpectedDatabase(connectionString);
 
 Environment.SetEnvironmentVariable("VNTA_DB", connectionString);
 

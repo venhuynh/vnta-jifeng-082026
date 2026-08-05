@@ -55,7 +55,7 @@ public sealed class SchemaInspectionService
     public async Task WriteSchemaComparisonAsync(CancellationToken cancellationToken)
     {
         var sourceConnectionString = ResolveConnectionString("SourcePostgres", "VNTA_POSTGRES_SYNC_SOURCE");
-        var targetConnectionString = ResolveConnectionString("TargetPostgres", "VNTA_POSTGRES_SYNC_TARGET");
+        var targetConnectionString = ResolveTargetConnectionString();
 
         var sourceTables = await LoadTablesAsync(sourceConnectionString, cancellationToken);
         var targetTables = await LoadTablesAsync(targetConnectionString, cancellationToken);
@@ -239,6 +239,13 @@ public sealed class SchemaInspectionService
             ?? Environment.GetEnvironmentVariable(environmentVariableName)
             ?? throw new InvalidOperationException(
                 $"Missing connection string '{connectionStringName}' and environment variable '{environmentVariableName}'.");
+    }
+
+    private string ResolveTargetConnectionString()
+    {
+        var connectionString = ResolveConnectionString("TargetPostgres", "VNTA_POSTGRES_SYNC_TARGET");
+        JifengHrmTargetDatabaseValidator.Validate(connectionString);
+        return connectionString;
     }
 
     private static string BuildTableKey(string schema, string tableName)

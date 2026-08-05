@@ -9,6 +9,23 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+$expectedDatabaseName = "jifeng_hrm"
+$connectionStringBuilder = [System.Data.Common.DbConnectionStringBuilder]::new()
+$connectionStringBuilder.PSBase.ConnectionString = $ConnectionString
+$databaseName = if ($connectionStringBuilder.ContainsKey("Database")) {
+    [string]$connectionStringBuilder["Database"]
+}
+elseif ($connectionStringBuilder.ContainsKey("Initial Catalog")) {
+    [string]$connectionStringBuilder["Initial Catalog"]
+}
+else {
+    ""
+}
+
+if (-not [string]::Equals($databaseName, $expectedDatabaseName, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "Refusing migration: the target database must be '$expectedDatabaseName'."
+}
+
 function Invoke-External {
     param(
         [Parameter(Mandatory = $true)]

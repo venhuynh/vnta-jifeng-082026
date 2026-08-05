@@ -253,7 +253,9 @@ try
     });
 
     var configuration = builder.Configuration;
-    builder.Services.AddInfrastructureServices(configuration);
+    builder.Services.AddInfrastructureServices(
+        configuration,
+        requireJifengDatabase: !builder.Environment.IsEnvironment("Testing"));
     builder.Services.AddOptions<HazardAllowanceExportJobOptions>()
         .Bind(configuration.GetSection(HazardAllowanceExportJobOptions.SectionName));
     builder.Services.AddHostedService<HazardAllowanceExportJobWorker>();

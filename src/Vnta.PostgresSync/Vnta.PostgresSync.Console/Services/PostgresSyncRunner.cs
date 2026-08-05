@@ -44,10 +44,7 @@ public sealed class PostgresSyncRunner
             options.SourceConnectionString,
             "SourcePostgres",
             "VNTA_POSTGRES_SYNC_SOURCE");
-        var targetConnectionString = ResolveConnectionString(
-            options.TargetConnectionString,
-            "TargetPostgres",
-            "VNTA_POSTGRES_SYNC_TARGET");
+        var targetConnectionString = ResolveTargetConnectionString(options.TargetConnectionString);
 
         ValidateWorkerOptions(options, sourceConnectionString, targetConnectionString);
 
@@ -102,10 +99,7 @@ public sealed class PostgresSyncRunner
             _optionsMonitor.CurrentValue.SourceConnectionString,
             "SourcePostgres",
             "VNTA_POSTGRES_SYNC_SOURCE");
-        var targetConnectionString = ResolveConnectionString(
-            _optionsMonitor.CurrentValue.TargetConnectionString,
-            "TargetPostgres",
-            "VNTA_POSTGRES_SYNC_TARGET");
+        var targetConnectionString = ResolveTargetConnectionString(_optionsMonitor.CurrentValue.TargetConnectionString);
 
         ValidateWorkerOptions(_optionsMonitor.CurrentValue, sourceConnectionString, targetConnectionString);
 
@@ -240,10 +234,7 @@ public sealed class PostgresSyncRunner
             _optionsMonitor.CurrentValue.SourceConnectionString,
             "SourcePostgres",
             "VNTA_POSTGRES_SYNC_SOURCE");
-        var targetConnectionString = ResolveConnectionString(
-            _optionsMonitor.CurrentValue.TargetConnectionString,
-            "TargetPostgres",
-            "VNTA_POSTGRES_SYNC_TARGET");
+        var targetConnectionString = ResolveTargetConnectionString(_optionsMonitor.CurrentValue.TargetConnectionString);
         ValidateWorkerOptions(_optionsMonitor.CurrentValue, sourceConnectionString, targetConnectionString);
 
         await using var sourceConnection = new NpgsqlConnection(sourceConnectionString);
@@ -689,8 +680,7 @@ public sealed class PostgresSyncRunner
 
         var sourceConnectionString = ResolveConnectionString(
             _optionsMonitor.CurrentValue.SourceConnectionString, "SourcePostgres", "VNTA_POSTGRES_SYNC_SOURCE");
-        var targetConnectionString = ResolveConnectionString(
-            _optionsMonitor.CurrentValue.TargetConnectionString, "TargetPostgres", "VNTA_POSTGRES_SYNC_TARGET");
+        var targetConnectionString = ResolveTargetConnectionString(_optionsMonitor.CurrentValue.TargetConnectionString);
         ValidateWorkerOptions(_optionsMonitor.CurrentValue, sourceConnectionString, targetConnectionString);
 
         await using var sourceConnection = new NpgsqlConnection(sourceConnectionString);
@@ -1151,8 +1141,7 @@ public sealed class PostgresSyncRunner
 
         var sourceConnectionString = ResolveConnectionString(
             _optionsMonitor.CurrentValue.SourceConnectionString, "SourcePostgres", "VNTA_POSTGRES_SYNC_SOURCE");
-        var targetConnectionString = ResolveConnectionString(
-            _optionsMonitor.CurrentValue.TargetConnectionString, "TargetPostgres", "VNTA_POSTGRES_SYNC_TARGET");
+        var targetConnectionString = ResolveTargetConnectionString(_optionsMonitor.CurrentValue.TargetConnectionString);
         ValidateWorkerOptions(_optionsMonitor.CurrentValue, sourceConnectionString, targetConnectionString);
 
         await using var sourceConnection = new NpgsqlConnection(sourceConnectionString);
@@ -2200,6 +2189,21 @@ public sealed class PostgresSyncRunner
                 ?? string.Empty
             : configuredValue
             ;
+    }
+
+    private string ResolveTargetConnectionString(string? configuredValue)
+    {
+        var connectionString = ResolveConnectionString(
+            configuredValue,
+            "TargetPostgres",
+            "VNTA_POSTGRES_SYNC_TARGET");
+
+        if (!string.IsNullOrWhiteSpace(connectionString))
+        {
+            JifengHrmTargetDatabaseValidator.Validate(connectionString);
+        }
+
+        return connectionString;
     }
 
     private static string ResolveSourceQuery(PostgresTableSyncOptions table, string tableName)

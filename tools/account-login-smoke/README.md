@@ -34,15 +34,16 @@ Chỉ định reviewer khác:
 dotnet run --project tools/account-login-smoke/AccountLoginSmoke.csproj -p:UseSharedCompilation=false -- --reviewer admin
 ```
 
-Chỉ định connection string khác:
+Chỉ định connection string `jifeng_hrm`:
 
 ```powershell
-dotnet run --project tools/account-login-smoke/AccountLoginSmoke.csproj -p:UseSharedCompilation=false -- --connection "Host=...;Port=...;Database=...;Username=...;Password=..."
+dotnet run --project tools/account-login-smoke/AccountLoginSmoke.csproj -p:UseSharedCompilation=false -- --connection "Host=...;Port=5432;Database=jifeng_hrm;Username=...;Password=..."
 ```
 
 ## Quy tắc an toàn
 
 - Mặc định tool chọn employee chưa có account.
 - Nếu employee đã có account, tool dừng ngay với exit code khác `0`.
-- Nếu không truyền `--connection`, tool đọc `VNTA_DB` trước, rồi mới fallback về connection string mặc định giống infrastructure hiện tại.
+- Phải truyền `--connection` hoặc đặt `VNTA_DB`; tool không dùng connection string mặc định.
+- Connection string phải trỏ đến database `jifeng_hrm`; tool dừng ngay nếu database khác.
 - Đây là smoke mức service/data layer, không thay thế browser smoke.

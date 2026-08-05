@@ -1,11 +1,11 @@
 ﻿# Thiết Lập Môi Trường Local
 
-Tài liệu này mô tả môi trường local khuyến nghị cho dự án Vnta HRM Blazor.
+Tài liệu này mô tả môi trường local khuyến nghị cho dự án JIFENG HRM.
 
 ## Source chính hiện tại
 
 - Source HRM hiện hành: `src/Vnta.HRM2026`
-- Solution hiện hành: `src/Vnta.HRM2026/Vnta.Hrm.slnx`
+- Solution hiện hành: `src/Vnta.HRM2026/Jifeng.Hrm.slnx`
 - Project host: `src/Vnta.HRM2026/Vnta.Hrm.Web/Vnta.Hrm.Web.csproj`
 - Solution console đồng bộ PostgreSQL: `src/Vnta.PostgresSync/Vnta.PostgresSync.slnx`
 
@@ -38,7 +38,24 @@ Các file cấu hình hiện tại:
 - `src/Vnta.HRM2026/Vnta.Hrm.Web/appsettings.json`
 - `src/Vnta.HRM2026/Vnta.Hrm.Web/appsettings.Development.json`
 - `src/Vnta.HRM2026/Vnta.Hrm.Web/appsettings.Local.json` (không commit; tạo từ `appsettings.Local.example.json`)
-- `src/Vnta.PostgresSync/Vnta.PostgresSync.Console/appsettings.json`
+- `src/Vnta.PostgresSync/Vnta.PostgresSync.Console/appsettings.json` (được commit, không chứa connection string)
+- `src/Vnta.PostgresSync/Vnta.PostgresSync.Console/appsettings.Local.example.json`
+- `src/Vnta.PostgresSync/Vnta.PostgresSync.Console/appsettings.Local.json` (không commit; tạo từ file example)
+
+### Console Postgres Sync
+
+Console không có `UserSecretsId`. Với local development, tạo file cấu hình riêng
+từ mẫu rồi điền connection string nguồn và đích:
+
+```powershell
+Copy-Item src\Vnta.PostgresSync\Vnta.PostgresSync.Console\appsettings.Local.example.json src\Vnta.PostgresSync\Vnta.PostgresSync.Console\appsettings.Local.json
+```
+
+Dùng `ConnectionStrings:SourcePostgres` cho database nguồn được cấp quyền và
+`ConnectionStrings:TargetPostgres` cho database đích Jifeng
+(`Database=jifeng_hrm`). Có thể dùng hai biến môi trường
+`ConnectionStrings__SourcePostgres` và `ConnectionStrings__TargetPostgres` thay
+cho file local; chúng được ưu tiên hơn file cấu hình.
 
 ### Thiết lập bằng .NET User Secrets
 
@@ -92,6 +109,8 @@ Khi tiếp tục refactor hoặc bổ sung migration cho HRM, cần đặc biệ
 
 ## Lưu ý build/test
 
-AI không được tự ý chạy build/test. Khi cần kiểm chứng bằng build/test, phải có yêu cầu rõ ràng từ người dùng.
+Sau thay đổi mã nguồn hoặc cấu hình, chạy build hoặc test phù hợp trước khi
+commit. Với thay đổi chỉ ở tài liệu, tối thiểu kiểm tra link/path và định dạng
+Markdown trước khi commit.
 
 

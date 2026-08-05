@@ -7,7 +7,7 @@ Thư mục `doc/templates` chứa các mẫu tài liệu và prompt dùng lại 
 Nguyên tắc chung:
 
 - ưu tiên tái sử dụng mẫu thay vì viết lại từ đầu;
-- mọi đường dẫn trong prompt phải bắt đầu từ `Vnta-Blazor-2026`;
+- mọi đường dẫn trong prompt phải bắt đầu từ `vnta-jifeng-082026`;
 - khi cập nhật mẫu, phải cập nhật trực tiếp đúng file nguồn thay vì tạo biến thể trùng lặp;
 - nếu một bộ prompt đã được tách theo giai đoạn, không viết lại nội dung chi tiết vào file chỉ mục.
 
@@ -15,17 +15,17 @@ Nguyên tắc chung:
 
 Bộ prompt refactor phụ cấp đã được tách thành các file riêng theo từng giai đoạn:
 
-- `Vnta-Blazor-2026\doc\templates\prompt-refactor-phu-cap.txt`
+- `vnta-jifeng-082026\doc\templates\prompt-refactor-phu-cap.txt`
   File chỉ mục, dùng để điều hướng nhanh đến từng giai đoạn.
-- `Vnta-Blazor-2026\doc\templates\prompt-refactor-phu-cap-giai-doan-1.txt`
+- `vnta-jifeng-082026\doc\templates\prompt-refactor-phu-cap-giai-doan-1.txt`
   Mở nhánh mới, nạp tài liệu, dựng context ban đầu.
-- `Vnta-Blazor-2026\doc\templates\prompt-refactor-phu-cap-giai-doan-2.txt`
+- `vnta-jifeng-082026\doc\templates\prompt-refactor-phu-cap-giai-doan-2.txt`
   Lập bản đồ logic xử lý và luồng dữ liệu hiện tại.
-- `Vnta-Blazor-2026\doc\templates\prompt-refactor-phu-cap-giai-doan-3.txt`
+- `vnta-jifeng-082026\doc\templates\prompt-refactor-phu-cap-giai-doan-3.txt`
   Refactor UI, state, popup, toast, icon, layout.
-- `Vnta-Blazor-2026\doc\templates\prompt-refactor-phu-cap-giai-doan-4.txt`
+- `vnta-jifeng-082026\doc\templates\prompt-refactor-phu-cap-giai-doan-4.txt`
   Chuẩn hóa logic code-behind.
-- `Vnta-Blazor-2026\doc\templates\prompt-refactor-phu-cap-giai-doan-5.txt`
+- `vnta-jifeng-082026\doc\templates\prompt-refactor-phu-cap-giai-doan-5.txt`
   Build, test, hoàn tất tài liệu, đối chiếu checklist và chuẩn bị commit.
 
 ## Thứ tự sử dụng khuyến nghị
@@ -40,7 +40,7 @@ Không bỏ qua giai đoạn giữa nếu màn hình chưa được phân tích 
 
 ## Prompt chuẩn hóa folder xuyên project
 
-- `Vnta-Blazor-2026\doc\templates\prompt-refactor-cau-truc-folder-xuyen-project.txt`
+- `vnta-jifeng-082026\doc\templates\prompt-refactor-cau-truc-folder-xuyen-project.txt`
   Dùng cho Codex/AI agent refactor một context nghiệp vụ theo cấu trúc folder mới
   xuyên `Web.Client`, `Web`, `Application`, `Domain` và `Infrastructure`.
   Prompt bắt buộc đọc standard, lập mapping, giữ cross-cutting root, dùng `git mv`,
@@ -48,14 +48,14 @@ Không bỏ qua giai đoạn giữa nếu màn hình chưa được phân tích 
 
 ## Prompt refactor SOLID theo màn hình UI
 
-- `Vnta-Blazor-2026\doc\templates\prompt-refactor-solid-ui-theo-man-hinh.txt`
+- `vnta-jifeng-082026\doc\templates\prompt-refactor-solid-ui-theo-man-hinh.txt`
   Nhận một đầu vào là path `.razor`, folder feature, route hoặc `ContextKey`; agent
   tự xác định page owner và child UI, lập boundary map, refactor theo SOLID, chạy
   kiểm chứng bắt buộc và cập nhật tài liệu. Dùng cho một UI/feature tại một thời điểm.
 
 ## Prompt sửa chiều cao Pager và CSS isolation
 
-- `Vnta-Blazor-2026\doc\templates\prompt-fix-pager-height-css-isolation.txt`
+- `vnta-jifeng-082026\doc\templates\prompt-fix-pager-height-css-isolation.txt`
   Dùng khi footer/pager của một màn hình Blazor bị cao bất thường hoặc để lại vùng
   trắng lớn bên dưới. Prompt yêu cầu đối chiếu với màn hình chuẩn, kiểm tra chuỗi
   flex từ root đến `DxGrid`, xử lý `::deep` ở đúng CSS owner, dùng `PageSize` khi

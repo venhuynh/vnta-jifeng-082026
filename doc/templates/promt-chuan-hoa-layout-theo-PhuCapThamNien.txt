@@ -1,16 +1,16 @@
 Bạn đang làm việc trong repo:
 
-C:\Users\VNSIT\Documents\GitHub\Vnta-Blazor-2026
+<repository-root>
 
 Mục tiêu:
-Chuẩn hóa layout UI cho màn hình C:\Users\VNSIT\Documents\GitHub\Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapPhepLe theo đúng pattern layout của màn hình `PhuCapThamNien`, nhưng KHÔNG thay đổi logic code-behind, state, event handler, service call, API contract, hoặc luồng nghiệp vụ hiện có.
+Chuẩn hóa layout UI cho màn hình <repository-root>\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapPhepLe theo đúng pattern layout của màn hình `PhuCapThamNien`, nhưng KHÔNG thay đổi logic code-behind, state, event handler, service call, API contract, hoặc luồng nghiệp vụ hiện có.
 
 Reference implementation bắt buộc phải đọc trước:
 - src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/PhuCap/PhuCapThamNien/PhuCapThamNien.razor
 - src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/PhuCap/PhuCapThamNien/PhuCapThamNien.razor.css
 
 Màn hình cần chuẩn hóa:
-C:\Users\VNSIT\Documents\GitHub\Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapPhepLe
+<repository-root>\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapPhepLe
 
 Phạm vi công việc:
 1. Chỉ tập trung chuẩn hóa phần layout/UI trong file `.razor` và `.razor.css`.

@@ -35,7 +35,7 @@ Set-Location $certDir
 $hrm = New-SelfSignedCertificate `
   -DnsName "hrm-test.vnta.online","hrm-web" `
   -CertStoreLocation "Cert:\CurrentUser\My" `
-  -FriendlyName "VNTA HRM Test Server" `
+  -FriendlyName "JIFENG HRM Test Server" `
   -KeyAlgorithm RSA `
   -KeyLength 2048 `
   -HashAlgorithm SHA256 `
@@ -59,7 +59,7 @@ Khi PowerShell hỏi password, nhập password mới. Ký tự không hiển th�
 $gateway = New-SelfSignedCertificate `
   -DnsName "gateway-client" `
   -CertStoreLocation "Cert:\CurrentUser\My" `
-  -FriendlyName "VNTA Gateway Client Test" `
+  -FriendlyName "JIFENG Gateway Client Test" `
   -KeyAlgorithm RSA `
   -KeyLength 2048 `
   -HashAlgorithm SHA256 `
@@ -190,13 +190,13 @@ GATEWAY_CLIENT_CERT_PASSWORD='<password của gateway-client.pfx>'
 
 DATABASE_HOST=192.168.1.199
 DATABASE_PORT=5432
-DATABASE_NAME=<ten database>
+DATABASE_NAME=jifeng_hrm
 DATABASE_USERNAME=<postgres user>
 DATABASE_PASSWORD='<password PostgreSQL>'
 DATABASE_TIMEZONE=Asia/Ho_Chi_Minh
 
-HRM_DB_CONNECTION='Host=192.168.1.199;Port=5432;Database=<ten database>;Username=<postgres user>;Password=<password PostgreSQL>;Timezone=Asia/Ho_Chi_Minh'
-ADMS_DB_CONNECTION='Host=192.168.1.199;Port=5432;Database=<ten database>;Username=<postgres user>;Password=<password PostgreSQL>;Timezone=Asia/Ho_Chi_Minh'
+HRM_DB_CONNECTION='Host=192.168.1.199;Port=5432;Database=jifeng_hrm;Username=<postgres user>;Password=<password PostgreSQL>;Timezone=Asia/Ho_Chi_Minh'
+ADMS_DB_CONNECTION='Host=192.168.1.199;Port=5432;Database=jifeng_hrm;Username=<postgres user>;Password=<password PostgreSQL>;Timezone=Asia/Ho_Chi_Minh'
 
 ADMS_CORE_API_ENABLED=true
 ADMS_CORE_API_BASE_URL=https://hrm-web:8443
@@ -208,6 +208,10 @@ GATEWAY_HMAC_SECRET='<kết quả openssl rand ở bước 4>'
 ```
 
 Hai connection string bắt buộc phải nằm trong dấu nháy đơn vì có dấu `;` và script deploy đọc file này bằng Bash. Password/HMAC có `#`, `;` hoặc khoảng trắng cũng phải được quote.
+
+Với Jifeng, `DATABASE_NAME`, `HRM_DB_CONNECTION` và `ADMS_DB_CONNECTION` phải cùng
+trỏ đến `jifeng_hrm`. Khi chuyển database, backup database cũ, chạy migration trên
+database mới rồi deploy `HrmAndGateway` để cả HRM và gateway nhận cùng cấu hình.
 
 Lưu file trong `nano` bằng `Ctrl+O`, `Enter`, `Ctrl+X`.
 

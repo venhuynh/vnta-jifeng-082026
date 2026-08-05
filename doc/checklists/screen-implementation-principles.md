@@ -8,8 +8,8 @@ Tài liệu này là checklist gốc về nguyên tắc triển khai. Tài liệ
 
 Màn tham chiếu chuẩn hiện tại của repo cho kiểu `Operational List Page` là:
 
-- [NhanVien.razor](C:/Users/VNSIT/Documents/GitHub/Vnta-Blazor-2026/src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/NhanSu/NhanVien/NhanVien.razor:1)
-- [NhanVien.razor.cs](C:/Users/VNSIT/Documents/GitHub/Vnta-Blazor-2026/src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/NhanSu/NhanVien/NhanVien.razor.cs:1)
+- [NhanVien.razor](../../src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/NhanSu/NhanVien/NhanVien.razor)
+- [NhanVien.razor.cs](../../src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/NhanSu/NhanVien/NhanVien.razor.cs)
 - `doc/checklists/operational-list-data-processing-standard.md`
 
 Khi có xung đột, ưu tiên theo thứ tự:

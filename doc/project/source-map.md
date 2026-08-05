@@ -4,7 +4,7 @@ Tài liệu này là điểm vào nhanh để đọc đúng thư mục sau khi c
 
 ## Vị trí chính
 
-- `src/Vnta.HRM2026/Vnta.Hrm.slnx`: solution HRM hiện hành của repo.
+- `src/Vnta.HRM2026/Jifeng.Hrm.slnx`: solution HRM hiện hành của repo.
 - `src/Vnta.HRM2026/Vnta.Hrm.Domain/`: domain layer cho entity, value object và rule nghiệp vụ.
 - `src/Vnta.HRM2026/Vnta.Hrm.Application/`: application layer cho use case, DTO, validation và orchestration.
 - `src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/`: infrastructure layer cho DI, persistence, identity và integration.
@@ -204,7 +204,7 @@ Tài liệu này là điểm vào nhanh để đọc đúng thư mục sau khi c
 
 ## Thứ tự đọc khi nhận task kiến trúc
 
-1. Đọc `src/Vnta.HRM2026/Vnta.Hrm.slnx` để thấy toàn bộ dependency ở mức solution.
+1. Đọc `src/Vnta.HRM2026/Jifeng.Hrm.slnx` để thấy toàn bộ dependency ở mức solution.
 2. Đọc `Vnta.Hrm.Domain`, `Vnta.Hrm.Application`, `Vnta.Hrm.Infrastructure` để giữ đúng ranh giới layer.
 3. Đọc `Vnta.Hrm.Web/Program.cs`, `Vnta.Hrm.Infrastructure/` và `Vnta.Hrm.Web/Data/` để biết phần nào đã được bóc ra và phần nào còn ở host.
 4. Đọc `src/Vnta.PostgresSync/` và `doc/setup/postgres-sync-console.md` nếu task liên quan luồng đồng bộ PostgreSQL.

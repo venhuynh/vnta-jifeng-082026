@@ -1,11 +1,11 @@
-# Tài Liệu Dự Án Vnta HRM Blazor
+# Tài Liệu Dự Án JIFENG HRM
 
 Đây là điểm vào chính cho tài liệu dự án.
 
 ## Hiện trạng source chính
 
 - Source HRM hiện hành của repo là `src/Vnta.HRM2026`.
-- Solution HRM hiện hành là `src/Vnta.HRM2026/Vnta.Hrm.slnx`.
+- Solution HRM hiện hành là `src/Vnta.HRM2026/Jifeng.Hrm.slnx`.
 - Baseline công nghệ chính thức của source HRM hiện hành là `.NET 10` và `DevExpress 26.1.x` (đang pin package `26.1.3`).
 - Thư mục `src/Vnta.HRM` đã bị loại khỏi repo.
 - Các tài liệu sprint, implementation log và troubleshooting cũ có thể còn tham chiếu `src/Vnta.HRM`; xem chúng như tư liệu lịch sử, không phải đường dẫn source đang hoạt động.

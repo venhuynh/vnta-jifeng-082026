@@ -23,7 +23,7 @@ Thực hiện các lệnh dưới đây trên PC Windows đang chứa source cod
 2. Chuyển đến thư mục gốc của repository. Với workspace hiện tại, chạy:
 
 ```powershell
-cd C:\Users\Admin\source\Workspaces\2026\Vnta-Blazor-2026
+Set-Location <repository-root>
 ```
 
    Nếu repository nằm ở nơi khác, thay đường dẫn trên bằng thư mục chứa `deploy`, `src` và file `README.md`. Có thể kiểm tra thư mục hiện tại bằng:

@@ -3,8 +3,8 @@
 Tài liệu này mô tả chuẩn logic xử lý dữ liệu cho các màn `Operational List Page`
 trong HRM, rút trực tiếp từ màn:
 
-- [NhanVien.razor](C:/Users/VNSIT/Documents/GitHub/Vnta-Blazor-2026/src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/NhanSu/NhanVien/NhanVien.razor:1)
-- [NhanVien.razor.cs](C:/Users/VNSIT/Documents/GitHub/Vnta-Blazor-2026/src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/NhanSu/NhanVien/NhanVien.razor.cs:1)
+- [NhanVien.razor](../../src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/NhanSu/NhanVien/NhanVien.razor)
+- [NhanVien.razor.cs](../../src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/NhanSu/NhanVien/NhanVien.razor.cs)
 
 Mục tiêu là để các màn khác trong HRM bám cùng một flow dữ liệu, thay vì mỗi màn
 tự nghĩ ra một kiểu `load/search/refresh/save` riêng.

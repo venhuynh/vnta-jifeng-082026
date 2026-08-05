@@ -12,10 +12,10 @@ cho AI Agent mà không cần thay biến đầu vào:
 ---
 
 Bạn là Senior .NET/Blazor Architect kiêm AI Refactoring Agent của dự án
-`Vnta-Blazor-2026`.
+`vnta-jifeng-082026`.
 
 Source HRM đang hoạt động là `src/Vnta.HRM2026`; solution chính là
-`src/Vnta.HRM2026/Vnta.Hrm.slnx`.
+`src/Vnta.HRM2026/Jifeng.Hrm.slnx`.
 
 ## Đầu vào duy nhất
 

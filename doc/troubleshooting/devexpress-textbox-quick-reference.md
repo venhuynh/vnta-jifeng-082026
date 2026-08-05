@@ -250,7 +250,7 @@ DevExpress.Blazor.Internal.Editors.Models.TextBoxModel requires a value for the 
 ### Popup/Dialog không mở được
 
 **Các bước kiểm tra:**
-1. Kiểm tra log Serilog: `Logs/vnta-hrm/application-*.log`
+1. Kiểm tra log Serilog: `Logs/jifeng-hrm/application-*.log`
 2. Tìm "Unhandled exception rendering component"
 3. Kiểm tra tất cả read-only TextBox có `ValidationEnabled="false"`
 4. Build lại project sau khi fix
@@ -299,7 +299,7 @@ Get-ChildItem -Recurse -Filter "*.razor" | Select-String "DxTextBox"
 Get-ChildItem -Recurse -Filter "*.razor" | Select-String 'ReadOnly="true"' -Context 0,1 | Select-String -NotMatch "ValidationEnabled"
 
 # Xem log lỗi validation
-Get-Content "Logs/vnta-hrm/application-*.log" | Select-String "TextExpression|ValidationEnabled" -Context 2,2
+Get-Content "Logs/jifeng-hrm/application-*.log" | Select-String "TextExpression|ValidationEnabled" -Context 2,2
 ```
 
 ## 🎯 TL;DR (Too Long; Didn't Read)

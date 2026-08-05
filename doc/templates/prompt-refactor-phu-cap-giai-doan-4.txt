@@ -40,24 +40,24 @@ Thông tin đích cố định
 - Tên runtime hiện tại trên UI: `Cấp bậc trách nhiệm`
 - Thư mục màn hình đích: `PhuCapTrachNhiemCapBac`
 - Component đích:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
 - Tài liệu đích hiện có:
-  `Vnta-Blazor-2026\doc\project\source-map.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
+  `vnta-jifeng-082026\doc\project\source-map.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
 - Nhánh đang làm việc:
   `<TEN_NHANH_DANG_LAM_VIEC>`
 
 Quy ước đường dẫn bắt buộc
-- Mọi đường dẫn phải bắt đầu từ `Vnta-Blazor-2026`.
+- Mọi đường dẫn phải bắt đầu từ `vnta-jifeng-082026`.
 - Không được dùng đường dẫn tuyệt đối theo máy.
 
 Source mẫu bắt buộc phải học theo
-- `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapChuyenCan\PhuCapChuyenCan.razor.cs`
-- `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\NhanSu\NhanVien\NhanVien.razor.cs`
+- `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapChuyenCan\PhuCapChuyenCan.razor.cs`
+- `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\NhanSu\NhanVien\NhanVien.razor.cs`
 
 Source đích trọng tâm cần chuẩn hóa
-- `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac\PhuCapTrachNhiemCapBac.razor.cs`
+- `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac\PhuCapTrachNhiemCapBac.razor.cs`
 - Nếu giai đoạn 3 đã tách thêm popup editor hoặc form riêng, phải rà soát thêm các file mới trong cùng thư mục `PhuCapTrachNhiemCapBac`.
 
 Mục tiêu chuẩn hóa code-behind
@@ -221,11 +221,11 @@ Hãy thực hiện Giai đoạn 4 cho nhiệm vụ refactor màn hình phụ c�
 - Tên màn hình đích: `Phụ cấp Trách nhiệm > Cấp bậc`
 - Thư mục màn hình đích: `PhuCapTrachNhiemCapBac`
 - Component đích:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
 - Tài liệu đích hiện có:
-  `Vnta-Blazor-2026\doc\project\source-map.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
+  `vnta-jifeng-082026\doc\project\source-map.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
 - Nhánh đang làm việc:
   `codex/refactor-phu-cap-trach-nhiem-cap-bac-20260715`
 

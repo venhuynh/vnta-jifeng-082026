@@ -3,11 +3,11 @@ Khởi tạo nhanh refactor màn hình `Phụ cấp > Trách nhiệm > Cấp b�
 
 Mục đích
 - Prompt này dùng để khởi tạo một nhánh refactor mới cho màn hình:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
 - Agent phải nạp đầy đủ tài liệu, source mẫu, sprint notes, checklist, frontend, backend và boundary dữ liệu của màn `PhuCapTrachNhiemCapBac` trước khi bắt đầu code.
 - Giai đoạn này chỉ được phép setup nhanh, đọc tài liệu, đọc source, báo cáo context và đề xuất phạm vi.
 - Chưa được refactor source nếu chưa kết thúc báo cáo giai đoạn 1.
-- Tất cả đường dẫn trong prompt này phải bắt đầu từ `Vnta-Blazor-2026` trở đi, không dùng phần tiền tố tuyệt đối theo từng máy.
+- Tất cả đường dẫn trong prompt này phải bắt đầu từ `vnta-jifeng-082026` trở đi, không dùng phần tiền tố tuyệt đối theo từng máy.
 
 Biến đầu vào cần thay
 - `<TEN_NHANH_MOI>`
@@ -35,50 +35,50 @@ Thông tin đích cố định
 - Thư mục màn hình đích: `PhuCapTrachNhiemCapBac`
 - Route runtime hiện tại: `/payroll/responsibility-allowances/grades`
 - Component đích:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
 - Tài liệu đích hiện có:
-  `Vnta-Blazor-2026\doc\project\source-map.md`
-  `Vnta-Blazor-2026\doc\project\hrm-ui-layout-refactor-plan.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\sprint-plan.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\implementation-notes.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\review-notes.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\tasks.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\responsibility-allowance-tables.md`
-  `Vnta-Blazor-2026\doc\implementation-log\20260714.md`
+  `vnta-jifeng-082026\doc\project\source-map.md`
+  `vnta-jifeng-082026\doc\project\hrm-ui-layout-refactor-plan.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\sprint-plan.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\implementation-notes.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\review-notes.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\tasks.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\responsibility-allowance-tables.md`
+  `vnta-jifeng-082026\doc\implementation-log\20260714.md`
 - Tài liệu đích cần kiểm tra xem đã có hay chưa:
-  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac`
+  `vnta-jifeng-082026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac`
 
 Quy ước đường dẫn bắt buộc
-- Mọi đường dẫn phải được ghi theo dạng bắt đầu từ `Vnta-Blazor-2026`.
+- Mọi đường dẫn phải được ghi theo dạng bắt đầu từ `vnta-jifeng-082026`.
 - Ví dụ đúng:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
 - Ví dụ không đúng:
-  `\duong-dan-tuyet-do-theo-may\...\Vnta-Blazor-2026\src\...`
+  `\duong-dan-tuyet-do-theo-may\...\vnta-jifeng-082026\src\...`
 
 Màn hình mẫu bắt buộc phải nạp
 - Thư mục source mẫu:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapChuyenCan`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapChuyenCan`
 - Tài liệu mẫu:
-  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapChuyenCan\README.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapChuyenCan\phu-cap-chuyen-can.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapChuyenCan\trien-khai-mau.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapChuyenCan\tinh-lai-logic.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapChuyenCan\lay-tu-thang-truoc-logic.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapChuyenCan\popup-va-luu-logic.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapChuyenCan\ky-thuat-va-cong-nghe.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\PhuCapChuyenCan\README.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\PhuCapChuyenCan\phu-cap-chuyen-can.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\PhuCapChuyenCan\trien-khai-mau.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\PhuCapChuyenCan\tinh-lai-logic.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\PhuCapChuyenCan\lay-tu-thang-truoc-logic.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\PhuCapChuyenCan\popup-va-luu-logic.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\PhuCapChuyenCan\ky-thuat-va-cong-nghe.md`
 - Tài liệu cũ để nạp thêm context nếu tồn tại:
-  `Vnta-Blazor-2026\doc\screens\phu-cap\phu-cap-chuyen-can.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\phu-cap-chuyen-can.md`
 - Tài liệu sprint cũ để nạp thêm context nếu tồn tại:
-  `Vnta-Blazor-2026\doc\sprints\PhuCap\01_ChuyenCan`
+  `vnta-jifeng-082026\doc\sprints\PhuCap\01_ChuyenCan`
 
 Context nghiệp vụ cũ của màn hình đích bắt buộc phải nạp
 - Màn cha runtime và source nghiệp vụ:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiem\PhuCapTrachNhiem.razor`
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiem\PhuCapTrachNhiem.razor.cs`
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiem\PhuCapTrachNhiem.razor.css`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiem\PhuCapTrachNhiem.razor`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiem\PhuCapTrachNhiem.razor.cs`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiem\PhuCapTrachNhiem.razor.css`
 - Tài liệu sprint cũ:
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
 - Ghi chú quan trọng đã biết từ source và sprint hiện có:
   - màn hình dùng bảng chính `payroll_monthly_responsibility_allowance_grades`
   - workflow tổng thể liên quan thêm các bảng `grade_positions`, `employee_assignments`, `abc`
@@ -89,38 +89,38 @@ Context nghiệp vụ cũ của màn hình đích bắt buộc phải nạp
   - implementation log ngày `2026-07-14` từng ghi nhận warning liên quan `PhuCapTrachNhiemCapBacEditPopup`, agent phải xác minh warning này còn thật hay đã lỗi thời
 
 Checklist và nguyên tắc bắt buộc phải đọc
-- `Vnta-Blazor-2026\doc\checklists\ui-screen-checklist.md`
-- `Vnta-Blazor-2026\doc\checklists\ui-popup-checklist.md`
-- `Vnta-Blazor-2026\doc\checklists\confirmation-popup-checklist.md`
-- `Vnta-Blazor-2026\doc\checklists\ui-state-checklist.md`
-- `Vnta-Blazor-2026\doc\checklists\operational-list-screen-checklist.md`
-- `Vnta-Blazor-2026\doc\checklists\operational-list-data-processing-standard.md`
-- `Vnta-Blazor-2026\doc\checklists\screen-implementation-principles.md`
-- `Vnta-Blazor-2026\doc\checklists\documentation-completeness.md`
-- `Vnta-Blazor-2026\doc\checklists\done-checklist.md`
-- `Vnta-Blazor-2026\doc\rules\devexpress-input-validation-rules.md`
+- `vnta-jifeng-082026\doc\checklists\ui-screen-checklist.md`
+- `vnta-jifeng-082026\doc\checklists\ui-popup-checklist.md`
+- `vnta-jifeng-082026\doc\checklists\confirmation-popup-checklist.md`
+- `vnta-jifeng-082026\doc\checklists\ui-state-checklist.md`
+- `vnta-jifeng-082026\doc\checklists\operational-list-screen-checklist.md`
+- `vnta-jifeng-082026\doc\checklists\operational-list-data-processing-standard.md`
+- `vnta-jifeng-082026\doc\checklists\screen-implementation-principles.md`
+- `vnta-jifeng-082026\doc\checklists\documentation-completeness.md`
+- `vnta-jifeng-082026\doc\checklists\done-checklist.md`
+- `vnta-jifeng-082026\doc\rules\devexpress-input-validation-rules.md`
 
 Source và thành phần dùng chung bắt buộc phải đọc
 - Source frontend đích:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac\PhuCapTrachNhiemCapBac.razor`
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac\PhuCapTrachNhiemCapBac.razor.cs`
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac\PhuCapTrachNhiemCapBac.razor.css`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac\PhuCapTrachNhiemCapBac.razor`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac\PhuCapTrachNhiemCapBac.razor.cs`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac\PhuCapTrachNhiemCapBac.razor.css`
 - Source frontend liên quan của màn cha:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiem\PhuCapTrachNhiem.razor`
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiem\PhuCapTrachNhiem.razor.cs`
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiem\PhuCapTrachNhiem.razor.css`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiem\PhuCapTrachNhiem.razor`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiem\PhuCapTrachNhiem.razor.cs`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiem\PhuCapTrachNhiem.razor.css`
 - Source provider và API đích:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Services\Api\HttpPayrollResponsibilityAllowanceWorkflowService.cs`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Services\Api\HttpPayrollResponsibilityAllowanceWorkflowService.cs`
 - Source application và backend đích:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Application\Payroll\IPayrollResponsibilityAllowanceWorkflowService.cs`
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Application\Payroll\PayrollResponsibilityAllowanceWorkflowModels.cs`
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Infrastructure\Payroll\DatabasePayrollResponsibilityAllowanceWorkflowService.cs`
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web\Endpoints\PayrollEndpoints.cs`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Application\Payroll\IPayrollResponsibilityAllowanceWorkflowService.cs`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Application\Payroll\PayrollResponsibilityAllowanceWorkflowModels.cs`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Infrastructure\Payroll\DatabasePayrollResponsibilityAllowanceWorkflowService.cs`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web\Endpoints\PayrollEndpoints.cs`
 - Thành phần dùng chung:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Services\Ui\VntaDevExpressIcons.cs`
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\SharedUi\MasterData\PayrollAllowanceToolbar.razor`
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\NhanSu\NhanVien\NhanVien.razor`
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\NhanSu\NhanVien\NhanVien.razor.cs`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Services\Ui\VntaDevExpressIcons.cs`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\SharedUi\MasterData\PayrollAllowanceToolbar.razor`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\NhanSu\NhanVien\NhanVien.razor`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\NhanSu\NhanVien\NhanVien.razor.cs`
 
 Yêu cầu xử lý Git
 1. Kiểm tra worktree hiện tại.
@@ -173,7 +173,7 @@ Yêu cầu nạp context
    - điểm cần refactor toast
    - điểm cần refactor icon toolbar và row action
    - điểm cần refactor tài liệu
-6. Nếu thư mục `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac` chưa tồn tại, phải ghi rõ đây là gap tài liệu của màn hình đích.
+6. Nếu thư mục `vnta-jifeng-082026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac` chưa tồn tại, phải ghi rõ đây là gap tài liệu của màn hình đích.
 
 Công cụ và cách làm việc
 - Ưu tiên dùng `rg` hoặc `rg --files` để tìm file và text.
@@ -220,14 +220,14 @@ Hãy thực hiện Giai đoạn 1 cho nhiệm vụ refactor màn hình phụ c�
 - Tên màn hình đích: `Phụ cấp Trách nhiệm > Cấp bậc`
 - Thư mục màn hình đích: `PhuCapTrachNhiemCapBac`
 - Component đích:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
 - Tài liệu đích hiện có:
-  `Vnta-Blazor-2026\doc\project\source-map.md`
-  `Vnta-Blazor-2026\doc\project\hrm-ui-layout-refactor-plan.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
+  `vnta-jifeng-082026\doc\project\source-map.md`
+  `vnta-jifeng-082026\doc\project\hrm-ui-layout-refactor-plan.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
 - Tài liệu màn hình dạng folder:
-  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac` và phải ghi nhận nếu chưa tồn tại
+  `vnta-jifeng-082026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac` và phải ghi nhận nếu chưa tồn tại
 - Nhánh gốc ưu tiên: nhánh tracking hiện tại đã được pull mới nhất
 - Tên nhánh mới:
   `codex/refactor-phu-cap-trach-nhiem-cap-bac-20260715`

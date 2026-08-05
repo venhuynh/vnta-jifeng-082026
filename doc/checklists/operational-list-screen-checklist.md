@@ -20,8 +20,8 @@ search hoặc lặp lại anti-pattern đã xử lý ở nhánh này.
 
 Màn tham chiếu chuẩn hiện tại của checklist này là:
 
-- [NhanVien.razor](C:/Users/VNSIT/Documents/GitHub/Vnta-Blazor-2026/src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/NhanSu/NhanVien/NhanVien.razor:1)
-- [NhanVien.razor.cs](C:/Users/VNSIT/Documents/GitHub/Vnta-Blazor-2026/src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/NhanSu/NhanVien/NhanVien.razor.cs:1)
+- [NhanVien.razor](../../src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/NhanSu/NhanVien/NhanVien.razor)
+- [NhanVien.razor.cs](../../src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/NhanSu/NhanVien/NhanVien.razor.cs)
 - `doc/checklists/operational-list-data-processing-standard.md`
 
 ## 1. Xác định đúng loại màn

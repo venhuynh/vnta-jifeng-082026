@@ -6,7 +6,9 @@ Tài liệu này mô tả cách dùng solution console độc lập `src/Vnta.Po
 
 - Solution: `src/Vnta.PostgresSync/Vnta.PostgresSync.slnx`
 - Project console: `src/Vnta.PostgresSync/Vnta.PostgresSync.Console/Vnta.PostgresSync.Console.csproj`
-- File cấu hình chính: `src/Vnta.PostgresSync/Vnta.PostgresSync.Console/appsettings.json`
+- File cấu hình mặc định: `src/Vnta.PostgresSync/Vnta.PostgresSync.Console/appsettings.json` (được commit, không chứa connection string)
+- File mẫu local: `src/Vnta.PostgresSync/Vnta.PostgresSync.Console/appsettings.Local.example.json`
+- File local: `src/Vnta.PostgresSync/Vnta.PostgresSync.Console/appsettings.Local.json` (đã ignore, không commit)
 
 ## Mục đích
 
@@ -15,15 +17,28 @@ Solution này phục vụ hai nhu cầu:
 - kiểm tra schema thực tế của database nguồn và database đích trước khi cấu hình sync
 - chạy đồng bộ dữ liệu theo pha, ưu tiên `master data` trước rồi mới đến dữ liệu chấm công hằng ngày
 
-## Thứ tự lấy cấu hình kết nối
+## Cấu hình cục bộ Jifeng
 
-Console hiện lấy connection string theo thứ tự:
+`appsettings.json` được commit với connection string rỗng. Không sửa hoặc commit file
+này. Console nạp cấu hình theo thứ tự `appsettings.json`,
+`appsettings.{Environment}.json`, `appsettings.Local.json`, rồi biến môi trường.
 
-1. `PostgresSync:SourceConnectionString` hoặc `PostgresSync:TargetConnectionString` nếu có giá trị thật
-2. `ConnectionStrings:SourcePostgres` hoặc `ConnectionStrings:TargetPostgres`
-3. biến môi trường `VNTA_POSTGRES_SYNC_SOURCE` hoặc `VNTA_POSTGRES_SYNC_TARGET`
+Tạo file local từ mẫu:
 
-Không ghi thêm secret mới vào tài liệu này. Khi cần đổi máy chủ, ưu tiên sửa `appsettings.json` cục bộ hoặc dùng biến môi trường.
+```powershell
+Copy-Item src\Vnta.PostgresSync\Vnta.PostgresSync.Console\appsettings.Local.example.json src\Vnta.PostgresSync\Vnta.PostgresSync.Console\appsettings.Local.json
+```
+
+Dùng `ConnectionStrings:SourcePostgres` cho database nguồn được vận hành cấp quyền và
+`ConnectionStrings:TargetPostgres` cho database đích Jifeng, với `Database=jifeng_hrm`.
+Hai key này dùng được cho cả `inspect` và các lệnh `sync-*`.
+
+Có thể dùng biến môi trường `ConnectionStrings__SourcePostgres` và
+`ConnectionStrings__TargetPostgres`; chúng ghi đè file local. Không ghi credential vào
+source, log hoặc tài liệu.
+
+Trước khi chạy đồng bộ, chạy `inspect`. Lệnh này chỉ đọc schema; các lệnh `sync-*` có
+thể upsert dữ liệu vào database đích và chỉ được chạy khi source/target đã được phê duyệt.
 
 ## Các lệnh hỗ trợ
 
@@ -117,7 +132,11 @@ Lệnh này chạy:
 1. `MasterData`
 2. `AttendanceDaily`
 
-## Ghi chú vận hành thực tế
+## Ghi chép vận hành lịch sử
+
+Các số liệu và ngày tháng trong mục này là bằng chứng của một lần kiểm chứng trước đây,
+không phải baseline dữ liệu hiện tại. Khi chạy lại, thay ngày, khoảng lọc và số liệu bằng
+giá trị thực tế của môi trường Jifeng; không dùng lại connection string trong lịch sử.
 
 Đã kiểm chứng ngày `2026-07-13`:
 
@@ -144,11 +163,13 @@ dotnet src/Vnta.PostgresSync/Vnta.PostgresSync.Console/bin/Debug/net10.0/Vnta.Po
   - `attendance_daily_summaries=0`
   - `attendance_workday_summaries=1`
 
-Nếu `dotnet run` lỗi quyền đọc `C:\Users\VNSIT\AppData\Roaming\NuGet\NuGet.Config`, ưu tiên chạy bằng DLL đã build như các ví dụ trên.
+Nếu `dotnet run` lỗi quyền đọc file `NuGet.Config`, kiểm tra quyền của NuGet configuration
+trên máy hiện tại hoặc chạy bằng DLL đã build như các ví dụ trên.
 
 ## Đồng bộ `payroll_basic_salary_records` từ kỳ trước
 
-`public.payroll_basic_salary_records` hiện không tồn tại ở database nguồn `hypertech_hrm`, nên console không thể sync trực tiếp source -> target như attendance.
+`public.payroll_basic_salary_records` từng không tồn tại ở database nguồn trong lần kiểm
+chứng lịch sử, nên console khi đó không thể sync trực tiếp source -> target như attendance.
 
 Với bảng này, console hỗ trợ command riêng để copy dữ liệu từ kỳ trước ngay trong database đích:
 
@@ -198,7 +219,9 @@ Mỗi bảng được mô tả trong `PostgresSync:Tables` với các trường 
 
 ## Bo sung 2026-07-13: sync source -> target cho `payroll_basic_salary_records` thang 06/2026
 
-Nguon business thuc te cho bang dich `public.payroll_basic_salary_records` la `public.payroll_monthly_salary_rates` trong database `hypertech_hrm`.
+Nguồn business được ghi nhận trong lần kiểm chứng lịch sử cho bảng đích
+`public.payroll_basic_salary_records` là `public.payroll_monthly_salary_rates` ở database
+nguồn khi đó. Cần xác nhận lại schema và quyền truy cập trước khi vận hành trên Jifeng.
 
 Mapping da duoc cau hinh:
 

@@ -1,6 +1,6 @@
 # Hướng Dẫn Lấy Mã Kích Hoạt Thiết Bị
 
-Tài liệu này mô tả cách lấy `Mã kích hoạt` cho thiết bị chấm công trong đúng ngữ cảnh của repo `Vnta-Blazor-2026`, nơi `HRM` và `adms-gateway` đang dùng chung một thuật toán sinh mã.
+Tài liệu này mô tả cách lấy `Mã kích hoạt` cho thiết bị chấm công trong đúng ngữ cảnh của repo JIFENG HRM, nơi `HRM` và `adms-gateway` đang dùng chung một thuật toán sinh mã.
 
 ## Phạm vi áp dụng
 
@@ -13,8 +13,8 @@ Tài liệu này không dựa vào tool ngoài repo làm nguồn chân lý. Ngu�
 
 Hai file sau phải luôn cho ra cùng một kết quả:
 
-- [AttendanceDeviceActivationCode.cs](/C:/Users/VNSIT/Documents/GitHub/Vnta-Blazor-2026/src/Vnta.HRM2026/Vnta.Hrm.Application/Attendance/AttendanceDeviceActivationCode.cs)
-- [VntaCrypto.cs](/C:/Users/VNSIT/Documents/GitHub/Vnta-Blazor-2026/src/zkteco-adms-gateway/Security/VntaCrypto.cs)
+- [AttendanceDeviceActivationCode.cs](../../src/Vnta.HRM2026/Vnta.Hrm.Application/QuanTri/MayChamCong/AttendanceDeviceActivationCode.cs)
+- [VntaCrypto.cs](../../src/zkteco-adms-gateway/Security/VntaCrypto.cs)
 
 Ý nghĩa:
 
@@ -39,8 +39,8 @@ Kết quả:
 
 Luồng này đang được xử lý trong:
 
-- [MayChamCong.razor.cs](/C:/Users/VNSIT/Documents/GitHub/Vnta-Blazor-2026/src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/QuanTri/MayChamCong/MayChamCong.razor.cs)
-- [DatabaseAttendanceDeviceService.cs](/C:/Users/VNSIT/Documents/GitHub/Vnta-Blazor-2026/src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/Integrations/AttendanceGateway/DatabaseAttendanceDeviceService.cs)
+- [MayChamCong.razor.cs](../../src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/QuanTri/MayChamCong/MayChamCong.razor.cs)
+- [DatabaseAttendanceDeviceService.cs](../../src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/QuanTri/MayChamCong/DatabaseAttendanceDeviceService.cs)
 
 ## Quy tắc chuẩn hóa serial
 
@@ -87,7 +87,7 @@ Mã kích hoạt     : VN1-LG8K-5JSQ-QSRJ-67KN
 
 ## Lưu ý vận hành
 
-- Hiện tại repo này chưa có một console tool riêng để sinh mã kiểu `HyperTech.ActivationTool`.
+- Hiện tại repo này chưa có một console tool riêng để sinh mã kích hoạt ngoài UI.
 - Trong bối cảnh triển khai hiện tại, nguồn chân lý là logic trong `AttendanceDeviceActivationCode` và `VntaCrypto`.
 - Không dùng cờ trạng thái trong database để suy ra thiết bị đã kích hoạt đúng hay chưa.
 - Ở runtime, `adms-gateway` chỉ tin vào cặp `SerialNumber` và `ActivationCode` sau khi chuẩn hóa.
@@ -103,7 +103,7 @@ Chỉ nên tách thêm tool console riêng khi đội vận hành thật sự c�
 
 Nếu mở nhánh này, tool phải gọi lại đúng thuật toán đang có trong:
 
-- `Vnta.Hrm.Application.Attendance.AttendanceDeviceActivationCode`
+- `Vnta.Hrm.Application.QuanTri.MayChamCong.AttendanceDeviceActivationCode`
 - hoặc `Vnta.AttendanceGateway.Security.VntaCrypto`
 
 và không được tự viết một phiên bản thuật toán khác.

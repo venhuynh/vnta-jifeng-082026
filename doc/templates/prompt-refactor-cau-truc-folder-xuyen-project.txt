@@ -1,6 +1,6 @@
 Bạn đang làm việc trong repo:
 
-C:\Users\VNSIT\Documents\GitHub\Vnta-Blazor-2026
+<repository-root>
 
 Mục tiêu:
 Refactor cấu trúc folder cho MỘT context nghiệp vụ HRM theo taxonomy đã chốt từ

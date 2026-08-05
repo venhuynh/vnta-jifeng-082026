@@ -73,6 +73,20 @@ dotnet build src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Vnta.Hrm.Web.Client.csproj --n
 dotnet run --project src\Vnta.HRM2026\Vnta.Hrm.Web\Vnta.Hrm.Web.csproj
 ```
 
+### Cấu hình Postgres Sync cục bộ
+
+`Postgres Sync` đọc file `appsettings.Local.json` đã được ignore trong project
+console. Tạo file từ mẫu, điền `ConnectionStrings:SourcePostgres` bằng database
+nguồn đã được cấp quyền và `ConnectionStrings:TargetPostgres` bằng database đích
+Jifeng (`Database=jifeng_hrm`). Không commit connection string.
+
+```powershell
+Copy-Item src\Vnta.PostgresSync\Vnta.PostgresSync.Console\appsettings.Local.example.json src\Vnta.PostgresSync\Vnta.PostgresSync.Console\appsettings.Local.json
+```
+
+Chạy `inspect` trước mọi lệnh đồng bộ. Xem hướng dẫn chi tiết tại
+[`doc/setup/postgres-sync-console.md`](doc/setup/postgres-sync-console.md).
+
 Không đưa chuỗi kết nối, chứng thư TLS, token hay khoá HMAC vào file cấu hình được commit. Các file `appsettings.Local.example.json` chỉ là mẫu cấu hình cục bộ.
 
 ## Triển khai Ubuntu

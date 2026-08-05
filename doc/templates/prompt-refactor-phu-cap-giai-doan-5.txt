@@ -39,44 +39,44 @@ Thông tin đích cố định
 - Tên runtime hiện tại trên UI: `Cấp bậc trách nhiệm`
 - Thư mục màn hình đích: `PhuCapTrachNhiemCapBac`
 - Component đích:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
 - Tài liệu đích hiện có:
-  `Vnta-Blazor-2026\doc\project\source-map.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
+  `vnta-jifeng-082026\doc\project\source-map.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
 - Nhánh đang làm việc:
   `<TEN_NHANH_DANG_LAM_VIEC>`
 
 Quy ước đường dẫn bắt buộc
-- Mọi đường dẫn phải bắt đầu từ `Vnta-Blazor-2026`.
+- Mọi đường dẫn phải bắt đầu từ `vnta-jifeng-082026`.
 - Không được dùng đường dẫn tuyệt đối theo máy.
 
 Checklist và tài liệu bắt buộc phải rà lại
-- `Vnta-Blazor-2026\doc\checklists\ui-screen-checklist.md`
-- `Vnta-Blazor-2026\doc\checklists\ui-popup-checklist.md`
-- `Vnta-Blazor-2026\doc\checklists\confirmation-popup-checklist.md`
-- `Vnta-Blazor-2026\doc\checklists\ui-state-checklist.md`
-- `Vnta-Blazor-2026\doc\checklists\operational-list-screen-checklist.md`
-- `Vnta-Blazor-2026\doc\checklists\operational-list-data-processing-standard.md`
-- `Vnta-Blazor-2026\doc\checklists\screen-implementation-principles.md`
-- `Vnta-Blazor-2026\doc\checklists\documentation-completeness.md`
-- `Vnta-Blazor-2026\doc\checklists\done-checklist.md`
-- `Vnta-Blazor-2026\doc\rules\devexpress-input-validation-rules.md`
+- `vnta-jifeng-082026\doc\checklists\ui-screen-checklist.md`
+- `vnta-jifeng-082026\doc\checklists\ui-popup-checklist.md`
+- `vnta-jifeng-082026\doc\checklists\confirmation-popup-checklist.md`
+- `vnta-jifeng-082026\doc\checklists\ui-state-checklist.md`
+- `vnta-jifeng-082026\doc\checklists\operational-list-screen-checklist.md`
+- `vnta-jifeng-082026\doc\checklists\operational-list-data-processing-standard.md`
+- `vnta-jifeng-082026\doc\checklists\screen-implementation-principles.md`
+- `vnta-jifeng-082026\doc\checklists\documentation-completeness.md`
+- `vnta-jifeng-082026\doc\checklists\done-checklist.md`
+- `vnta-jifeng-082026\doc\rules\devexpress-input-validation-rules.md`
 
 Tài liệu màn hình cần cập nhật nếu có liên quan
 - Tài liệu hiện có:
-  `Vnta-Blazor-2026\doc\project\source-map.md`
-  `Vnta-Blazor-2026\doc\project\hrm-ui-layout-refactor-plan.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\sprint-plan.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\implementation-notes.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\review-notes.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\tasks.md`
-  `Vnta-Blazor-2026\doc\implementation-log\20260714.md`
+  `vnta-jifeng-082026\doc\project\source-map.md`
+  `vnta-jifeng-082026\doc\project\hrm-ui-layout-refactor-plan.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\sprint-plan.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\implementation-notes.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\review-notes.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\tasks.md`
+  `vnta-jifeng-082026\doc\implementation-log\20260714.md`
 - Tài liệu màn hình dạng folder nếu đã được tạo ở các giai đoạn trước:
-  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac\README.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac\trien-khai-mau.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac\...`
+  `vnta-jifeng-082026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac\README.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac\trien-khai-mau.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac\...`
 - Nếu màn hình vẫn chưa có bộ tài liệu dạng folder riêng, phải ghi nhận khoảng trống đó và đề xuất phạm vi tài liệu tối thiểu cần bổ sung.
 
 Nhiệm vụ bắt buộc
@@ -94,8 +94,8 @@ Nhiệm vụ bắt buộc
 
 2. Build trong phạm vi khả thi
    - Build project liên quan trực tiếp:
-     - `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Vnta.Hrm.Web.Client.csproj`
-     - `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web\Vnta.Hrm.Web.csproj`
+     - `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Vnta.Hrm.Web.Client.csproj`
+     - `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web\Vnta.Hrm.Web.csproj`
    - Nếu cần, build solution hoặc các project liên quan để bắt lỗi lan sang dependency khác.
    - Nếu build web bị file lock cục bộ, được phép dùng `OutDir` riêng để xác minh build.
    - Nếu build lỗi, phải sửa đến khi đạt trạng thái ổn định trong phạm vi nhiệm vụ.
@@ -205,11 +205,11 @@ Hãy thực hiện Giai đoạn 5 cho nhiệm vụ refactor màn hình phụ c�
 - Tên màn hình đích: `Phụ cấp Trách nhiệm > Cấp bậc`
 - Thư mục màn hình đích: `PhuCapTrachNhiemCapBac`
 - Component đích:
-  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
+  `vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
 - Tài liệu đích hiện có:
-  `Vnta-Blazor-2026\doc\project\source-map.md`
-  `Vnta-Blazor-2026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
-  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
+  `vnta-jifeng-082026\doc\project\source-map.md`
+  `vnta-jifeng-082026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
+  `vnta-jifeng-082026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
 - Nhánh đang làm việc:
   `codex/refactor-phu-cap-trach-nhiem-cap-bac-20260715`
 

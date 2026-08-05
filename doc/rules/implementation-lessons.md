@@ -265,7 +265,7 @@ thì nên chuyển nó từ ghi chú cá nhân thành rule hoặc checklist tron
 ## 19. DevExpress popup/form phải kiểm chứng thêm bằng runtime log
 
 - Với popup/form DevExpress, build pass chưa đủ; nếu click không phản hồi, popup không mở
-  hoặc breakpoint trong handler không chạm được, phải đọc `Logs/vnta-hrm/error-*.log`
+  hoặc breakpoint trong handler không chạm được, phải đọc `Logs/jifeng-hrm/error-*.log`
   trước khi suy luận tiếp.
 - Không dùng property DevExpress khi chưa xác nhận API đúng với version đang pin. Ví dụ
   `DxFormLayoutItem.CaptionVisible` có thể làm circuit lỗi runtime dù ý đồ UI rất nhỏ.

@@ -1,11 +1,11 @@
-﻿# Tài liệu kỹ thuật VNTA HRM
+# Tài liệu kỹ thuật JIFENG HRM
 
 Thư mục `doc/` là điểm vào chính cho tài liệu kỹ thuật, quy tắc làm việc, màn hình, troubleshooting và nhật ký triển khai của repo.
 
 ## Source of truth hiện tại
 
 - Source HRM chính: `src/Vnta.HRM2026`
-- Solution hiện hành: `src/Vnta.HRM2026/Vnta.Hrm.slnx`
+- Solution hiện hành: `src/Vnta.HRM2026/Jifeng.Hrm.slnx`
 - Cây menu chuẩn: `src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Navigation/VntaNavMenuCatalog.cs`
 - Bản đồ source hiện hành: `doc/project/source-map.md`
 - Quy tắc menu và cấu trúc source: `doc/rules/menu-structure-rules.md`

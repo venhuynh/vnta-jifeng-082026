@@ -65,15 +65,17 @@ Không được tự kết luận thuật toán “đúng nghiệp vụ” chỉ
    - component con phát event, JS interop và navigation.
 4. Với từng action, lần theo implementation thật sự bằng `rg` đến provider, HTTP client, endpoint, application, domain policy, infrastructure/EF/SQL và test. Tìm toàn bộ partial class, extension method, interface implementation và DI registration liên quan.
 5. Với mọi DataTable/DataGrid/list có cột (ví dụ `MudTable`, `MudDataGrid`, `QuickGrid`, `RadzenDataGrid`, bảng HTML hoặc component wrapper), truy vết component/table source, row data source, từng cột, DTO/projection/backend field, logic tính/map/format, sort/filter và query/EF/SQL nguồn.
-6. Xác định vị trí chính xác theo đường dẫn workspace tuyệt đối và số dòng. Mọi vị trí trong tài liệu PHẢI là Markdown link có thể click để mở đúng dòng source, theo format:
+6. Xác định vị trí chính xác theo đường dẫn workspace tuyệt đối và số dòng. Trong mẫu
+   dưới đây, thay `<repository-root>` bằng thư mục gốc thực tế của JIFENG HRM. Mọi vị
+   trí trong tài liệu PHẢI là Markdown link có thể click để mở đúng dòng source, theo format:
 
-   `[TênFile.cs:42](C:/Users/Admin/source/Workspaces/2026/Vnta-Blazor-2026/src/.../TênFile.cs:42)`
+   `[TênFile.cs:42](<repository-root>/src/.../TênFile.cs:42)`
 
    Ví dụ:
 
-   `[PhuCapCom.razor:42](C:/Users/Admin/source/Workspaces/2026/Vnta-Blazor-2026/src/Vnta.Hrm.Web.Client/Components/PhuCap/PhuCapCom/PhuCapCom.razor:42)`
+   `[PhuCapCom.razor:42](<repository-root>/src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/PhuCap/PhuCapCom/PhuCapCom.razor:42)`
 
-   `[GetMealAllowancePageQuery.cs:88](C:/Users/Admin/source/Workspaces/2026/Vnta-Blazor-2026/src/Vnta.Hrm.Application/PhuCap/Queries/GetMealAllowancePageQuery.cs:88)`
+   `[GetMealAllowancePageQuery.cs:88](<repository-root>/src/Vnta.HRM2026/Vnta.Hrm.Application/PhuCap/Queries/GetMealAllowancePageQuery.cs:88)`
 
    Không dùng link giả, link thư mục thay cho file, link không có line hoặc chỉ text `file:line` không click được. Nếu môi trường render yêu cầu format link nội bộ khác, dùng convention của repository nhưng vẫn phải điều hướng được đến chính xác file và dòng.
 7. Không suy đoán endpoint, database table hay business rule. Nếu không thể lần tới, ghi rõ `Chưa xác minh`, bằng chứng đã kiểm tra và bước cần thực hiện tiếp.

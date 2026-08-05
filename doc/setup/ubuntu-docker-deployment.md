@@ -1,6 +1,6 @@
 # Triển Khai Ubuntu Bằng Docker Image-Only
 
-Tài liệu này chốt quy trình deploy cho repo `Vnta-Blazor-2026` theo đúng mục tiêu:
+Tài liệu này chốt quy trình deploy image-only cho JIFENG HRM theo đúng mục tiêu:
 
 - không đưa source code lên server Ubuntu
 - không build source trên server
@@ -16,7 +16,7 @@ Tài liệu này chốt quy trình deploy cho repo `Vnta-Blazor-2026` theo đún
 - PostgreSQL production hiện vẫn nằm ở máy DB nội bộ, không chạy cùng Docker stack trên Ubuntu
 - Nghĩa là database vẫn nằm trong operational scope của release này, nhưng được quản lý theo hướng external DB: migration, backup, rollback dữ liệu tách riêng khỏi Docker Compose
 - Luồng SSH, `scp`, truy cập HRM và kết nối ADMS trong tài liệu này đều được hiểu là đi trong cùng LAN nội bộ
-- HRM public trực tiếp bằng IP và port HTTP, không đặt sau Nginx, không bật HTTPS trong runbook này
+- HRM public trực tiếp bằng HTTPS; chứng thư PFX được mount vào container, không đặt sau Nginx trong runbook này
 - ADMS chỉ public `listener port`; control plane port giữ nội bộ trong Docker network
 - Ubuntu mục tiêu được giả định là `Ubuntu 24.04 LTS` (bản phát hành tháng 04/2024). Bạn đã ghi `24.4`, nên tài liệu này chuẩn hóa thành `24.04`
 
@@ -52,15 +52,15 @@ Tài liệu và file mẫu còn lại các placeholder sau. Trước khi deploy 
 
 Do không dùng Nginx và không muốn ADMS listener trùng port với HRM, bộ port mẫu được chốt như sau:
 
-- HRM web: host port `8088` -> container port `8080`
+- HRM web: host port `8443` -> container port `8443` (HTTPS)
 - ADMS listener: host port `8080` -> container port `8080`
 - ADMS control plane: container port `5005`, không public ra host
 
 Khi đó:
 
-- HRM truy cập bằng `http://192.168.1.218:8088`
+- HRM truy cập bằng `https://192.168.1.218:8443`
 - thiết bị ADMS gọi vào `192.168.1.218:8080`
-- từ PC cùng LAN, có thể mở trực tiếp `http://192.168.1.218:8088` để smoke test sau deploy
+- từ PC cùng LAN, có thể mở trực tiếp `https://192.168.1.218:8443` để smoke test sau deploy
 
 ## Cấu Trúc Thư Mục Trên Server
 
@@ -105,7 +105,7 @@ Ví dụ:
 
 ```powershell
 pwsh .\deploy\ubuntu\scripts\run-hrm-db-migration.ps1 `
-  -ConnectionString "Host=192.168.1.199;Port=5432;Database=vnta-2026;Username=postgres;Password=YOUR_PASSWORD;Timezone=Asia/Ho_Chi_Minh"
+  -ConnectionString "Host=192.168.1.199;Port=5432;Database=jifeng_hrm;Username=postgres;Password=YOUR_PASSWORD;Timezone=Asia/Ho_Chi_Minh"
 ```
 
 Lưu ý:
@@ -216,10 +216,10 @@ Nếu vừa thêm group `docker`, đăng xuất SSH và vào lại trước khi 
 
 ### 3.3. Firewall Tối Thiểu
 
-Do không dùng Nginx/HTTPS trong runbook này, chỉ cần mở:
+Do không dùng Nginx nhưng HRM dùng HTTPS trực tiếp, chỉ cần mở:
 
 - SSH port thật của bạn
-- HRM HTTP port: `8088`
+- HRM HTTPS port: `8443`
 - ADMS listener port: `8080`
 - ưu tiên chỉ mở trong LAN nội bộ, không route các cổng này ra internet nếu không thực sự cần
 
@@ -227,7 +227,7 @@ Ví dụ nếu SSH vẫn là `22`:
 
 ```bash
 sudo ufw allow 22/tcp
-sudo ufw allow 8088/tcp
+sudo ufw allow 8443/tcp
 sudo ufw allow 8080/tcp
 sudo ufw enable
 sudo ufw status
@@ -244,39 +244,57 @@ cp /opt/vnta/releases/<release-name>/.env.production.example /opt/vnta/shared/en
 nano /opt/vnta/shared/env/.env.production
 ```
 
-Giá trị mẫu quan trọng:
+Schema đầy đủ nằm trong `.env.production.example`. Khi tạo môi trường Jifeng, thay các
+giá trị database trong file đã copy theo baseline dưới đây và thay toàn bộ placeholder
+`CHANGE_ME`; không sao chép lại block HTTP hoặc database legacy từ các release cũ.
 
 ```dotenv
 COMPOSE_PROJECT_NAME=vnta-hrm-2026
 DEPLOY_ROOT=/opt/vnta
+TZ=Asia/Ho_Chi_Minh
 
 HRM_IMAGE=vnta/hrm-web:2026.07.08-01
 ADMS_IMAGE=vnta/adms-gateway:2026.07.08-01
 
-HRM_HTTP_PORT=8088
-HRM_PUBLIC_ORIGIN=http://192.168.1.218:8088
+HRM_HTTPS_CONTAINER_PORT=8443
+HRM_HTTPS_PORT=8443
+HRM_PUBLIC_ORIGIN=https://192.168.1.218:8443
+HRM_CERT_DIR=/opt/vnta/shared/certificates/hrm
+HRM_TLS_CERT_PASSWORD=CHANGE_ME
 
 ADMS_LISTENER_PORT=8080
 ADMS_CONTROL_PLANE_PORT=5005
+ADMS_LOG_DIR=/opt/vnta/shared/logs/adms
+ADMS_RAW_LOG_DIR=/opt/vnta/shared/logs/adms-raw
+HRM_LOG_DIR=/opt/vnta/shared/logs/hrm
+BACKUP_DIR=/opt/vnta/shared/backups
 
 DATABASE_HOST=192.168.1.199
 DATABASE_PORT=5432
-DATABASE_NAME=vnta-2026
+DATABASE_NAME=jifeng_hrm
 DATABASE_USERNAME=postgres
 DATABASE_PASSWORD=YOUR_PASSWORD
+DATABASE_TIMEZONE=Asia/Ho_Chi_Minh
 
-HRM_DB_CONNECTION=Host=192.168.1.199;Port=5432;Database=vnta-2026;Username=postgres;Password=YOUR_PASSWORD;Timezone=Asia/Ho_Chi_Minh
-ADMS_DB_CONNECTION=Host=192.168.1.199;Port=5432;Database=vnta-2026;Username=postgres;Password=YOUR_PASSWORD;Timezone=Asia/Ho_Chi_Minh
+HRM_DB_CONNECTION=Host=192.168.1.199;Port=5432;Database=jifeng_hrm;Username=postgres;Password=YOUR_PASSWORD;Timezone=Asia/Ho_Chi_Minh
+ADMS_DB_CONNECTION=Host=192.168.1.199;Port=5432;Database=jifeng_hrm;Username=postgres;Password=YOUR_PASSWORD;Timezone=Asia/Ho_Chi_Minh
 
 ADMS_CORE_API_ENABLED=true
-ADMS_CORE_API_BASE_URL=http://hrm-web:8080
+ADMS_CORE_API_BASE_URL=https://hrm-web:8443
+GATEWAY_CERT_DIR=/opt/vnta/shared/certificates/gateway
+GATEWAY_CLIENT_CERT_PASSWORD=CHANGE_ME
+GATEWAY_CLIENT_CERT_SHA256_THUMBPRINT=CHANGE_ME
+HRM_SERVER_CERT_SHA256_THUMBPRINT=CHANGE_ME
+GATEWAY_HMAC_KEY_ID=gateway-2026-01
+GATEWAY_HMAC_SECRET=CHANGE_ME
 ```
 
 Giải thích ngắn:
 
 - `HRM_PUBLIC_ORIGIN` được đưa vào CORS/origin config cho gateway
-- `ADMS_CORE_API_BASE_URL=http://hrm-web:8080` giúp gateway gọi ngược vào HRM trong cùng Docker network
+- `ADMS_CORE_API_BASE_URL=https://hrm-web:8443` giúp gateway gọi ngược vào HRM trong cùng Docker network
 - `5005` không public, nhưng vẫn tồn tại nội bộ để gateway chạy API control/hub của nó
+- `DATABASE_NAME`, `HRM_DB_CONNECTION` và `ADMS_DB_CONNECTION` phải cùng trỏ đến `jifeng_hrm`; không deploy mode `HrmOnly` trong lần chuyển database vì gateway có thể vẫn giữ connection string cũ
 
 ## 5. Upload Release Package Lên Server
 
@@ -357,7 +375,7 @@ docker compose --env-file /opt/vnta/shared/env/.env.production -f docker-compose
 
 ### 8.3. Truy Cập Dịch Vụ
 
-- HRM: `http://192.168.1.218:8088`
+- HRM: `https://192.168.1.218:8443`
 - ADMS listener: `192.168.1.218:8080`
 - từ chính PC đang build release, đây là hai địa chỉ ưu tiên để kiểm tra ngay sau deploy
 
@@ -404,7 +422,7 @@ docker run --rm \
     --host 192.168.1.199 \
     --port 5432 \
     --username postgres \
-    --dbname vnta-2026 \
+    --dbname jifeng_hrm \
     /backup/<dump-file>.dump
 ```
 
@@ -431,7 +449,7 @@ Trước khi go-live, check lại:
 
 - `docker-compose.production.yml` được thiết kế cho external PostgreSQL
 - Nếu sau này bạn muốn đưa PostgreSQL vào cùng server Ubuntu, nên tách thành một runbook riêng để tránh nhầm với production topology hiện tại
-- HRM production hiện đang đi trực tiếp bằng HTTP. Nếu sau này cần SSL, đặt reverse proxy phía trước và chốt lại port/origin
+- HRM production hiện đang đi trực tiếp bằng HTTPS tại `8443`; nếu sau này đặt reverse proxy phía trước, chốt lại certificate, port và `HRM_PUBLIC_ORIGIN` cùng lúc
 - Vì đây là private LAN deployment, runbook này không bao gồm port forwarding, public DNS, reverse proxy internet hay hardening theo mô hình public edge
 
 ## 13. Bắt Buộc Security Cho Gateway → HRM

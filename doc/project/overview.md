@@ -1,11 +1,11 @@
 ﻿# Tổng Quan Dự Án
 
-Vnta HRM Blazor là ứng dụng quản trị nhân sự xây dựng bằng Blazor và DevExpress Blazor.
+JIFENG HRM là ứng dụng quản trị nhân sự xây dựng bằng Blazor và DevExpress Blazor.
 
 ## Source chính hiện tại
 
 - Source root hiện hành: `src/Vnta.HRM2026`
-- Solution hiện hành: `src/Vnta.HRM2026/Vnta.Hrm.slnx`
+- Solution hiện hành: `src/Vnta.HRM2026/Jifeng.Hrm.slnx`
 - Dự án server/host: `src/Vnta.HRM2026/Vnta.Hrm.Web`
 - Dự án client UI: `src/Vnta.HRM2026/Vnta.Hrm.Web.Client`
 - Dự án domain: `src/Vnta.HRM2026/Vnta.Hrm.Domain`
@@ -30,7 +30,7 @@ Vnta HRM Blazor là ứng dụng quản trị nhân sự xây dựng bằng Blaz
 
 - Tên solution và project kỹ thuật đã đổi sang ngữ cảnh HRM, nhưng cấu trúc feature bên trong vẫn còn nhiều dấu vết CRM demo.
 - Baseline runtime hiện tại của source này đã chốt là `.NET 10` với DevExpress `26.1.x`.
-- HRM hiện dùng chung PostgreSQL với `src/zkteco-adms-gateway` tại database `vnta-2026`.
+- HRM hiện dùng chung PostgreSQL với `src/zkteco-adms-gateway` tại database Jifeng `jifeng_hrm`.
 - `ApplicationDbContext`, `ApplicationUser`, migration Identity và `IdentityNoOpEmailSender` đã được chuyển sang `Vnta.Hrm.Infrastructure`.
 - Runtime không còn seed tài khoản demo; cấu hình cục bộ dùng `appsettings.Local.json` đã được ignore và lấy mẫu từ `appsettings.Local.example.json`.
 - Migration Identity hiện có vẫn là di sản từ SQL Server demo cũ và cần được chuẩn hóa lại theo Npgsql ở các lượt tiếp theo.

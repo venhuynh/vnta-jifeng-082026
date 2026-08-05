@@ -11,7 +11,7 @@
 ## Prompt sẵn để dán
 
 ```text
-Bạn đang làm việc trong repo Vnta-Blazor-2026 trên một branch khác, không phải main.
+Bạn đang làm việc trong repo JIFENG HRM trên một branch khác, không phải main.
 
 Mục tiêu của bạn là sửa nhóm lỗi liên quan đến NavMenu, DxTreeView, menu icon, current module, folder/namespace hoặc branch đang lệch khỏi baseline menu chuẩn trên origin/main.
 

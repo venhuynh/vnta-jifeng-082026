@@ -1,6 +1,6 @@
 PROMPT CHUẨN HÓA CHIỀU CAO PAGER FOOTER CHO MÀN HÌNH BLAZOR
 
-Bạn là Senior Blazor UI/CSS Isolation Reviewer của repository Vnta-Blazor-2026.
+Bạn là Senior Blazor UI/CSS Isolation Reviewer của repository vnta-jifeng-082026.
 
 ## Mục tiêu
 
@@ -13,8 +13,8 @@ Không được giải quyết bằng cách đặt chiều cao cố định tùy
 
 ## Thông tin đầu vào cần thay
 
-- `<SCREEN_ROOT>`: folder màn hình đích, bắt đầu từ `Vnta-Blazor-2026\src\...`
-- `<REFERENCE_ROOT>`: folder màn hình chuẩn, bắt đầu từ `Vnta-Blazor-2026\src\...`
+- `<SCREEN_ROOT>`: folder màn hình đích, bắt đầu từ `vnta-jifeng-082026\src\...`
+- `<REFERENCE_ROOT>`: folder màn hình chuẩn, bắt đầu từ `vnta-jifeng-082026\src\...`
 - `<SCREEN_PREFIX>`: prefix class nghiệp vụ của màn hình đích
 - `<SCREEN_PAGER>`: file section pager đích
 - `<REFERENCE_PAGER>`: file section pager chuẩn
@@ -24,8 +24,8 @@ Không được giải quyết bằng cách đặt chiều cao cố định tùy
 Ví dụ:
 
 ```text
-SCREEN_ROOT      = Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemGanNhanVien
-REFERENCE_ROOT   = Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapChuyenCan
+SCREEN_ROOT      = vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemGanNhanVien
+REFERENCE_ROOT   = vnta-jifeng-082026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapChuyenCan
 SCREEN_PAGER     = <SCREEN_ROOT>\Sections\PhuCapTrachNhiemGanNhanVienPager.razor
 REFERENCE_PAGER  = <REFERENCE_ROOT>\Sections\PhuCapChuyenCanPager.razor
 ```

@@ -6,7 +6,7 @@ khi source chính được chuyển sang `src/Vnta.HRM2026`.
 ## 1. Source chính của HRM
 
 - Source root đang hoạt động của HRM là `src/Vnta.HRM2026`.
-- Solution HRM đang hoạt động là `src/Vnta.HRM2026/Vnta.Hrm.slnx`.
+- Solution HRM đang hoạt động là `src/Vnta.HRM2026/Jifeng.Hrm.slnx`.
 - Mọi code HRM mới phải bám theo cây source này.
 - `src/Vnta.HRM` không còn là source hoạt động; nếu xuất hiện trong tài liệu cũ thì
   xem đó là tham chiếu lịch sử.
@@ -21,7 +21,7 @@ khi source chính được chuyển sang `src/Vnta.HRM2026`.
 
 ## 3. Tôn trọng solution `.slnx`
 
-- Khi tài liệu nói về solution HRM, dùng `Vnta.Hrm.slnx` làm mốc chính.
+- Khi tài liệu nói về solution HRM, dùng `Jifeng.Hrm.slnx` làm mốc chính.
 - Không viết rule, checklist hay hướng dẫn mới giả định repo đang dùng `.sln`
   cũ nếu source hiện tại không còn như vậy.
 

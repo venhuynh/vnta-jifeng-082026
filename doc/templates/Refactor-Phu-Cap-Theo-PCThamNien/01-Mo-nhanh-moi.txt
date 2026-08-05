@@ -6,7 +6,7 @@ trong đó màn hình “Bảng công ngày” là chuẩn tham chiếu về ki�
 ## 1. Chuẩn bị source code và nhánh làm việc
 
 Repository:
-C:\Users\VNSIT\Documents\GitHub\Vnta-Blazor-2026
+<repository-root>
 
 Thực hiện theo thứ tự:
 

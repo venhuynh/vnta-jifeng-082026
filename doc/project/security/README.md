@@ -1,6 +1,6 @@
 # Bảo mật backend HRM
 
-Thư mục này là nguồn tài liệu sống cho việc đánh giá và refactor bảo mật backend của VNTA HRM. Phạm vi bao gồm `Vnta.Hrm.Web`, `Vnta.Hrm.Application`, `Vnta.Hrm.Infrastructure`, PostgreSQL, ASP.NET Core Identity và các tích hợp backend liên quan.
+Thư mục này là nguồn tài liệu sống cho việc đánh giá và refactor bảo mật backend của JIFENG HRM. Phạm vi bao gồm `Vnta.Hrm.Web`, `Vnta.Hrm.Application`, `Vnta.Hrm.Infrastructure`, PostgreSQL, ASP.NET Core Identity và các tích hợp backend liên quan.
 
 ## Tài liệu chính
 

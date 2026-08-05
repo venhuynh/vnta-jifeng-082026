@@ -150,7 +150,7 @@ Tài liệu liên quan:
 
 Trạng thái hiện tại:
 
-- đã đổi solution hiện hành sang `Vnta.Hrm.slnx`
+- đã đổi solution hiện hành sang `Jifeng.Hrm.slnx`
 - đã đổi hai project hiện hành sang `Vnta.Hrm.Web` và `Vnta.Hrm.Web.Client`
 - đã đổi namespace/usings chính sang ngữ cảnh HRM
 - đã cập nhật docs/cấu hình chính để repo coi `src/Vnta.HRM2026` là source HRM chính thức
@@ -163,7 +163,7 @@ Mục tiêu:
 
 Đầu việc:
 
-- chuẩn hóa đường dẫn solution hiện hành là `src/Vnta.HRM2026/Vnta.Hrm.slnx`
+- chuẩn hóa đường dẫn solution hiện hành là `src/Vnta.HRM2026/Jifeng.Hrm.slnx`
 - chuẩn hóa host hiện hành là `src/Vnta.HRM2026/Vnta.Hrm.Web`
 - chuẩn hóa interactive client hiện hành là `src/Vnta.HRM2026/Vnta.Hrm.Web.Client`
 - dọn text, asset path và namespace còn gắn CRM

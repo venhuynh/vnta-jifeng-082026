@@ -4,7 +4,7 @@ Tài liệu này mô tả hướng kiến trúc nên áp dụng khi dự án HRM
 
 ## Hiện trạng
 
-Source HRM hiện hành là `src/Vnta.HRM2026` với solution `src/Vnta.HRM2026/Vnta.Hrm.slnx`, gồm:
+Source HRM hiện hành là `src/Vnta.HRM2026` với solution `src/Vnta.HRM2026/Jifeng.Hrm.slnx`, gồm:
 
 - `Vnta.Hrm.Web/`: startup host, `Program.cs`, account UI, static assets, host-side components và composition root.
 - `Vnta.Hrm.Web.Client/`: UI interactive chạy trong browser, routes, layout, model demo, services và các module demo `Analytics`, `Contacts`, `Planning`.
@@ -20,7 +20,7 @@ Source HRM hiện hành là `src/Vnta.HRM2026` với solution `src/Vnta.HRM2026/
 - Runtime database ưu tiên `ConnectionStrings:Postgres`.
 - Repo có thêm solution console độc lập `src/Vnta.PostgresSync` để chạy luồng đồng bộ PostgreSQL-to-PostgreSQL ngoài `Vnta.HRM2026`.
 - Luồng sync này được vận hành bằng command console và có tài liệu riêng tại `doc/setup/postgres-sync-console.md`.
-- HRM đang dùng chung PostgreSQL với gateway attendance tại database `vnta-2026`.
+- HRM đang dùng chung PostgreSQL với gateway attendance tại database Jifeng `jifeng_hrm`.
 - Baseline công nghệ chính thức của source hiện hành là `.NET 10` và DevExpress `26.1.x`, hiện đang pin package `26.1.3`.
 - Toàn solution đã build thành công với `0 Warning(s)` và `0 Error(s)` ngày `2026-06-29`.
 
@@ -92,7 +92,7 @@ Trong giai đoạn hiện tại, có thể tiếp tục giữ nhịp triển kha
 ## Quy tắc database
 
 - `Infrastructure` là nơi sở hữu `ApplicationDbContext`, migrations và cấu hình provider.
-- HRM hiện dùng PostgreSQL/Npgsql và dùng chung database `vnta-2026` với gateway attendance.
+- HRM hiện dùng PostgreSQL/Npgsql và dùng chung database Jifeng `jifeng_hrm` với gateway attendance.
 - Migration Identity đã được chuẩn hóa lại theo PostgreSQL/Npgsql và đã được apply thành công.
 - `ConnectionStrings:Postgres` là cấu hình ưu tiên cho runtime hiện tại của HRM.
 - Các trường `DateTime` nghiệp vụ nên ưu tiên `timestamp without time zone` khi mở rộng model sang nghiệp vụ HRM thật.

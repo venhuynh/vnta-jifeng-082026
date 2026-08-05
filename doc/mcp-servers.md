@@ -12,7 +12,7 @@ This repository currently standardizes DevExpress documentation lookup through s
 
 The tracked MCP configuration is in `src/Vnta.HRM2026/.mcp.json`.
 
-This location matches Visual Studio automatic discovery for the solution at `src/Vnta.HRM2026/Vnta.Hrm.slnx`.
+This location matches Visual Studio automatic discovery for the solution at `src/Vnta.HRM2026/Jifeng.Hrm.slnx`.
 
 Configured servers:
 
@@ -78,7 +78,7 @@ This distinction prevents repository instructions from incorrectly requiring a t
 
 ## Verification Checklist
 
-After opening `src/Vnta.HRM2026/Vnta.Hrm.slnx` in Visual Studio:
+After opening `src/Vnta.HRM2026/Jifeng.Hrm.slnx` in Visual Studio:
 
 1. Switch Copilot chat to `Agent` mode.
 2. Open the tool picker and confirm `dxdocs` or `dxdocs26_1` appears.

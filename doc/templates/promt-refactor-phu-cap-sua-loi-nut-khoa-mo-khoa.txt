@@ -1,6 +1,6 @@
 Bạn đang làm việc trong repo:
 
-C:\Users\VNSIT\Documents\GitHub\Vnta-Blazor-2026
+<repository-root>
 
 Mục tiêu:
 Rà soát toàn bộ logic nút “Khóa / Mở khóa” ở các màn hình khác, kiểm tra xem có đang xử lý chậm / gọi từng dòng / load period sai / bật loading muộn hay không, rồi refactor theo đúng pattern backend batch vừa áp dụng cho màn hình Phụ cấp thâm niên.

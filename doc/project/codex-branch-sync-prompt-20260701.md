@@ -18,7 +18,7 @@
 ## Prompt sẵn để dán
 
 ```text
-Bạn đang làm việc trong repo Vnta-Blazor-2026 trên một feature branch, không phải main.
+Bạn đang làm việc trong repo JIFENG HRM trên một feature branch, không phải main.
 
 Source of truth cho menu, source UI và tài liệu chuẩn hiện nằm trên `origin/main`, đã được merge ngày 2026-07-01 qua PR #10, commit `25b00b8`.
 

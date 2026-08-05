@@ -172,7 +172,7 @@ Nếu chưa đăng nhập, `302` redirect đến login là chấp nhận đượ
 ## Prompt cho may/branch khac
 
 ```text
-Bạn đang làm việc trong repo Vnta-Blazor-2026 trên một feature branch, không phải main.
+Bạn đang làm việc trong repo JIFENG HRM trên một feature branch, không phải main.
 
 Van để cần sua:
 Các màn hình trong menu `Quản trị` có thể treo global Loading khi mở nhiều tab hoặc click nhiều node menu liên tiếp. UI DEMO vẫn mở bình thường.

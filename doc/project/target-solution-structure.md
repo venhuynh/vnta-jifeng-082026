@@ -1,6 +1,6 @@
 # Cấu Trúc Solution Đích
 
-Tài liệu này mô tả cấu trúc source và solution đích cho Vnta HRM theo ba giai đoạn phát triển, dựa trên baseline đang hoạt động của repo.
+Tài liệu này mô tả cấu trúc source và solution đích cho JIFENG HRM theo ba giai đoạn phát triển, dựa trên baseline đang hoạt động của repo.
 
 1. Hiện tại
 2. Refactor tiếp trong `Vnta.HRM2026`
@@ -12,9 +12,9 @@ Mục tiêu của tài liệu là giúp nhóm giữ cùng một hướng kiến 
 
 - Từ `2026-06-29`, source HRM chính thức của repo là `src/Vnta.HRM2026`.
 - Thư mục `src/Vnta.HRM` đã bị loại khỏi repo.
-- Solution HRM hiện hành là `src/Vnta.HRM2026/Vnta.Hrm.slnx`.
+- Solution HRM hiện hành là `src/Vnta.HRM2026/Jifeng.Hrm.slnx`.
 - Baseline công nghệ chính thức là `.NET 10` và DevExpress `26.1.x`.
-- Runtime database là PostgreSQL/Npgsql, dùng chung database `vnta-2026` với gateway attendance.
+- Runtime database là PostgreSQL/Npgsql, dùng chung database Jifeng `jifeng_hrm` với gateway attendance.
 
 ## Nguyên tắc chung
 
@@ -35,7 +35,7 @@ Ghi nhận đúng hiện trạng của source HRM2026 sau khi đã tách skeleto
 
 ```text
 src/Vnta.HRM2026/
-  Vnta.Hrm.slnx
+  Jifeng.Hrm.slnx
   Directory.Packages.props
 
   Vnta.Hrm.Domain/
@@ -117,7 +117,7 @@ Giữ naming HRM đã chốt, dọn tiếp dấu vết CRM demo, và đưa modul
 
 ```text
 src/Vnta.HRM2026/
-  Vnta.Hrm.slnx
+  Jifeng.Hrm.slnx
 
   Vnta.Hrm.Domain/
     Common/

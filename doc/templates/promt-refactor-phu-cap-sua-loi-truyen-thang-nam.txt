@@ -1,6 +1,6 @@
 Bạn đang làm việc trong repo:
 
-C:\Users\VNSIT\Documents\GitHub\Vnta-Blazor-2026
+<repository-root>
 
 Branch hiện tại:
 codex/refactor-phu-cap-tham-nien-ui-20260715

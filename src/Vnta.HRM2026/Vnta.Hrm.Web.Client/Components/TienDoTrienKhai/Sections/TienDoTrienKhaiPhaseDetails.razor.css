@@ -54,6 +54,18 @@
     font-variant-numeric: tabular-nums;
 }
 
+.implementation-progress-phase-details-meta .implementation-progress-persistence-status-saved {
+    border-color: color-mix(in srgb, var(--dxds-color-content-success-default-rest, #15803d) 25%, transparent);
+    color: var(--dxds-color-content-success-default-rest, #15803d);
+    background: color-mix(in srgb, var(--dxds-color-content-success-default-rest, #15803d) 7%, var(--dxds-color-surface-neutral-default-rest));
+}
+
+.implementation-progress-phase-details-meta .implementation-progress-persistence-status-error {
+    border-color: color-mix(in srgb, var(--dxds-color-content-danger-default-rest, #b91c1c) 25%, transparent);
+    color: var(--dxds-color-content-danger-default-rest, #b91c1c);
+    background: color-mix(in srgb, var(--dxds-color-content-danger-default-rest, #b91c1c) 7%, var(--dxds-color-surface-neutral-default-rest));
+}
+
 .implementation-progress-detail-grid-host {
     overflow-x: auto;
     scrollbar-color: color-mix(in srgb, var(--dxds-color-content-neutral-subtle-rest, #64748b) 40%, transparent) transparent;

@@ -1,4 +1,5 @@
 using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Models;
+using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Persistence;
 
 namespace Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.State;
 
@@ -67,7 +68,7 @@ internal sealed class ProjectImplementationProgressSessionState
                 "Chốt quy tắc xử lý bảng xếp ca"
             ]),
         CreateMilestone(
-            "2.1",
+            "2.2",
             "Xử lý được các trường hợp chấm công bất thường",
             new DateOnly(2026, 9, 7),
             [
@@ -79,7 +80,7 @@ internal sealed class ProjectImplementationProgressSessionState
                 "Giải thích kỹ và cách tính công, đi trễ về sớm, khấu trừ ngày làm việc của từng nhân viên khi xử lý các log bất thường"
             ]),
         CreateMilestone(
-            "2.2",
+            "2.3",
             "Theo dõi được các trường hợp nghỉ thai sản, được phép đi trễ về sớm, nghỉ phép",
             new DateOnly(2026, 9, 14),
             [
@@ -91,7 +92,7 @@ internal sealed class ProjectImplementationProgressSessionState
                 "Cung cấp quy tắc đăng ký nghỉ phép"
             ]),
         CreateMilestone(
-            "2.3",
+            "2.4",
             "Chốt công tháng",
             new DateOnly(2026, 9, 21),
             [
@@ -157,6 +158,57 @@ internal sealed class ProjectImplementationProgressSessionState
             ])
     ];
 
+    private static IReadOnlyList<ProjectImplementationMilestone> CreatePhaseFourMilestones() =>
+    [
+        CreateMilestone(
+            "4.1",
+            "Triển khai ứng dụng WebApp và Mobile lên môi trường internet",
+            new DateOnly(2026, 10, 26),
+            [
+                "Cho phép truy cập qua internet ứng dụng web hoặc mobile tùy chọn",
+                "Quản lý nhân viên truy cập vào ứng dụng mobile"
+            ],
+            [
+                "Cung cấp tên miền cho từng loại ứng dụng. Ví dụ www.[Tên miền] => WebApp; mobile.[Tên miền] => Mobile",
+                "Tự chủ từ server, tên miền nếu chưa có để sẵn sàng cho môi trường triển khai"
+            ]),
+        CreateMilestone(
+            "4.2",
+            "Chạy thử tải cho toàn bộ nhân viên truy cập vào",
+            new DateOnly(2026, 11, 2),
+            [
+                "Điều chỉnh và đảm bảo hệ thống chịu tải về mặt phần mềm cho toàn bộ tối đa 300 nhân viên truy cập đồng thời ở môi trường mobile"
+            ],
+            [
+                "Đầu tư máy chủ, đường truyền mạng với tốc độ phù hợp cho tải 300 nhân viên truy cập đồng thời"
+            ]),
+        CreateMilestone(
+            "4.3",
+            "Triển khai ứng dụng mobile cho khách hàng",
+            new DateOnly(2026, 11, 9),
+            [
+                "Đảm bảo quản lý người sử dụng nhân viên"
+            ],
+            [
+                "Vận hành việc quản lý danh sách các nhân viên truy cập vào ứng dụng mobile"
+            ])
+    ];
+
+    private static IReadOnlyList<ProjectImplementationMilestone> CreatePhaseFiveMilestones() =>
+    [
+        CreateMilestone(
+            "5.1",
+            "Áp dụng các quy tắc quản lý Hành Chính",
+            new DateOnly(2026, 11, 16),
+            [
+                "Đưa vào sử dụng các quy tắc quản lý Hành chính trong nội bộ công ty"
+            ],
+            [
+                "Cung cấp đầy đủ các quy trình xử lý về mặt Hành chính để chuyển đổi số"
+            ],
+            durationWeeks: 2)
+    ];
+
     private static IReadOnlyList<ProjectImplementationPhase> CreateDefaultPhases() =>
     [
         new(
@@ -200,20 +252,26 @@ internal sealed class ProjectImplementationProgressSessionState
             4,
             "Ứng dụng mobile cho phép nhân viên truy cập",
             3,
-            null,
-            [],
-            []),
+            new DateOnly(2026, 10, 26),
+            CreatePhaseFourMilestones(),
+            [
+                "Ứng dụng mobile hoạt động được.",
+                "Quản lý nhân viên truy cập vào ứng dụng mobile.",
+                "Nhân viên truy cập và nhìn thấy được dữ liệu cá nhân."
+            ]),
         new(
             Guid.Parse("6b927efe-9598-4c6a-812f-b1f69377a1a2"),
             5,
             "Áp dụng các quy tắc hành chính.",
             2,
-            null,
-            [],
-            [])
+            new DateOnly(2026, 11, 16),
+            CreatePhaseFiveMilestones(),
+            [
+                "Chuyển đổi số về mặt quản lý Hành Chính."
+            ])
     ];
 
-    internal IReadOnlyList<ProjectImplementationPhase> Phases { get; } = CreateDefaultPhases();
+    internal IReadOnlyList<ProjectImplementationPhase> Phases { get; private set; } = CreateDefaultPhases();
 
     internal int PhaseCount => Phases.Count;
 
@@ -221,15 +279,29 @@ internal sealed class ProjectImplementationProgressSessionState
 
     internal IReadOnlyList<int> TimelineWeeks => Enumerable.Range(1, TotalDurationWeeks).ToArray();
 
+    internal void Apply(ProjectImplementationProgressSnapshot snapshot)
+    {
+        Phases = snapshot.Phases;
+    }
+
+    internal static ProjectImplementationProgressSnapshot CreateDefaultSnapshot() =>
+        new(ProjectImplementationProgressSnapshot.CurrentSchemaVersion, CreateDefaultPhases());
+
     private static ProjectImplementationMilestone CreateMilestone(
         string code,
         string title,
         DateOnly startDate,
         IReadOnlyList<string> vnsItems,
         IReadOnlyList<string> jifengItems,
-        string? jifengLeadIn = null)
+        string? jifengLeadIn = null,
+        int durationWeeks = 1)
     {
-        var endDate = startDate.AddDays(6);
+        if(durationWeeks < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(durationWeeks));
+        }
+
+        var endDate = startDate.AddDays(durationWeeks * 7 - 1);
         IReadOnlyList<ProjectImplementationTask> jifengLeadInTask = string.IsNullOrWhiteSpace(jifengLeadIn)
             ? []
             : CreateDetailTasks(
@@ -243,7 +315,7 @@ internal sealed class ProjectImplementationProgressSessionState
         return new ProjectImplementationMilestone(
             code,
             title,
-            1,
+            durationWeeks,
             startDate,
             endDate,
             [

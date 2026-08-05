@@ -10,6 +10,11 @@
 
 <div class="content-root">
     <main class="implementation-progress-root" aria-labelledby="implementation-progress-page-title">
+        @if(!string.IsNullOrWhiteSpace(LoadError))
+        {
+            <p class="implementation-progress-persistence-error" role="alert">@LoadError</p>
+        }
+
         <TienDoTrienKhaiProjectHeader PhaseCount="@PhaseCount"
                                         TotalDurationWeeks="@TotalDurationWeeks" />
         <TienDoTrienKhaiRoadmap Phases="@Phases"

@@ -2,12 +2,15 @@ using System.Globalization;
 using DevExpress.Blazor;
 using Microsoft.AspNetCore.Components;
 using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Models;
+using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Persistence;
 
 namespace Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Sections;
 
 /// <summary>Trình bày và cho phép cập nhật cục bộ các đầu việc chi tiết của một giai đoạn.</summary>
 public partial class TienDoTrienKhaiPhaseDetails
 {
+    [Inject] private IProjectImplementationProgressStore ProgressStore { get; set; } = default!;
+
     private sealed record TaskOwnerOption(ProjectImplementationTaskOwner Value, string Text);
 
     private sealed record TaskStatusOption(ProjectImplementationTaskStatus Value, string Text);
@@ -36,14 +39,42 @@ public partial class TienDoTrienKhaiPhaseDetails
 
     private string AcceptanceTitleId => $"implementation-progress-phase-{Phase.Sequence}-acceptance";
 
-    private void OnEditModelSaving(GridEditModelSavingEventArgs e)
+    private DateTimeOffset? LastSavedAt { get; set; }
+
+    private string? SaveError { get; set; }
+
+    private async Task OnEditModelSaving(GridEditModelSavingEventArgs e)
     {
-        if(!e.IsNew)
+        if(e.IsNew)
         {
-            e.CopyChangesToDataItem();
+            e.Cancel = true;
+            return;
         }
 
-        e.Reload = false;
+        var editedTask = (ProjectImplementationTask)e.EditModel;
+        editedTask.WorkItem = editedTask.WorkItem?.Trim() ?? string.Empty;
+
+        try
+        {
+            await ProgressStore.UpdateTaskAsync(new UpdateProjectImplementationTaskRequest(
+                editedTask.Id,
+                editedTask.WorkItem,
+                editedTask.Owner,
+                editedTask.StartDate,
+                editedTask.EndDate,
+                editedTask.Status,
+                editedTask.CompletionPercent));
+
+            e.CopyChangesToDataItem();
+            e.Reload = false;
+            LastSavedAt = DateTimeOffset.Now;
+            SaveError = null;
+        }
+        catch
+        {
+            e.Cancel = true;
+            SaveError = "Không thể lưu thay đổi. Vui lòng thử lại.";
+        }
     }
 
     private static string GetOwnerLabel(ProjectImplementationTaskOwner owner) =>
@@ -62,4 +93,7 @@ public partial class TienDoTrienKhaiPhaseDetails
 
     private static string FormatDate(DateOnly value) =>
         value.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+    private static string FormatSavedAt(DateTimeOffset value) =>
+        value.ToLocalTime().ToString("HH:mm:ss dd/MM", CultureInfo.InvariantCulture);
 }

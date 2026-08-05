@@ -13,6 +13,14 @@
                 <span>Bắt đầu <strong>@FormatDate(startDate)</strong></span>
             }
             <span><strong>@Phase.DetailedDurationWeeks/@Phase.DurationWeeks</strong> tuần đã mô tả</span>
+            @if(!string.IsNullOrWhiteSpace(SaveError))
+            {
+                <span class="implementation-progress-persistence-status implementation-progress-persistence-status-error" role="alert">@SaveError</span>
+            }
+            else if(LastSavedAt is { } savedAt)
+            {
+                <span class="implementation-progress-persistence-status implementation-progress-persistence-status-saved" role="status">Đã lưu @FormatSavedAt(savedAt)</span>
+            }
         </div>
     </header>
 

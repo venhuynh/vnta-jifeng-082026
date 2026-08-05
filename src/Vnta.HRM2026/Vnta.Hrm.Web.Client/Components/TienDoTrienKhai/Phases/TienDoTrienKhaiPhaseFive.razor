@@ -1,3 +1,8 @@
+@using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Sections
 @inherits TienDoTrienKhaiPhaseComponentBase
 
-<TienDoTrienKhaiPhaseCard Phase="@Phase" />
+<TienDoTrienKhaiPhaseCard Phase="@Phase">
+    <ChildContent>
+        <TienDoTrienKhaiPhaseDetails Phase="@Phase" />
+    </ChildContent>
+</TienDoTrienKhaiPhaseCard>

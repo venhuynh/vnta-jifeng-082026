@@ -16,4 +16,12 @@ public sealed record ProjectImplementationPhase(
     public int DetailedDurationWeeks => Milestones.Sum(milestone => milestone.DurationWeeks);
 
     public int RemainingDurationWeeks => Math.Max(0, DurationWeeks - DetailedDurationWeeks);
+
+    public IReadOnlyList<ProjectImplementationTask> DetailTasks => Milestones
+        .SelectMany(milestone => milestone.Tasks)
+        .OrderBy(task => task.StartDate)
+        .ThenBy(task => task.MilestoneGroup, StringComparer.Ordinal)
+        .ThenBy(task => task.Owner)
+        .ThenBy(task => task.WorkItem, StringComparer.Ordinal)
+        .ToArray();
 }

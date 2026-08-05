@@ -1,10 +1,10 @@
 namespace Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Models;
 
-/// <summary>Một mốc công việc cùng trách nhiệm phối hợp của VNS và JIFENG.</summary>
+/// <summary>Một mốc công việc có lịch thực hiện và các dòng công việc chi tiết.</summary>
 public sealed record ProjectImplementationMilestone(
     string Code,
     string Title,
     int DurationWeeks,
-    IReadOnlyList<string> VnsItems,
-    IReadOnlyList<string> JifengItems,
-    string? JifengLeadIn = null);
+    DateOnly StartDate,
+    DateOnly EndDate,
+    IReadOnlyList<ProjectImplementationTask> Tasks);

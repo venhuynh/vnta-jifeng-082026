@@ -5,12 +5,12 @@ namespace Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.State;
 /// <summary>Sở hữu lộ trình triển khai cố định trong phiên UI hiện tại.</summary>
 internal sealed class ProjectImplementationProgressSessionState
 {
-    private static readonly IReadOnlyList<ProjectImplementationMilestone> PhaseOneMilestones =
+    private static IReadOnlyList<ProjectImplementationMilestone> CreatePhaseOneMilestones() =>
     [
-        new(
+        CreateMilestone(
             "1.1",
             "Lắp đặt MCC",
-            1,
+            new DateOnly(2026, 8, 3),
             [
                 "Bàn giao 2 máy chấm công khuyến mãi V5L"
             ],
@@ -19,10 +19,10 @@ internal sealed class ProjectImplementationProgressSessionState
                 "Chịu trách nhiệm lắp đặt.",
                 "Khuyến cáo cần thêm UPS lưu trữ cho trường hợp cúp điện thì MCC vẫn hoạt động được."
             ]),
-        new(
+        CreateMilestone(
             "1.2",
             "Triển khai máy chủ giao tiếp với các MCC",
-            1,
+            new DateOnly(2026, 8, 10),
             [
                 "Cài đặt máy chủ ADMS để giao tiếp với các máy chấm công và tải được dữ liệu sinh trắc học."
             ],
@@ -30,10 +30,10 @@ internal sealed class ProjectImplementationProgressSessionState
                 "Tạo máy ảo Ubuntu và cung cấp các thông tin đăng nhập.",
                 "Cài đặt các MCC trỏ về địa chỉ IP của máy chủ."
             ]),
-        new(
+        CreateMilestone(
             "1.3",
             "Quản lý thông tin nhân viên, dữ liệu sinh trắc học",
-            1,
+            new DateOnly(2026, 8, 17),
             [
                 "Quản lý danh mục nhân viên.",
                 "Quản lý danh mục phòng ban.",
@@ -52,7 +52,7 @@ internal sealed class ProjectImplementationProgressSessionState
             "Cung cấp file dữ liệu")
     ];
 
-    private static readonly IReadOnlyList<ProjectImplementationPhase> DefaultPhases =
+    private static IReadOnlyList<ProjectImplementationPhase> CreateDefaultPhases() =>
     [
         new(
             Guid.Parse("f6abcc03-8545-4d19-b41b-1098590ca152"),
@@ -60,7 +60,7 @@ internal sealed class ProjectImplementationProgressSessionState
             "Lắp đặt các vị trí mới của máy chấm công, dữ liệu sinh trắc học, quy tắc ca kíp",
             4,
             new DateOnly(2026, 8, 3),
-            PhaseOneMilestones),
+            CreatePhaseOneMilestones()),
         new(
             Guid.Parse("996ff665-bf80-4c6a-badf-63adc3c4ab67"),
             2,
@@ -91,11 +91,64 @@ internal sealed class ProjectImplementationProgressSessionState
             [])
     ];
 
-    internal IReadOnlyList<ProjectImplementationPhase> Phases { get; } = DefaultPhases;
+    internal IReadOnlyList<ProjectImplementationPhase> Phases { get; } = CreateDefaultPhases();
 
     internal int PhaseCount => Phases.Count;
 
     internal int TotalDurationWeeks => Phases.Sum(phase => phase.DurationWeeks);
 
     internal IReadOnlyList<int> TimelineWeeks => Enumerable.Range(1, TotalDurationWeeks).ToArray();
+
+    private static ProjectImplementationMilestone CreateMilestone(
+        string code,
+        string title,
+        DateOnly startDate,
+        IReadOnlyList<string> vnsItems,
+        IReadOnlyList<string> jifengItems,
+        string? jifengLeadIn = null)
+    {
+        var endDate = startDate.AddDays(6);
+        IReadOnlyList<ProjectImplementationTask> jifengLeadInTask = string.IsNullOrWhiteSpace(jifengLeadIn)
+            ? []
+            : CreateDetailTasks(
+                code,
+                title,
+                startDate,
+                endDate,
+                ProjectImplementationTaskOwner.Jifeng,
+                [jifengLeadIn]);
+
+        return new ProjectImplementationMilestone(
+            code,
+            title,
+            1,
+            startDate,
+            endDate,
+            [
+                ..CreateDetailTasks(code, title, startDate, endDate, ProjectImplementationTaskOwner.Vns, vnsItems),
+                ..jifengLeadInTask,
+                ..CreateDetailTasks(code, title, startDate, endDate, ProjectImplementationTaskOwner.Jifeng, jifengItems)
+            ]);
+    }
+
+    private static IReadOnlyList<ProjectImplementationTask> CreateDetailTasks(
+        string milestoneCode,
+        string milestoneTitle,
+        DateOnly startDate,
+        DateOnly endDate,
+        ProjectImplementationTaskOwner owner,
+        IReadOnlyList<string> workItems) =>
+        workItems
+            .Select(workItem => new ProjectImplementationTask
+            {
+                Id = Guid.NewGuid(),
+                MilestoneGroup = $"{milestoneCode} · {milestoneTitle}",
+                WorkItem = workItem,
+                Owner = owner,
+                StartDate = startDate,
+                EndDate = endDate,
+                Status = ProjectImplementationTaskStatus.NotStarted,
+                CompletionPercent = 0
+            })
+            .ToArray();
 }

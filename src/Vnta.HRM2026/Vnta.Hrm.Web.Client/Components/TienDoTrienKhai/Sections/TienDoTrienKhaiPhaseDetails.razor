@@ -1,10 +1,11 @@
+@using DevExpress.Blazor
 @using Vnta.Hrm.Web.Client.Components.TienDoTrienKhai.Models
 
 <section class="implementation-progress-phase-details" aria-labelledby="@DetailsTitleId">
     <header class="implementation-progress-phase-details-header">
         <div>
             <p>Chi tiết thực hiện</p>
-            <h4 id="@DetailsTitleId">Giai đoạn @Phase.Sequence</h4>
+            <h4 id="@DetailsTitleId">Giai đoạn @Phase.Sequence · @TaskCount công việc</h4>
         </div>
         <div class="implementation-progress-phase-details-meta">
             @if(Phase.StartDate is { } startDate)
@@ -15,49 +16,113 @@
         </div>
     </header>
 
-    <div class="implementation-progress-milestone-table-scroll">
-        <table class="implementation-progress-milestone-table">
-            <caption>Chi tiết các mốc công việc của giai đoạn @Phase.Sequence</caption>
-            <thead>
-                <tr>
-                    <th scope="col">Mốc</th>
-                    <th scope="col">VNS</th>
-                    <th scope="col">JIFENG</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach(var milestone in Phase.Milestones)
-                {
-                    <tr @key="milestone.Code">
-                        <th scope="row">
-                            <span class="implementation-progress-milestone-code">@milestone.Code</span>
-                            <span class="implementation-progress-milestone-title">@milestone.Title</span>
-                            <span class="implementation-progress-milestone-duration">Thời gian: @milestone.DurationWeeks tuần</span>
-                        </th>
-                        <td>
-                            <ul>
-                                @foreach(var item in milestone.VnsItems)
-                                {
-                                    <li>@item</li>
-                                }
-                            </ul>
-                        </td>
-                        <td>
-                            @if(!string.IsNullOrWhiteSpace(milestone.JifengLeadIn))
-                            {
-                                <p class="implementation-progress-jifeng-lead-in">@milestone.JifengLeadIn</p>
-                            }
-                            <ul>
-                                @foreach(var item in milestone.JifengItems)
-                                {
-                                    <li>@item</li>
-                                }
-                            </ul>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <div class="implementation-progress-detail-grid-host">
+        <DxGrid Data="@Tasks"
+                KeyFieldName="@nameof(ProjectImplementationTask.Id)"
+                CssClass="implementation-progress-detail-grid"
+                PagerVisible="false"
+                ShowAllRows="true"
+                ShowGroupPanel="false"
+                AutoExpandAllGroupRows="true"
+                EditMode="GridEditMode.EditRow"
+                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                TextWrapEnabled="true"
+                FocusedRowEnabled="true"
+                HighlightRowOnHover="true"
+                EditModelSaving="OnEditModelSaving">
+            <Columns>
+                <DxGridCommandColumn Width="5.25rem"
+                                     NewButtonVisible="false"
+                                     DeleteButtonVisible="false"
+                                     TextAlignment="GridTextAlignment.Center" />
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.MilestoneGroup)"
+                                  Caption="Mốc (nhóm)"
+                                  GroupIndex="0"
+                                  ReadOnly="true"
+                                  Width="16rem"
+                                  MinWidth="240" />
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.WorkItem)"
+                                  Caption="Nội dung công việc chi tiết"
+                                  MinWidth="320">
+                    <CellDisplayTemplate>
+                        @{ var task = (ProjectImplementationTask)context.DataItem; }
+                        <span class="implementation-progress-detail-work-item">@task.WorkItem</span>
+                    </CellDisplayTemplate>
+                </DxGridDataColumn>
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.Owner)"
+                                  Caption="Phụ trách"
+                                  Width="8.75rem"
+                                  MinWidth="132"
+                                  TextAlignment="GridTextAlignment.Center">
+                    <CellDisplayTemplate>
+                        @{ var task = (ProjectImplementationTask)context.DataItem; }
+                        <span class="@GetOwnerCssClass(task.Owner)">@GetOwnerLabel(task.Owner)</span>
+                    </CellDisplayTemplate>
+                    <EditSettings>
+                        <DxComboBoxSettings Data="@OwnerOptions"
+                                            ValueFieldName="Value"
+                                            TextFieldName="Text" />
+                    </EditSettings>
+                </DxGridDataColumn>
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.StartDate)"
+                                  Caption="Từ ngày"
+                                  DisplayFormat="dd/MM/yyyy"
+                                  Width="8.5rem"
+                                  MinWidth="128"
+                                  TextAlignment="GridTextAlignment.Center" />
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.EndDate)"
+                                  Caption="Đến ngày"
+                                  DisplayFormat="dd/MM/yyyy"
+                                  Width="8.5rem"
+                                  MinWidth="128"
+                                  TextAlignment="GridTextAlignment.Center" />
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.Status)"
+                                  Caption="Tình trạng"
+                                  Width="10rem"
+                                  MinWidth="152">
+                    <CellDisplayTemplate>
+                        @{ var task = (ProjectImplementationTask)context.DataItem; }
+                        <span class="@GetStatusCssClass(task.Status)">
+                            <span class="implementation-progress-detail-status-dot" aria-hidden="true"></span>
+                            @GetStatusLabel(task.Status)
+                        </span>
+                    </CellDisplayTemplate>
+                    <EditSettings>
+                        <DxComboBoxSettings Data="@StatusOptions"
+                                            ValueFieldName="Value"
+                                            TextFieldName="Text" />
+                    </EditSettings>
+                </DxGridDataColumn>
+
+                <DxGridDataColumn FieldName="@nameof(ProjectImplementationTask.CompletionPercent)"
+                                  Caption="% hoàn thành"
+                                  Width="11rem"
+                                  MinWidth="168"
+                                  TextAlignment="GridTextAlignment.Right">
+                    <CellDisplayTemplate>
+                        @{ var task = (ProjectImplementationTask)context.DataItem; }
+                        <div class="implementation-progress-detail-progress">
+                            <DxProgressBar CssClass="implementation-progress-detail-progress-bar"
+                                           MaxValue="100"
+                                           Value="@task.CompletionPercent"
+                                           ShowLabel="false" />
+                            <span>@task.CompletionPercent%</span>
+                        </div>
+                    </CellDisplayTemplate>
+                    <EditSettings>
+                        <DxSpinEditSettings MinValue="0"
+                                            MaxValue="100"
+                                            Increment="5" />
+                    </EditSettings>
+                </DxGridDataColumn>
+            </Columns>
+        </DxGrid>
     </div>
 
     @if(Phase.RemainingDurationWeeks > 0)

@@ -1,0 +1,58 @@
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTongHop.Models
+@using Vnta.Hrm.Web.Client.Models.Payroll
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTongHop
+
+<DxGrid @ref="grid" Data="@Records" KeyFieldName="Id" CssClass="attendance-allowance-grid" ShowSearchBox="false" PagerVisible="false" PageSize="@PageSize" SkeletonRowsEnabled="true" ColumnResizeMode="GridColumnResizeMode.NextColumn" FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always" TextWrapEnabled="false" FocusedRowEnabled="true" HighlightRowOnHover="true" AllowSelectRowByClick="true" SelectionMode="GridSelectionMode.Multiple" SelectedDataItems="@SelectedDataItems" SelectedDataItemsChanged="SelectedDataItemsChanged" FilterCriteriaChanged="FilterCriteriaChanged">
+    <Columns>
+        <DxGridSelectionColumn Width="3rem" />
+        <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false"><CellDisplayTemplate>@(CurrentPageIndex * PageSize + context.VisibleIndex + 1)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn Caption="Tác vụ" MinWidth="96" Width="6rem" AllowSort="false" TextAlignment="GridTextAlignment.Center" ShowInColumnChooser="false">
+            <CellDisplayTemplate>
+                @{ var row = (PayrollAllowanceSummaryRecord)context.DataItem; }
+                <div class="attendance-allowance-row-menu-host" @onclick:stopPropagation="true" @onmousedown:stopPropagation="true">
+                    <DxDropDownButton CssClass="attendance-allowance-row-menu-btn" IconCssClass="icon more-icon medium-icon" RenderStyle="ButtonRenderStyle.Link" DropDownToggleVisible="false" Enabled="@CanOperate" Tooltip="Tác vụ dòng tổng hợp phụ cấp"><Items>
+                        <DxDropDownButtonItem Text="Điều chỉnh" IconUrl="@VntaDevExpressIcons.Edit" Click="@(() => EditRequested.InvokeAsync(row))" Enabled="@CanEditRow(row)" />
+                        <DxDropDownButtonItem Text="Làm mới" IconUrl="@VntaDevExpressIcons.Refresh" Click="@(() => RefreshRequested.InvokeAsync(row))" Enabled="@CanRefreshRow(row)" />
+                        <DxDropDownButtonItem Text="@LockActionText(row)" IconUrl="@(row.IsLocked ? VntaDevExpressIcons.Unlock : VntaDevExpressIcons.Lock)" Click="@(() => ToggleLockRequested.InvokeAsync(row))" Enabled="@CanToggleLock(row)" BeginGroup="true" />
+                        <DxDropDownButtonItem Text="Bảng công tháng" IconUrl="@VntaDevExpressIcons.TaskList" Tooltip="Xem bảng công tháng của nhân viên ở chế độ chỉ đọc." Click="@(() => MonthlyWorkRequested.InvokeAsync(row))" Enabled="@CanViewMonthlyWork(row)" />
+                    </Items></DxDropDownButton>
+                </div>
+            </CellDisplayTemplate>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="EmployeeDisplay" Caption="Nhân viên" MinWidth="240"><CellDisplayTemplate>@{ var row = (PayrollAllowanceSummaryRecord)context.DataItem; }<span class="attendance-allowance-employee-text" title="@row.EmployeeDisplay">@HighlightSearchText(row.EmployeeDisplay)</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Phòng ban" MinWidth="180"><CellDisplayTemplate>@HighlightSearchText(context.DisplayText)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" MinWidth="160"><CellDisplayTemplate>@HighlightSearchText(context.DisplayText)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" MinWidth="110" />
+        <DxGridDataColumn FieldName="ResponsibilityAllowanceAmount" Caption="Trách nhiệm" MinWidth="130"><CellDisplayTemplate>@FormatMoney(((PayrollAllowanceSummaryRecord)context.DataItem).ResponsibilityAllowanceAmount)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="ResponsibilityOtherAllowanceAmount" Caption="Trách nhiệm khác" MinWidth="160"><CellDisplayTemplate>@FormatMoney(((PayrollAllowanceSummaryRecord)context.DataItem).ResponsibilityOtherAllowanceAmount)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="SeniorityAllowanceAmount" Caption="Thâm niên" MinWidth="120"><CellDisplayTemplate>@FormatMoney(((PayrollAllowanceSummaryRecord)context.DataItem).SeniorityAllowanceAmount)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="AttendanceAllowanceAmount" Caption="Chuyên cần" MinWidth="130"><CellDisplayTemplate>@FormatMoney(((PayrollAllowanceSummaryRecord)context.DataItem).AttendanceAllowanceAmount)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="MealAllowanceAmount" Caption="Cơm" MinWidth="110"><CellDisplayTemplate>@FormatMoney(((PayrollAllowanceSummaryRecord)context.DataItem).MealAllowanceAmount)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="HazardAllowanceAmount" Caption="Độc hại" MinWidth="110"><CellDisplayTemplate>@FormatMoney(((PayrollAllowanceSummaryRecord)context.DataItem).HazardAllowanceAmount)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="OtherAllowanceAmount" Caption="Khác" MinWidth="110"><CellDisplayTemplate>@FormatMoney(((PayrollAllowanceSummaryRecord)context.DataItem).OtherAllowanceAmount)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="LeaveHolidayAllowanceAmount" Caption="Phép-Lễ" MinWidth="120"><CellDisplayTemplate>@FormatMoney(((PayrollAllowanceSummaryRecord)context.DataItem).LeaveHolidayAllowanceAmount)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="TotalAllowanceAmount" Caption="Tổng PC" MinWidth="135"><CellDisplayTemplate>@{ var row = (PayrollAllowanceSummaryRecord)context.DataItem; }<span class="hrm-grid-amount hrm-grid-amount--total">@FormatMoney(row.TotalAllowanceAmount)</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="IsLocked" Caption="Trạng thái" MinWidth="120"><CellDisplayTemplate>@{ var row = (PayrollAllowanceSummaryRecord)context.DataItem; }<span class="@LockBadgeCssClass(row.IsLocked)">@row.LockStatusText</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="Note" Caption="Ghi chú" MinWidth="240"><CellDisplayTemplate>@{ var row = (PayrollAllowanceSummaryRecord)context.DataItem; }@if (!string.IsNullOrWhiteSpace(row.Note)) { <span title="@row.Note">@HighlightSearchText(row.Note)</span> }</CellDisplayTemplate></DxGridDataColumn>
+    </Columns>
+    <TotalSummary>
+        <DxGridSummaryItem Name="ResponsibilityAllowanceAmountTotal" FieldName="@nameof(PayrollAllowanceSummaryRecord.ResponsibilityAllowanceAmount)" SummaryType="GridSummaryItemType.Sum" Visible="false" />
+        <DxGridSummaryItem Name="ResponsibilityOtherAllowanceAmountTotal" FieldName="@nameof(PayrollAllowanceSummaryRecord.ResponsibilityOtherAllowanceAmount)" SummaryType="GridSummaryItemType.Sum" Visible="false" />
+        <DxGridSummaryItem Name="SeniorityAllowanceAmountTotal" FieldName="@nameof(PayrollAllowanceSummaryRecord.SeniorityAllowanceAmount)" SummaryType="GridSummaryItemType.Sum" Visible="false" />
+        <DxGridSummaryItem Name="AttendanceAllowanceAmountTotal" FieldName="@nameof(PayrollAllowanceSummaryRecord.AttendanceAllowanceAmount)" SummaryType="GridSummaryItemType.Sum" Visible="false" />
+        <DxGridSummaryItem Name="MealAllowanceAmountTotal" FieldName="@nameof(PayrollAllowanceSummaryRecord.MealAllowanceAmount)" SummaryType="GridSummaryItemType.Sum" Visible="false" />
+        <DxGridSummaryItem Name="HazardAllowanceAmountTotal" FieldName="@nameof(PayrollAllowanceSummaryRecord.HazardAllowanceAmount)" SummaryType="GridSummaryItemType.Sum" Visible="false" />
+        <DxGridSummaryItem Name="OtherAllowanceAmountTotal" FieldName="@nameof(PayrollAllowanceSummaryRecord.OtherAllowanceAmount)" SummaryType="GridSummaryItemType.Sum" Visible="false" />
+        <DxGridSummaryItem Name="LeaveHolidayAllowanceAmountTotal" FieldName="@nameof(PayrollAllowanceSummaryRecord.LeaveHolidayAllowanceAmount)" SummaryType="GridSummaryItemType.Sum" Visible="false" />
+        <DxGridSummaryItem Name="TotalAllowanceAmountTotal" FieldName="@nameof(PayrollAllowanceSummaryRecord.TotalAllowanceAmount)" SummaryType="GridSummaryItemType.Sum" Visible="false" />
+    </TotalSummary>
+    <EmptyDataAreaTemplate>
+        <div class="empty-state">
+            <div class="state-title">@EmptyStateTitle</div>
+            <div class="state-message">@EmptyStateMessage</div>
+            <DxButton Text="@EmptyStateActionText" Click="EmptyStateActionRequested" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </EmptyDataAreaTemplate>
+</DxGrid>

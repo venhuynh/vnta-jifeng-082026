@@ -1,0 +1,54 @@
+@inject NavigationManager NavigationManager
+
+<div class="block-content card">
+    <DxFormLayout CaptionPosition="@CaptionPosition.Vertical">
+        <DxFormLayoutItem ColSpanMd="12">
+            <div class="title">
+                <div class="title-text">@Title</div>
+            </div>
+        </DxFormLayoutItem>
+        <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
+            <p>@PrimaryText</p>
+            @if(!string.IsNullOrWhiteSpace(SecondaryText))
+            {
+                <p>@SecondaryText</p>
+            }
+        </DxFormLayoutItem>
+        @if(ShowReturnLink)
+        {
+            <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
+                <a href="@BuildReturnLink()">@ReturnText</a>
+            </DxFormLayoutItem>
+        }
+    </DxFormLayout>
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string PrimaryText { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? SecondaryText { get; set; }
+
+    [Parameter]
+    public string ReturnText { get; set; } = "Quay lại đăng nhập";
+
+    [Parameter]
+    public string ReturnRoute { get; set; } = "Account/Login";
+
+    [Parameter]
+    public string? ReturnUrl { get; set; }
+
+    [Parameter]
+    public bool ShowReturnLink { get; set; } = true;
+
+    private string BuildReturnLink() =>
+        string.IsNullOrWhiteSpace(ReturnUrl)
+            ? ReturnRoute
+            : NavigationManager.GetUriWithQueryParameters(
+                ReturnRoute,
+                new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl });
+}

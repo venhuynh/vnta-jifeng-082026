@@ -1,0 +1,97 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+
+@if(Model is not null)
+{
+    <div class="responsibility-editor-card">
+        @if(!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <div class="responsibility-error-banner">@ErrorMessage</div>
+        }
+
+        <DxFormLayout CaptionPosition="CaptionPosition.Vertical">
+            <DxFormLayoutGroup Caption="Thông tin cấp bậc" ColSpanMd="12">
+                <DxFormLayoutItem Caption="Mã bậc" ColSpanMd="6">
+                    <DxTextBox @bind-Text="Model.Code"
+                               BindValueMode="BindValueMode.OnInput"
+                               ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                               NullText="Nhập mã cấp bậc"
+                               CssClass="responsibility-input"
+                               Enabled="@CanSave" />
+                    <ValidationMessage For="@(() => Model.Code)" />
+                </DxFormLayoutItem>
+
+                <DxFormLayoutItem Caption="Tên bậc" ColSpanMd="6">
+                    <DxTextBox @bind-Text="Model.Name"
+                               BindValueMode="BindValueMode.OnInput"
+                               ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                               NullText="Nhập tên cấp bậc"
+                               CssClass="responsibility-input"
+                               Enabled="@CanSave" />
+                    <ValidationMessage For="@(() => Model.Name)" />
+                </DxFormLayoutItem>
+
+                <DxFormLayoutItem Caption="Tiền chuẩn" ColSpanMd="6">
+                    <DxSpinEdit TValue="decimal"
+                                @bind-Value="Model.StandardResponsibilityAllowanceAmount"
+                                MinValue="0"
+                                Increment="100000"
+                                Mask="n0"
+                                CssClass="responsibility-input w-100"
+                                Enabled="@CanSave"
+                                ShowValidationIcon="true"
+                                ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.StandardResponsibilityAllowanceAmount)" />
+                </DxFormLayoutItem>
+
+                <DxFormLayoutItem Caption="Thứ tự hiển thị" ColSpanMd="6">
+                    <DxSpinEdit TValue="int"
+                                @bind-Value="Model.DisplayOrder"
+                                MinValue="0"
+                                Increment="1"
+                                CssClass="responsibility-input w-100"
+                                Enabled="@CanSave"
+                                ShowValidationIcon="true"
+                                ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.DisplayOrder)" />
+                </DxFormLayoutItem>
+
+                <DxFormLayoutItem Caption="Ghi chú" ColSpanMd="12">
+                    <DxMemo @bind-Text="Model.Note"
+                            CssClass="responsibility-input responsibility-textarea w-100"
+                            Rows="4"
+                            NullText="Bổ sung ghi chú nếu cần"
+                            Enabled="@CanSave" />
+                    <ValidationMessage For="@(() => Model.Note)" />
+                </DxFormLayoutItem>
+
+                <DxFormLayoutItem Caption="Trạng thái sử dụng" ColSpanMd="12">
+                    <div class="responsibility-checkbox-row">
+                        <DxCheckBox @bind-Checked="Model.IsActive" Enabled="@CanSave">
+                            Đánh dấu cấp bậc này đang sử dụng
+                        </DxCheckBox>
+                        <span class="@GetActiveTextCssClass(Model.IsActive)">@GetActiveText(Model.IsActive)</span>
+                    </div>
+                </DxFormLayoutItem>
+            </DxFormLayoutGroup>
+        </DxFormLayout>
+
+        <ValidationSummary class="validation-summary" />
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public PhuCapTrachNhiemCapBacEditModel Model { get; set; } = PhuCapTrachNhiemCapBacEditModel.CreateDefault();
+
+    [Parameter]
+    public bool CanSave { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    private static string GetActiveTextCssClass(bool value) =>
+        string.Join(' ', "yes-no-status", value ? "yes-no-status-yes" : "yes-no-status-neutral");
+
+    private static string GetActiveText(bool isActive) => isActive ? "Đang dùng" : "Ngừng";
+}

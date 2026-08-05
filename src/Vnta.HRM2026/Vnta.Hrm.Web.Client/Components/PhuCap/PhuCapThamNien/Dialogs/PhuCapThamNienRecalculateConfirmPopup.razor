@@ -1,0 +1,38 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapThamNien
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Xác nhận tính lại"
+         Width="min(32rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsRefreshing)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="seniority-popup-footer"
+         CssClass="seniority-confirm-popup">
+    <BodyContentTemplate>
+        <div class="seniority-confirm-content">
+            <div class="seniority-confirm-message">
+            Sẽ tính lại phụ cấp thâm niên của kỳ @PeriodLabel từ dữ liệu gốc. Số tiền phụ cấp của các dòng chưa khóa có thể ghi đè giá trị đã chỉnh sửa thủ công. Các dòng đã khóa sẽ được giữ nguyên.
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="seniority-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="seniority-popup-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Tính lại"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                      CssClass="seniority-popup-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

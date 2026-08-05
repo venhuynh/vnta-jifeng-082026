@@ -1,0 +1,42 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Xác nhận tính lại phụ cấp độc hại"
+         Width="min(34rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsRefreshing)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="hazard-confirm-popup-footer"
+         CssClass="hazard-confirm-popup">
+    <BodyContentTemplate>
+        <div class="hazard-confirm-content">
+            <div class="hazard-confirm-icon" aria-hidden="true">
+                <DxButton IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                          Attributes="@DecorativeIconAttributes"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Text" />
+            </div>
+            <div class="hazard-confirm-message">
+                <p>Bạn sắp tính lại phụ cấp độc hại cho kỳ <strong>@PeriodLabel</strong> dựa trên bảng công của nhân viên.</p>
+                <p>Các dòng chưa khóa sẽ được cập nhật theo kết quả mới; các điều chỉnh trước đó ở những dòng này có thể thay đổi.</p>
+                <p>Các dòng đã khóa sẽ được giữ nguyên.</p>
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="hazard-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Tính lại"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

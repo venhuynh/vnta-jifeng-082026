@@ -1,0 +1,54 @@
+@page "/payroll/allowance-dashboard"
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Application.PhuCap.PhuCapDashboard.Policies
+@using Vnta.Hrm.Application.PhuCap.PhuCapTongHop
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+@implements IDisposable
+
+<PageTitle>VNTA - Dashboard phụ cấp</PageTitle>
+<DxLayoutBreakpoint MaxWidth="1400" IsActiveChanged="OnSmallScreenChanged" />
+<DxLayoutBreakpoint MinWidth="1400" MaxWidth="2000" @bind-IsActive="IsMediumScreen" />
+<DxLayoutBreakpoint MinWidth="2000" @bind-IsActive="IsLargeScreen" />
+
+<div class="content-root">
+    <PhuCapDashboardToolbar Month="@ToolbarMonth" Year="@ToolbarYear" Months="@AvailableMonths" MinimumYear="@PayrollAllowanceDashboardPeriodPolicy.MinimumSupportedYear" MaximumYear="@PayrollAllowanceDashboardPeriodPolicy.MaximumSupportedYear" Enabled="@CanChangePeriod" YearChanged="OnYearChangedAsync" MonthChanged="OnMonthChangedAsync" ViewClicked="LoadDashboardAsync" />
+    <div class="allowance-dashboard-root">
+        @if (!string.IsNullOrWhiteSpace(LoadErrorMessage))
+        {
+            <div class="card error-state"><div class="state-title">Không thể tải dashboard phụ cấp</div><div class="state-message">@LoadErrorMessage</div><DxButton Text="Thử lại" Click="LoadDashboardAsync" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained" /></div>
+        }
+        else
+        {
+            <div class="card allowance-dashboard-content-card">
+                <HrmLoadingPanel Visible="@IsLoading" IsContentBlocked="true" IsContentVisible="true" IndicatorVisible="true" IndicatorAreaVisible="true" CssClass="allowance-dashboard-loading-panel" Text="Đang tải dashboard phụ cấp...">
+                    @if (Dashboard is not null)
+                    {
+                        <div class="allowance-dashboard-content">
+                            <PhuCapDashboardKpiStrip Dashboard="@Dashboard" PeriodLabel="@PeriodLabel" />
+                            <DxGridLayout CssClass="allowance-dashboard-grid" RowSpacing="1.25rem" ColumnSpacing="1.5rem">
+                                <Rows>
+                                    @if (IsLargeScreen) { <DxGridLayoutRow Areas="trend trend breakdown breakdown" Height="auto" /><DxGridLayoutRow Areas="comparison comparison comparison comparison" Height="auto" /><DxGridLayoutRow Areas="departments departments departments departments" Height="auto" /> }
+                                    else if (IsMediumScreen) { <DxGridLayoutRow Areas="trend trend" Height="auto" /><DxGridLayoutRow Areas="breakdown comparison" Height="auto" /><DxGridLayoutRow Areas="departments departments" Height="auto" /> }
+                                    else { <DxGridLayoutRow Areas="trend" Height="auto" /><DxGridLayoutRow Areas="breakdown" Height="auto" /><DxGridLayoutRow Areas="comparison" Height="auto" /><DxGridLayoutRow Areas="departments" Height="auto" /> }
+                                </Rows>
+                                <Columns>
+                                    @if (IsLargeScreen) { <DxGridLayoutColumn /><DxGridLayoutColumn /><DxGridLayoutColumn /><DxGridLayoutColumn /> }
+                                    else if (IsMediumScreen) { <DxGridLayoutColumn /><DxGridLayoutColumn /> }
+                                    else { <DxGridLayoutColumn /> }
+                                </Columns>
+                                <Items>
+                                    <DxGridLayoutItem Area="trend" CssClass="dashboard-section"><Template><PhuCapDashboardTrendReport Trend="@Dashboard.Trend" PayrollMonth="@Dashboard.PayrollMonth" PayrollYear="@Dashboard.PayrollYear" IsRefreshing="@IsLoading" RefreshRequested="LoadDashboardAsync" /></Template></DxGridLayoutItem>
+                                    <DxGridLayoutItem Area="breakdown" CssClass="dashboard-section"><Template><PhuCapDashboardBreakdownReport Breakdown="@Dashboard.AllowanceBreakdown" IsRefreshing="@IsLoading" RefreshRequested="LoadDashboardAsync" /></Template></DxGridLayoutItem>
+                                    <DxGridLayoutItem Area="departments" CssClass="dashboard-section"><Template><PhuCapDashboardDepartmentComparisonReport Comparison="@Dashboard.DepartmentMonthlyComparison" PayrollMonth="@Dashboard.PayrollMonth" PayrollYear="@Dashboard.PayrollYear" IsRefreshing="@IsLoading" RefreshRequested="LoadDashboardAsync" /></Template></DxGridLayoutItem>
+                                    <DxGridLayoutItem Area="comparison" CssClass="dashboard-section"><Template><PhuCapDashboardMonthlyComparisonReport Comparison="@Dashboard.AllowanceMonthlyComparison" PayrollMonth="@Dashboard.PayrollMonth" PayrollYear="@Dashboard.PayrollYear" IsRefreshing="@IsLoading" RefreshRequested="LoadDashboardAsync" /></Template></DxGridLayoutItem>
+                                </Items>
+                            </DxGridLayout>
+                        </div>
+                    }
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>

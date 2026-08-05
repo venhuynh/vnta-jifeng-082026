@@ -1,0 +1,12 @@
+.other-allowance-grid-header { flex: 0 0 auto; display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem 1rem .625rem; background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 94%, white); border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, white 82%, transparent); }
+.other-allowance-summary-strip { display: flex; flex: 1 1 auto; gap: .5rem; min-width: 0; padding-bottom: .125rem; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
+.other-allowance-grid-search { flex: 0 0 auto; min-width: 15rem; max-width: min(100%, 20rem); }
+::deep .other-allowance-grid-searchbox { width: 100%; }
+::deep .other-allowance-grid-searchbox .dxbl-text-editor { min-height: 2.3rem; border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 72%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 92%, white); box-shadow: inset 0 1px 0 color-mix(in srgb, white 80%, transparent); }
+::deep .other-allowance-grid-searchbox .dxbl-text-editor-input { min-width: 11rem; }
+::deep .other-allowance-grid-searchbox .dxbl-btn-clear { opacity: .68; }
+::deep .other-allowance-summary-button-group, ::deep .other-allowance-total-button-group { display: inline-flex; min-width: max-content; pointer-events: none; }
+::deep .other-allowance-summary-button, ::deep .other-allowance-total-button { font-size: .82rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+::deep .other-allowance-summary-button { color: var(--dxds-color-content-info-default-rest, #2563eb); }
+::deep .other-allowance-total-button { color: var(--dxds-color-content-success-default-rest, #15803d); font-weight: 800; }
+@media (max-width: 768px) { .other-allowance-grid-header { flex-direction: column; align-items: stretch; padding: .75rem; } .other-allowance-grid-search { width: 100%; min-width: 0; max-width: none; } }

@@ -1,0 +1,13 @@
+.git
+.github
+.agents
+.artifacts
+**/.artifacts/**
+ReferenceCode
+doc
+tmp-*.log
+**/bin
+**/obj
+**/.vs
+**/*.user
+**/*.suo

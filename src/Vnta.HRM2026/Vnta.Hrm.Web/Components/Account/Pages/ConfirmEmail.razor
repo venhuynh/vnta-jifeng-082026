@@ -1,0 +1,51 @@
+﻿@page "/Account/ConfirmEmail"
+
+@using System.Text
+@using Vnta.Hrm.Infrastructure.Identity
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>VNTA HRM 2026 - Xác nhận email</PageTitle>
+
+<div class="main-content">
+    <div class="block-content card">
+        <div class="title">
+            <div class="title-header-text">Xác nhận email</div>
+            <div class="title-content-text">@statusMessage</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string? statusMessage;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromQuery]
+    private string? UserId { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? Code { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        if(UserId is null || Code is null) {
+            RedirectManager.RedirectTo("");
+        }
+
+        var user = await UserManager.FindByIdAsync(UserId);
+        if(user is null) {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            statusMessage = "Lỗi: Không tìm thấy tài khoản cần xác nhận email.";
+        } else {
+            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
+            var result = await UserManager.ConfirmEmailAsync(user, code);
+            statusMessage = result.Succeeded ? "Email đã được xác nhận thành công." : "Lỗi: Không thể xác nhận email.";
+        }
+    }
+}
+
+

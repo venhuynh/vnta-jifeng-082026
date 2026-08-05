@@ -1,0 +1,102 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiem
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Quy tắc phụ cấp trách nhiệm"
+         Width="900px"
+         ShowFooter="false"
+         ShowCloseButton="true"
+         CloseOnEscape="true"
+         CssClass="responsibility-rules-popup">
+    <BodyContentTemplate>
+        <div class="responsibility-rules-popup-body">
+            <section class="responsibility-rules-section">
+                <h3>I. Tính ABC</h3>
+                <ol>
+                    <li>Áp dụng cho các dòng có cột <strong>THS = TRUE</strong>.</li>
+                    <li>
+                        Các code áp dụng để tính 01 công HC lấy từ bảng <strong>Code kết quả tính công</strong>,
+                        cột <strong>TN + NS</strong>. Mỗi record có code thuộc nhóm này được tính là 01 ngày
+                        công HC; kết quả gọi tắt là <strong>Công HC</strong>.
+                    </li>
+                    <li>
+                        Tìm trong bảng công tháng tổng số phút đi trễ/về sớm và chia cho 480 để ra số ngày
+                        <strong>ĐTVS</strong>; kết quả lấy 04 chữ số thập phân.
+                    </li>
+                    <li>
+                        Tìm công tính lương (<strong>CTL</strong>) = Công HC − Tổng đi trễ/về sớm;
+                        kết quả lấy 04 chữ số thập phân.
+                    </li>
+                    <li>
+                        Lấy công chuẩn tháng (<strong>Công chuẩn</strong>) từ cột Công chuẩn tháng của bảng
+                        <strong>Lương cơ bản</strong>.
+                    </li>
+                    <li>
+                        Tính xếp loại ABC:
+                        <ol type="a">
+                            <li>Nếu trong bảng công tháng có <strong>CODE = KP</strong> (nghỉ không phép), tự động xếp loại C; đây là điều kiện được xét ưu tiên cao nhất.</li>
+                            <li>
+                                Ngược lại:
+                                <ol type="i">
+                                    <li>Số ngày thiếu công = Công chuẩn − CTL.</li>
+                                    <li>Nếu số ngày thiếu công ≤ 01: xếp loại A.</li>
+                                    <li>Nếu số ngày thiếu công &gt; 01 và ≤ 03: xếp loại B.</li>
+                                    <li>Nếu số ngày thiếu công &gt; 03 và ≤ 07: xếp loại C.</li>
+                                    <li>Nếu số ngày thiếu công &gt; 07: xếp loại D.</li>
+                                </ol>
+                            </li>
+                        </ol>
+                    </li>
+                </ol>
+            </section>
+
+            <section class="responsibility-rules-section">
+                <h3>II. Tính tiền trách nhiệm</h3>
+                <ol>
+                    <li>Tiền trách nhiệm chuẩn lấy từ <strong>DS Cấp bậc nhân viên</strong>, trường <strong>Số tiền chuẩn</strong>.</li>
+                    <li>
+                        Nếu có cột <strong>THS = TRUE</strong>:
+                        <ol type="a">
+                            <li>
+                                Với trường hợp ABC:
+                                <ol type="i">
+                                    <li>Tiền trách nhiệm thực tế = Số tiền chuẩn × % hiệu suất người dùng nhập × ABC.</li>
+                                </ol>
+                            </li>
+                            <li>
+                                Với trường hợp D:
+                                <ol type="i">
+                                    <li>Tiền trách nhiệm thực tế = (Số tiền chuẩn × % hiệu suất người dùng nhập × 70%) ÷ Công chuẩn tháng × CTL.</li>
+                                </ol>
+                            </li>
+                        </ol>
+                    </li>
+                    <li>
+                        Nếu có cột <strong>THS = FALSE</strong> (đối tượng không tính hiệu suất):
+                        <ol type="a">
+                            <li>
+                                Nếu số ngày thiếu công ≤ 01:
+                                <ol type="i">
+                                    <li>Tiền trách nhiệm thực tế = Tiền trách nhiệm chuẩn.</li>
+                                </ol>
+                            </li>
+                            <li>
+                                Nếu số ngày thiếu công &gt; 01:
+                                <ol type="i">
+                                    <li>Tiền trách nhiệm thực tế = Tiền trách nhiệm chuẩn ÷ Công chuẩn tháng × CTL.</li>
+                                </ol>
+                            </li>
+                        </ol>
+                    </li>
+                </ol>
+            </section>
+
+            <div class="responsibility-rules-actions">
+                <DxButton Text="Đóng"
+                          Click="CloseAsync"
+                          RenderStyle="ButtonRenderStyle.Secondary"
+                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            </div>
+        </div>
+    </BodyContentTemplate>
+</DxPopup>

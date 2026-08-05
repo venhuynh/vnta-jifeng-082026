@@ -1,0 +1,98 @@
+.personal-income-tax-popup-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.personal-income-tax-popup-action {
+    min-width: 7rem;
+}
+
+.personal-income-tax-rules-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    color: #24324a;
+}
+
+.personal-income-tax-rules-subtitle {
+    color: #60708a;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.personal-income-tax-rule-card,
+.personal-income-tax-rule-item {
+    border: 1px solid #d8e0ef;
+    border-radius: 0.9rem;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(25, 39, 68, 0.04);
+}
+
+.personal-income-tax-rule-card {
+    padding: 0.9rem 1rem;
+}
+
+.personal-income-tax-rule-card-accent {
+    background: linear-gradient(180deg, #eef5ff 0%, #eaf2ff 100%);
+    border-color: #b9d3ff;
+}
+
+.personal-income-tax-rule-card-warning {
+    background: linear-gradient(180deg, #fff4f2 0%, #fff7f6 100%);
+    border-color: #f3b7ae;
+    color: #8f2318;
+}
+
+.personal-income-tax-rule-card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 0.45rem;
+}
+
+.personal-income-tax-rule-card-body {
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+.personal-income-tax-rule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.personal-income-tax-rule-item {
+    display: grid;
+    grid-template-columns: 9rem minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    align-items: start;
+}
+
+.personal-income-tax-rule-item-label {
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.personal-income-tax-rule-item-value {
+    color: #4b5b75;
+    line-height: 1.5;
+    font-weight: 600;
+}
+
+.personal-income-tax-inline-code {
+    display: inline-block;
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.4rem;
+    background: #eef2f8;
+    color: #30415f;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.92em;
+}
+
+@media (max-width: 768px) {
+    .personal-income-tax-rule-item {
+        grid-template-columns: 1fr;
+    }
+}

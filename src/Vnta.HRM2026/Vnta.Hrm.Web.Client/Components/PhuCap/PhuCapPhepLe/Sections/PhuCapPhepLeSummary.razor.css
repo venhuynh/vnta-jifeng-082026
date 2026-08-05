@@ -1,0 +1,115 @@
+.leave-holiday-allowance-grid-header {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem 0.625rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 94%, white);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 82%, transparent);
+}
+
+.leave-holiday-allowance-summary-strip {
+    display: flex;
+    flex: 1 1 auto;
+    gap: 0.5rem;
+    min-width: 0;
+    padding-bottom: 0.125rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+}
+
+.leave-holiday-allowance-grid-search {
+    flex: 0 0 auto;
+    min-width: 15rem;
+    max-width: min(100%, 20rem);
+}
+
+::deep .leave-holiday-allowance-grid-searchbox {
+    width: 100%;
+}
+
+::deep .leave-holiday-allowance-grid-searchbox .dxbl-text-editor {
+    min-height: 2.3rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 72%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 92%, white);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 80%, transparent);
+}
+
+::deep .leave-holiday-allowance-grid-searchbox .dxbl-text-editor-input {
+    min-width: 11rem;
+}
+
+::deep .leave-holiday-allowance-grid-searchbox .dxbl-btn-clear {
+    opacity: 0.68;
+}
+
+::deep .leave-holiday-allowance-summary-button-group {
+    display: inline-flex;
+    min-width: max-content;
+}
+
+::deep .leave-holiday-allowance-total-amount-button-group {
+    display: inline-flex;
+    min-width: max-content;
+    pointer-events: none;
+}
+
+::deep .leave-holiday-allowance-total-amount-button {
+    color: var(--dxds-color-content-success-default-rest, #15803d) !important;
+    font-size: 0.82rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+::deep .leave-holiday-allowance-summary-button {
+    --summary-accent: var(--dxds-color-content-info-default-rest);
+    min-width: 5.75rem;
+    color: var(--summary-accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+}
+
+::deep .leave-holiday-allowance-summary-button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--summary-accent) 9%, white);
+}
+
+::deep .leave-holiday-allowance-summary-button[aria-pressed="true"],
+::deep .leave-holiday-allowance-summary-button.dxbl-btn-selected,
+::deep .leave-holiday-allowance-summary-button.dxbl-btn-active {
+    border-color: var(--summary-accent);
+    background: color-mix(in srgb, var(--summary-accent) 14%, white);
+    box-shadow: inset 0 -0.18rem 0 var(--summary-accent);
+}
+
+::deep .leave-holiday-allowance-summary-button-all {
+    --summary-accent: var(--dxds-color-content-info-default-rest);
+}
+
+::deep .leave-holiday-allowance-summary-button-open {
+    --summary-accent: var(--dxds-color-content-success-default-rest);
+}
+
+::deep .leave-holiday-allowance-summary-button-locked {
+    --summary-accent: var(--dxds-color-content-warning-default-rest);
+}
+
+@media (max-width: 768px) {
+    .leave-holiday-allowance-grid-header {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 0.75rem;
+    }
+
+    .leave-holiday-allowance-grid-search {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+    }
+}

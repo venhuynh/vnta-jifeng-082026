@@ -1,0 +1,51 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapCom
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsRefreshing)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="meal-allowance-popup-footer"
+         CssClass="meal-allowance-confirm-popup meal-allowance-lock-action-popup">
+    <BodyContentTemplate>
+        <div class="meal-allowance-lock-action-content">
+            <div class="meal-allowance-confirm-message">@PromptText</div>
+            <div class="meal-allowance-lock-action-context">@ContextText</div>
+            <div class="meal-allowance-lock-action-options">
+                <button type="button"
+                        class="@GetScopeCssClass(SelectedRowsScope)"
+                        @onclick="@(() => SelectScopeAsync(SelectedRowsScope))"
+                        disabled="@(!CanChooseSelectedRowsScope || IsRefreshing)">
+                    <span class="meal-allowance-lock-action-title">Các dòng đã chọn</span>
+                    <span class="meal-allowance-lock-action-description">@SelectedRowsDescription</span>
+                </button>
+                <button type="button"
+                        class="@GetScopeCssClass(WholePeriodScope)"
+                        @onclick="@(() => SelectScopeAsync(WholePeriodScope))"
+                        disabled="@IsRefreshing">
+                    <span class="meal-allowance-lock-action-title">Toàn bộ kỳ @WholePeriodLabel</span>
+                    <span class="meal-allowance-lock-action-description">@WholePeriodDescription</span>
+                </button>
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="meal-allowance-popup-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="@(ShouldLock ? "Khóa" : "Mở khóa")"
+                      Click="ConfirmAsync"
+                      IconUrl="@(ShouldLock ? VntaDevExpressIcons.Lock : VntaDevExpressIcons.Unlock)"
+                      Enabled="@CanConfirm"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

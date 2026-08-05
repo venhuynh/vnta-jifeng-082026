@@ -1,0 +1,305 @@
+@page "/attendance/result-codes"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models
+
+@attribute [Authorize(Policy = InternalAccountPolicies.AttendanceAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Mã kết quả tính công</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Mã kết quả tính công" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Làm mới"
+                           Tooltip="Tải lại danh mục mã kết quả tính công"
+                           Enabled="@CanRefresh"
+                           Click="ReloadAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Chi tiết"
+                           Tooltip="Xem chi tiết mã kết quả tính công đã chọn"
+                           Enabled="@CanViewDetail"
+                           Click="OpenDetailAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Info" />
+            <DxToolbarItem Text="Xuất dữ liệu"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất danh mục mã kết quả tính công"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel"
+                                   Click="ExportAllDataToExcel"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ danh mục mã kết quả tính công ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF"
+                                   Click="ExportAllDataToPdf"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ danh mục mã kết quả tính công ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra Excel"
+                                   Click="ExportSelectedRowsToExcel"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các mã kết quả tính công đã chọn ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra PDF"
+                                   Click="ExportSelectedRowsToPdf"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các mã kết quả tính công đã chọn ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh mục mã kết quả tính công"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanInteract"
+                           Click="OnColumnChooserItemClick"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="search-textbox-item"
+                           Tooltip="Tìm kiếm mã kết quả tính công theo mã, tên hoặc loại">
+                <Template>
+                    <div class="custom-item">
+                        <DxSearchBox CssClass="search-textbox"
+                                     NullText="Tìm mã, tên, loại"
+                                     Text="@SearchText"
+                                     TextChanged="OnSearchTextChangedAsync"
+                                     BindValueMode="BindValueMode.OnDelayedInput"
+                                     InputDelay="300"
+                                     ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                     />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+        </DxToolbar>
+    </div>
+
+    <div class="attendance-result-codes-root">
+        @if (HasLoadError)
+        {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải mã kết quả tính công</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="ReloadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+            <div class="card attendance-result-codes-grid-card">
+                <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 CssClass="attendance-result-codes-loading-panel"
+                                 Text="@LoadingText">
+                    <DxGrid @ref="Grid"
+                            Data="@Records"
+                            KeyFieldName="Id"
+                            SearchText="@SearchText"
+                            CssClass="attendance-result-codes-grid"
+                            PageSize="20"
+                            PagerPosition="GridPagerPosition.TopAndBottom"
+                            PageSizeSelectorVisible="true"
+                            PageSizeSelectorItems="@(new int[] { 10, 20, 50 })"
+                            SkeletonRowsEnabled="true"
+                            ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                            EditMode="GridEditMode.EditRow"
+                            FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                            TextWrapEnabled="false"
+                            FocusedRowEnabled="true"
+                            HighlightRowOnHover="true"
+                            AllowSelectRowByClick="true"
+                            SelectionMode="GridSelectionMode.Multiple"
+                            SelectedDataItems="@SelectedDataItems"
+                            SelectedDataItemsChanged="@OnSelectedDataItemsChanged"
+                            EditModelSaving="OnEditModelSaving"
+                            DataItemDeleting="OnDataItemDeleting">
+                        <Columns>
+                            <DxGridSelectionColumn Width="3rem" />
+                            <DxGridCommandColumn Width="110px"
+                                                 NewButtonVisible="false"
+                                                 EditButtonVisible="true"
+                                                 DeleteButtonVisible="true"
+                                                 SaveButtonVisible="true"
+                                                 CancelButtonVisible="true" />
+                            <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                <CellDisplayTemplate>
+                                    @(context.VisibleIndex + 1)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="Code" Caption="Mã" MinWidth="120" ReadOnly="true" />
+                            <DxGridDataColumn FieldName="Name" Caption="Tên" MinWidth="180" ReadOnly="true" />
+                            <DxGridDataColumn FieldName="Kind" Caption="Loại" MinWidth="130" ReadOnly="true">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceStatusCodeRecord)context.DataItem;
+                                    }
+                                    <span class="@AttendanceStatusCodePresentation.GetKindCssClass(row.Kind)">@AttendanceStatusCodePresentation.GetKindText(row.Kind)</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="CongHanhChinh" Caption="Công hành chính" MinWidth="140">
+                                <EditSettings>
+                                    <DxCheckBoxSettings CheckedDisplayText="@AttendanceStatusCodePresentation.YesNoCheckedDisplayText"
+                                                        UncheckedDisplayText="@AttendanceStatusCodePresentation.YesNoUncheckedDisplayText"
+                                                        ShowCheckBoxInDisplayMode="false" />
+                                </EditSettings>
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceStatusCodeRecord)context.DataItem;
+                                    }
+                                    <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(row.CongHanhChinh)">@AttendanceStatusCodePresentation.GetYesNoStatusText(row.CongHanhChinh)</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="PhuCapTrachNhiemTinhNangSuat" Caption="Trách nhiệm + năng suất" MinWidth="170">
+                                <EditSettings>
+                                    <DxCheckBoxSettings CheckedDisplayText="@AttendanceStatusCodePresentation.YesNoCheckedDisplayText"
+                                                        UncheckedDisplayText="@AttendanceStatusCodePresentation.YesNoUncheckedDisplayText"
+                                                        ShowCheckBoxInDisplayMode="false" />
+                                </EditSettings>
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceStatusCodeRecord)context.DataItem;
+                                    }
+                                    <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(row.PhuCapTrachNhiemTinhNangSuat)">@AttendanceStatusCodePresentation.GetYesNoStatusText(row.PhuCapTrachNhiemTinhNangSuat)</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="PhuCapDocHai" Caption="Độc hại" MinWidth="100">
+                                <EditSettings>
+                                    <DxCheckBoxSettings CheckedDisplayText="@AttendanceStatusCodePresentation.YesNoCheckedDisplayText"
+                                                        UncheckedDisplayText="@AttendanceStatusCodePresentation.YesNoUncheckedDisplayText"
+                                                        ShowCheckBoxInDisplayMode="false" />
+                                </EditSettings>
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceStatusCodeRecord)context.DataItem;
+                                    }
+                                    <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(row.PhuCapDocHai)">@AttendanceStatusCodePresentation.GetYesNoStatusText(row.PhuCapDocHai)</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="PhuCapTrachNhiemKhac" Caption="Trách nhiệm khác" MinWidth="140">
+                                <EditSettings>
+                                    <DxCheckBoxSettings CheckedDisplayText="@AttendanceStatusCodePresentation.YesNoCheckedDisplayText"
+                                                        UncheckedDisplayText="@AttendanceStatusCodePresentation.YesNoUncheckedDisplayText"
+                                                        ShowCheckBoxInDisplayMode="false" />
+                                </EditSettings>
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceStatusCodeRecord)context.DataItem;
+                                    }
+                                    <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(row.PhuCapTrachNhiemKhac)">@AttendanceStatusCodePresentation.GetYesNoStatusText(row.PhuCapTrachNhiemKhac)</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="PhuCapPhepLe" Caption="Phép/lễ" MinWidth="100">
+                                <EditSettings>
+                                    <DxCheckBoxSettings CheckedDisplayText="@AttendanceStatusCodePresentation.YesNoCheckedDisplayText"
+                                                        UncheckedDisplayText="@AttendanceStatusCodePresentation.YesNoUncheckedDisplayText"
+                                                        ShowCheckBoxInDisplayMode="false" />
+                                </EditSettings>
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceStatusCodeRecord)context.DataItem;
+                                    }
+                                    <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(row.PhuCapPhepLe)">@AttendanceStatusCodePresentation.GetYesNoStatusText(row.PhuCapPhepLe)</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="PhuCapTrachNhiemKhongTinhNangSuat" Caption="Trách nhiệm không năng suất" MinWidth="190">
+                                <EditSettings>
+                                    <DxCheckBoxSettings CheckedDisplayText="@AttendanceStatusCodePresentation.YesNoCheckedDisplayText"
+                                                        UncheckedDisplayText="@AttendanceStatusCodePresentation.YesNoUncheckedDisplayText"
+                                                        ShowCheckBoxInDisplayMode="false" />
+                                </EditSettings>
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceStatusCodeRecord)context.DataItem;
+                                    }
+                                    <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(row.PhuCapTrachNhiemKhongTinhNangSuat)">@AttendanceStatusCodePresentation.GetYesNoStatusText(row.PhuCapTrachNhiemKhongTinhNangSuat)</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="PhuCapChuyenCan" Caption="Chuyên cần" MinWidth="100">
+                                <EditSettings>
+                                    <DxCheckBoxSettings CheckedDisplayText="@AttendanceStatusCodePresentation.YesNoCheckedDisplayText"
+                                                        UncheckedDisplayText="@AttendanceStatusCodePresentation.YesNoUncheckedDisplayText"
+                                                        ShowCheckBoxInDisplayMode="false" />
+                                </EditSettings>
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceStatusCodeRecord)context.DataItem;
+                                    }
+                                    <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(row.PhuCapChuyenCan)">@AttendanceStatusCodePresentation.GetYesNoStatusText(row.PhuCapChuyenCan)</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="PhuCapThamNien" Caption="Thâm niên" MinWidth="100">
+                                <EditSettings>
+                                    <DxCheckBoxSettings CheckedDisplayText="@AttendanceStatusCodePresentation.YesNoCheckedDisplayText"
+                                                        UncheckedDisplayText="@AttendanceStatusCodePresentation.YesNoUncheckedDisplayText"
+                                                        ShowCheckBoxInDisplayMode="false" />
+                                </EditSettings>
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceStatusCodeRecord)context.DataItem;
+                                    }
+                                    <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(row.PhuCapThamNien)">@AttendanceStatusCodePresentation.GetYesNoStatusText(row.PhuCapThamNien)</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="KhauTruTamUng" Caption="Khấu trừ tạm ứng" MinWidth="150">
+                                <EditSettings>
+                                    <DxCheckBoxSettings CheckedDisplayText="@AttendanceStatusCodePresentation.YesNoCheckedDisplayText"
+                                                        UncheckedDisplayText="@AttendanceStatusCodePresentation.YesNoUncheckedDisplayText"
+                                                        ShowCheckBoxInDisplayMode="false" />
+                                </EditSettings>
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceStatusCodeRecord)context.DataItem;
+                                    }
+                                    <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(row.KhauTruTamUng)">@AttendanceStatusCodePresentation.GetYesNoStatusText(row.KhauTruTamUng)</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="IsActive" Caption="Trạng thái" MinWidth="120" ReadOnly="true">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceStatusCodeRecord)context.DataItem;
+                                    }
+                                    <span class="@AttendanceStatusCodePresentation.GetActiveTextCssClass(row.IsActive)">@AttendanceStatusCodePresentation.GetActiveText(row.IsActive)</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="Note" Caption="Ghi chú" MinWidth="180" ReadOnly="true" />
+                            <DxGridDataColumn FieldName="CreatedAtUtc" Caption="Ngày tạo" Visible="false" MinWidth="150" ReadOnly="true">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceStatusCodeRecord)context.DataItem;
+                                    }
+                                    @AttendanceStatusCodePresentation.FormatDateTime(row.CreatedAtUtc)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="UpdatedAtUtc" Caption="Ngày cập nhật" Visible="false" MinWidth="150" ReadOnly="true">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceStatusCodeRecord)context.DataItem;
+                                    }
+                                    @AttendanceStatusCodePresentation.FormatDateTime(row.UpdatedAtUtc)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                        </Columns>
+                        <EmptyDataAreaTemplate>
+                            <div class="empty-state">
+                                <div class="state-title">@(Records.Count == 0 ? "Chưa có mã kết quả tính công" : "Không tìm thấy kết quả")</div>
+                                <div class="state-message">@(Records.Count == 0
+                                    ? "Danh mục chưa có dữ liệu."
+                                    : "Không có mã kết quả tính công phù hợp với điều kiện tìm kiếm hoặc lọc hiện tại.")</div>
+                            </div>
+                        </EmptyDataAreaTemplate>
+                    </DxGrid>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>
+
+<CodeKetQuaTinhCongDetailPopup Record="@DetailRecord"
+                               Visible="@IsDetailVisible"
+                               VisibleChanged="OnDetailPopupVisibleChanged" />

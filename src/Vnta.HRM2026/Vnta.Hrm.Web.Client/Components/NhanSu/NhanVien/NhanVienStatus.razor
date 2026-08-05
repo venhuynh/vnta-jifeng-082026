@@ -1,0 +1,18 @@
+@using Vnta.Hrm.Web.Client.Models.Employees
+
+@if(Employee is not null) {
+    <span class="@(string.Join(' ', "status", GetStatusClass()))">@Employee.StatusText</span>
+}
+
+@code {
+    [Parameter]
+    public EmployeeRecord? Employee { get; set; }
+
+    private string GetStatusClass() => Employee?.EmploymentStatus switch
+    {
+        EmployeeEmploymentStatus.Probation => "status-probation",
+        EmployeeEmploymentStatus.Official => "status-official",
+        EmployeeEmploymentStatus.Resigned => "status-resigned",
+        _ => string.Empty
+    };
+}

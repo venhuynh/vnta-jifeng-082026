@@ -1,0 +1,20 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe
+@using DevExpress.Blazor
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe.Models
+
+<div class="leave-holiday-allowance-export-source" aria-hidden="true">
+    <DxGrid @ref="grid" Data="@Records" KeyFieldName="Id" ShowAllRows="true" PagerVisible="false" TextWrapEnabled="true">
+        <Columns>
+            <DxGridDataColumn FieldName="EmployeeDisplay" Caption="Nhân viên" />
+            <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Bộ phận" />
+            <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" />
+            <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" />
+            <DxGridDataColumn FieldName="DailyWageAmount" Caption="Lương ngày" DisplayFormat="#,#0 'đ';-#,#0 'đ';''" />
+            <DxGridDataColumn FieldName="LeaveDayCount" Caption="Ngày phép" DisplayFormat="#,#0.##" />
+            <DxGridDataColumn FieldName="HolidayDayCount" Caption="Ngày lễ" DisplayFormat="#,#0.##" />
+            <DxGridDataColumn FieldName="LeaveHolidayAllowanceAmount" Caption="Tổng Phép/Lễ" DisplayFormat="#,#0 'đ';-#,#0 'đ';''" />
+            <DxGridDataColumn FieldName="Note" Caption="Ghi chú" />
+            <DxGridDataColumn FieldName="LockStatusText" Caption="Trạng thái" />
+        </Columns>
+    </DxGrid>
+</div>

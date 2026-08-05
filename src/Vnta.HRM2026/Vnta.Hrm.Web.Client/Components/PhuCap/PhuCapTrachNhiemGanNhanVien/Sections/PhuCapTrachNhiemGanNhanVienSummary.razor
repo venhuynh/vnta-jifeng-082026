@@ -1,0 +1,17 @@
+@using Vnta.Hrm.Application.PhuCap.PhuCapTrachNhiem
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemGanNhanVien.Sections
+
+<div class="employee-grade-list-grid-header">
+    <div class="employee-summary-strip employee-grade-list-summary">
+        <DxButtonGroup CssClass="employee-grade-list-summary-button-group" RenderStyle="ButtonRenderStyle.Secondary" RenderStyleMode="ButtonRenderStyleMode.Outline" SelectionMode="ButtonGroupSelectionMode.Single" Enabled="@CanInteract">
+            <Items>
+                <DxButtonGroupItem Text="@($"Tất cả {Summary.TotalCount:N0}")" Tooltip="Hiển thị toàn bộ nhân viên" CssClass="employee-grade-list-summary-button employee-grade-list-summary-button-all" Selected="@string.IsNullOrEmpty(SelectedKey)" Click="@(() => SelectionChanged.InvokeAsync(string.Empty))" />
+                <DxButtonGroupItem Text="@($"Có cấp bậc {Summary.AssignedCount:N0}")" Tooltip="Chỉ hiển thị nhân viên đã được gán cấp bậc" CssClass="employee-grade-list-summary-button employee-grade-list-summary-button-assigned" Selected="@(SelectedKey == AssignedKey)" Click="@(() => SelectionChanged.InvokeAsync(AssignedKey))" />
+                <DxButtonGroupItem Text="@($"Không có cấp bậc {Summary.UnassignedCount:N0}")" Tooltip="Chỉ hiển thị nhân viên chưa được gán cấp bậc" CssClass="employee-grade-list-summary-button employee-grade-list-summary-button-unassigned" Selected="@(SelectedKey == UnassignedKey)" Click="@(() => SelectionChanged.InvokeAsync(UnassignedKey))" />
+            </Items>
+        </DxButtonGroup>
+    </div>
+    <div class="employee-grade-list-search">
+        <DxSearchBox CssClass="employee-grade-list-searchbox" NullText="Tìm mã nhân viên, họ tên, chức vụ, cấp bậc" BindValueMode="BindValueMode.OnDelayedInput" InputDelay="500" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" Text="@SearchText" TextChanged="SearchTextChanged" Enabled="@CanInteract" />
+    </div>
+</div>

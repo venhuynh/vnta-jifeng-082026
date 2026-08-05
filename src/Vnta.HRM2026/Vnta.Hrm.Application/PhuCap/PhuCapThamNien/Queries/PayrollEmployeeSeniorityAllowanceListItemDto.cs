@@ -1,0 +1,26 @@
+namespace Vnta.Hrm.Application.PhuCap.PhuCapThamNien;
+
+public sealed record PayrollEmployeeSeniorityAllowanceListItemDto(
+    Guid Id,
+    Guid PayrollAllowanceSummaryRecordId,
+    Guid EmployeeId,
+    string? EmployeeCode,
+    string? EmployeeName,
+    string? DepartmentName,
+    string? PositionName,
+    short PayrollMonth,
+    short PayrollYear,
+    DateOnly? EmploymentStartDate,
+    short? CompletedSeniorityYears,
+    short? CompletedSeniorityMonths,
+    decimal? AdministrativeWorkDays,
+    decimal? LateEarlyLeaveWorkDays,
+    decimal? SalaryWorkDays,
+    string? AppliedRuleKey,
+    decimal AllowanceAmount,
+    string? Note,
+    bool IsLocked,
+    DateTime? RefreshedAtUtc,
+    string? RefreshedBy,
+    DateTime UpdatedAtUtc,
+    bool IsSummaryLocked = false);

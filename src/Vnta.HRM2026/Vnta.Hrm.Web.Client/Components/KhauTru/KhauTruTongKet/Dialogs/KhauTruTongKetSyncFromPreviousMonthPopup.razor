@@ -1,0 +1,37 @@
+@namespace Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruTongHop
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Lấy từ tháng trước"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsSyncing)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsSyncing)"
+         CloseOnOutsideClick="false"
+         CssClass="deduction-summary-sync-popup">
+    <BodyContentTemplate>
+        <div class="deduction-summary-sync-content">
+            <div class="deduction-summary-sync-message">
+                Sẽ lấy snapshot tổng kết khấu trừ từ kỳ @SourcePeriodLabel để khởi tạo dữ liệu kỳ @TargetPeriodLabel.
+                Kỳ đích chỉ giữ nhân viên có dữ liệu chấm công; các record của nhân viên không còn chấm công sẽ bị xóa, kể cả khi đã khóa.
+                Các dòng đã khóa của nhân viên vẫn còn chấm công được giữ nguyên.
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="deduction-summary-sync-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      Enabled="@(!IsSyncing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Đồng bộ"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.FolderOpenArrowImport"
+                      Enabled="@(!IsSyncing)"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

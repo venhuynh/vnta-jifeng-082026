@@ -1,0 +1,28 @@
+namespace Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Queries;
+
+public sealed record AttendanceAllowanceResultListItemDto(
+    Guid Id,
+    PayrollAllowanceKind AllowanceKind,
+    Guid EmployeeId,
+    string? EmployeeCode,
+    string? EmployeeName,
+    string? DepartmentName,
+    string? PositionName,
+    int PayrollMonth,
+    int PayrollYear,
+    decimal StandardAllowanceAmount,
+    decimal StandardWorkdayCount,
+    decimal ActualWorkdayCount,
+    decimal AttendanceRate,
+    decimal ActualAllowanceAmount,
+    bool IsLocked,
+    DateTime CreatedAtUtc,
+    DateTime? UpdatedAtUtc,
+    string? AppliedRuleKey = null,
+    string? AttendanceClass = null,
+    decimal? CtlWorkdayCount = null,
+    int? LateEarlyMinutes = null,
+    decimal? Kqcc = null,
+    bool HasKpViolation = false,
+    decimal? AdministrativeWorkdayCount = null,
+    decimal? LateEarlyDeductionDays = null);

@@ -1,0 +1,287 @@
+.content-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.toolbar {
+    flex: 0 0 3.25rem;
+    height: 3.25rem;
+    min-height: 3.25rem;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+::deep .toolbar .dxbl-toolbar {
+    height: 100%;
+    flex-wrap: nowrap;
+    align-items: center;
+    min-width: max-content;
+}
+
+::deep .toolbar .dxbl-toolbar-title {
+    white-space: nowrap;
+}
+
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+.biometric-data-root {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.biometric-data-grid-card {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.biometric-summary-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.summary-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 2.625rem;
+    padding: 0.4rem 0.82rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 999px;
+    background: var(--dxds-color-surface-neutral-default-rest);
+    color: var(--dxds-color-content-neutral-default-rest);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.summary-badge:not(:disabled) {
+    cursor: pointer;
+}
+
+.summary-badge:not(:disabled):hover {
+    border-color: color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 40%, #2563eb);
+    box-shadow: 0 0.35rem 0.85rem color-mix(in srgb, #2563eb 12%, transparent);
+}
+
+.summary-badge:disabled {
+    opacity: 0.7;
+    cursor: default;
+}
+
+.summary-badge.is-active {
+    border-color: #2563eb;
+    box-shadow: 0 0.4rem 0.95rem color-mix(in srgb, #2563eb 16%, transparent);
+    background: color-mix(in srgb, #eff6ff 86%, white);
+}
+
+.summary-badge-dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 999px;
+    flex: 0 0 0.7rem;
+    background: #2563eb;
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, #2563eb 16%, transparent);
+}
+
+.summary-badge-all .summary-badge-dot {
+    background: #2563eb;
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, #2563eb 16%, transparent);
+}
+
+.summary-badge-fingerprint .summary-badge-dot {
+    background: #0f766e;
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, #0f766e 16%, transparent);
+}
+
+.summary-badge-face .summary-badge-dot {
+    background: #7c3aed;
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, #7c3aed 16%, transparent);
+}
+
+.summary-badge-card .summary-badge-dot {
+    background: #d97706;
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, #d97706 16%, transparent);
+}
+
+.summary-badge-password .summary-badge-dot {
+    background: #db2777;
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, #db2777 16%, transparent);
+}
+
+.summary-badge-admin .summary-badge-dot {
+    background: #dc2626;
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, #dc2626 16%, transparent);
+}
+
+.summary-badge-label {
+    font-size: 0.88rem;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.summary-badge-value {
+    font-size: 0.88rem;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    background-clip: border-box;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+}
+
+.empty-state,
+.error-state {
+    height: 100%;
+    min-height: 18rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.state-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.state-message {
+    max-width: 38rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .biometric-data-loading-panel {
+    height: 100%;
+}
+
+::deep .biometric-data-grid {
+    max-height: 100%;
+    border-radius: 0.25rem;
+}
+
+::deep .search-textbox-item {
+    max-width: 16rem;
+}
+
+.checkbox-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.75rem;
+}
+
+.checkbox-cell input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    cursor: default;
+}
+
+.biometric-row-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+    width: 100%;
+}
+
+::deep .biometric-row-action-button.dxbl-btn {
+    width: 1.9rem;
+    height: 1.9rem;
+    min-width: 1.9rem;
+    padding: 0;
+    border-radius: 0.25rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .biometric-row-action-detail.dxbl-btn:hover {
+    color: var(--dxds-color-content-info-default-rest);
+    background-color: color-mix(in srgb, var(--dxds-color-content-info-default-rest) 10%, transparent);
+}
+
+::deep .biometric-row-action-delete.dxbl-btn:hover {
+    color: var(--dxds-color-content-danger-default-rest);
+    background-color: color-mix(in srgb, var(--dxds-color-content-danger-default-rest) 10%, transparent);
+}
+
+::deep .biometric-row-action-button .dxbl-image,
+::deep .biometric-row-action-button .dxbl-btn-image,
+::deep .biometric-row-action-button img,
+::deep .biometric-row-action-button svg {
+    width: 0.95rem;
+    height: 0.95rem;
+}
+
+.employee-avatar-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+}
+
+.employee-avatar-image,
+.employee-avatar-fallback {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    flex: 0 0 2.5rem;
+}
+
+.employee-avatar-image {
+    display: block;
+    object-fit: cover;
+    border: 2px solid color-mix(in srgb, #ffffff 78%, #9ca3af);
+    box-shadow: 0 0.45rem 1rem color-mix(in srgb, #111827 14%, transparent);
+    background: #f3f4f6;
+}
+
+.employee-avatar-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #0f172a;
+    border: 2px solid color-mix(in srgb, #ffffff 78%, #93c5fd);
+    background:
+        radial-gradient(circle at 30% 30%, color-mix(in srgb, white 82%, transparent) 0%, transparent 42%),
+        linear-gradient(135deg, #dbeafe 0%, #bfdbfe 45%, #c7d2fe 100%);
+    box-shadow: 0 0.45rem 1rem color-mix(in srgb, #2563eb 12%, transparent);
+    text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+    .summary-badge {
+        min-height: 2.45rem;
+        padding: 0.38rem 0.72rem;
+    }
+
+    .summary-badge-label {
+        font-size: 0.82rem;
+    }
+
+    .summary-badge-value {
+        font-size: 0.82rem;
+    }
+}

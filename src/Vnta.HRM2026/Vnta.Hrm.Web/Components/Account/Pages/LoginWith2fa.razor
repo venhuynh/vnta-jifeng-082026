@@ -1,0 +1,98 @@
+﻿@page "/Account/LoginWith2fa"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Vnta.Hrm.Infrastructure.Identity
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject IdentityRedirectManager RedirectManager
+@inject ILogger<LoginWith2fa> Logger
+
+<PageTitle>VNTA HRM 2026 - Xác thực hai lớp</PageTitle>
+<div class="main-content">
+    <div class="block-content card">
+        <StatusMessage Message="@message" />
+        <EditForm Model="Input" FormName="login-with-2fa" OnValidSubmit="OnValidSubmitAsync" method="post" Context="LoginWithFA">
+            <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+            <input type="hidden" name="RememberMe" value="@RememberMe" />
+            <DataAnnotationsValidator />
+            <DxFormLayout CaptionPosition=@CaptionPosition.Vertical>
+                <DxFormLayoutItem ColSpanMd="12">
+                    <div class="title">
+                        <div class="title-header-text">Xác thực hai lớp</div>
+                        <div class="title-content-text-secondary">Tài khoản của bạn được bảo vệ bằng ứng dụng xác thực. Vui lòng nhập mã xác thực bên dưới.</div>
+                    </div>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Mã xác thực" ColSpanMd="12" BeginRow="true">
+                    <InteractiveServerMaskedInput Name="Input.TwoFactorCode" CssClass="large-input" Value="@Input.TwoFactorCode" Mask="000 000" />
+                    <ValidationMessage class="text-danger" For="() => Input.TwoFactorCode" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
+                    <InteractiveServerCheckbox Name="Input.RememberMachine" InputId="rememberme" Value="@Input.RememberMachine" LabelText="Ghi nhớ thiết bị này"></InteractiveServerCheckbox>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
+                    <DxButton CssClass="w-100" SubmitFormOnClick="true" Text="Đăng nhập"></DxButton>
+                </DxFormLayoutItem>
+            </DxFormLayout>
+        </EditForm>
+        <div class="links-container">
+            <span>Không đăng nhập được?</span><span>Bạn có thể <a href="Account/LoginWithRecoveryCode?ReturnUrl=@ReturnUrl">dùng mã khôi phục để đăng nhập</a>.</span>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private string? message;
+    private ApplicationUser user = default!;
+
+    private InputModel? input;
+
+    [SupplyParameterFromForm]
+    private InputModel Input {
+        get => input ??= new();
+        set => input = value;
+    }
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery]
+    private bool RememberMe { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        // Đảm bảo người dùng đã hoàn tất bước nhập tài khoản và mật khẩu.
+        user = await SignInManager.GetTwoFactorAuthenticationUserAsync() ??
+            throw new InvalidOperationException("Unable to load two-factor authentication user.");
+    }
+
+    private async Task OnValidSubmitAsync() {
+        var authenticatorCode = Input.TwoFactorCode!.Replace(" ", string.Empty).Replace("-", string.Empty);
+        var result = await SignInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, RememberMe, Input.RememberMachine);
+        var userId = await UserManager.GetUserIdAsync(user);
+
+        if(result.Succeeded) {
+            Logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", userId);
+            RedirectManager.RedirectToPostLogin(ReturnUrl);
+        } else if(result.IsLockedOut) {
+            Logger.LogWarning("User with ID '{UserId}' account locked out.", userId);
+            RedirectManager.RedirectTo("Account/Lockout");
+        } else {
+            Logger.LogWarning("Invalid authenticator code entered for user with ID '{UserId}'.", userId);
+            message = "Lỗi: Mã xác thực không hợp lệ.";
+        }
+    }
+
+    private sealed class InputModel {
+        [Required]
+        [StringLength(7, ErrorMessage = "{0} phải có từ {2} đến {1} ký tự.", MinimumLength = 6)]
+        [DataType(DataType.Text)]
+        [Display(Name = "Mã xác thực")]
+        public string? TwoFactorCode { get; set; }
+
+        [Display(Name = "Ghi nhớ thiết bị này")]
+        public bool RememberMachine { get; set; }
+    }
+}
+
+

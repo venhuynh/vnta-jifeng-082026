@@ -1,0 +1,63 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapThamNien
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="520px"
+         ShowCloseButton="@(!IsSaving)"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         FooterCssClass="seniority-popup-footer"
+         CssClass="seniority-edit-popup">
+    <BodyContentTemplate Context="editPopupBody">
+        <div class="seniority-edit-form">
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="form-error-message" role="alert">@ErrorMessage</div>
+            }
+            <DxFormLayout CaptionPosition="@CaptionPosition.Vertical">
+                <DxFormLayoutItem Caption="Nhân viên" ColSpanMd="12">
+                    <DxTextBox Text="@Draft.EmployeeDisplay"
+                               ReadOnly="true"
+                               CssClass="seniority-edit-readonly" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Phụ cấp thâm niên" ColSpanMd="12">
+                    <DxMaskedInput T="decimal"
+                                   Value="@Draft.AllowanceAmount"
+                                   ValueChanged="OnAllowanceAmountChangedAsync"
+                                   Mask="n0"
+                                   MaskMode="MaskMode.Numeric"
+                                   Enabled="@CanEditFields">
+                        <DxNumericMaskProperties Culture="@DisplayCulture" />
+                    </DxMaskedInput>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Ghi chú" ColSpanMd="12">
+                    <DxMemo Text="@Draft.Note"
+                            TextChanged="OnNoteChangedAsync"
+                            NullText="Nhập ghi chú điều chỉnh"
+                            Rows="4"
+                            Enabled="@CanEditFields" />
+                </DxFormLayoutItem>
+            </DxFormLayout>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="seniority-edit-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="seniority-popup-action"
+                      Enabled="@(!IsSaving)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Lưu"
+                      Click="SaveAsync"
+                      IconUrl="@VntaDevExpressIcons.Save"
+                      CssClass="seniority-popup-action"
+                      Enabled="@CanSave"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

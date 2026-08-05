@@ -1,0 +1,159 @@
+.content-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.toolbar {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+.attendance-result-codes-root {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    background-clip: border-box;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+}
+
+.empty-state,
+.error-state {
+    height: 100%;
+    min-height: 18rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.state-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.state-message {
+    max-width: 32rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+.kind-status {
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.kind-status::before {
+    content: " ";
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    margin-right: 0.3rem;
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+.kind-status-workday {
+    color: var(--dxds-color-content-success-default-rest);
+}
+
+.kind-status-leave,
+.kind-status-business-trip {
+    color: var(--dxds-color-content-info-default-rest);
+}
+
+.kind-status-absence {
+    color: var(--dxds-color-content-danger-default-rest);
+}
+
+.kind-status-neutral {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+tr.dxbl-grid-focused-row .kind-status {
+    color: inherit !important;
+}
+
+.yes-no-status {
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.yes-no-status::before {
+    content: " ";
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    margin-right: 0.3rem;
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+.yes-no-status-yes {
+    color: var(--dxds-color-content-success-default-rest);
+}
+
+.yes-no-status-no {
+    color: var(--dxds-color-content-danger-default-rest);
+}
+
+.yes-no-status-neutral {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+tr.dxbl-grid-focused-row .yes-no-status {
+    color: inherit !important;
+}
+
+.attendance-result-codes-grid-card {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+::deep .attendance-result-codes-loading-panel {
+    height: 100%;
+}
+
+::deep .attendance-result-codes-grid {
+    max-height: 100%;
+    border-radius: 0.25rem;
+}
+
+::deep .search-textbox-item {
+    max-width: 16rem;
+}
+
+@media (max-width: 768px) {
+    .toolbar {
+        margin-bottom: 0.75rem;
+    }
+
+    .toolbar .custom-item {
+        width: min(100%, 16rem);
+        margin: 0.25rem;
+    }
+
+    ::deep .search-textbox-item {
+        max-width: 100%;
+    }
+}

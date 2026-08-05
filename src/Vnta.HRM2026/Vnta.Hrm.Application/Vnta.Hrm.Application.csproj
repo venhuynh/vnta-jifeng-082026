@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableDefaultItems>False</EnableDefaultItems>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Vnta.Hrm.Application</RootNamespace>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vnta.Hrm.Domain\Vnta.Hrm.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="**/*.cs" Exclude="obj/**/*.cs;.artifacts/**/*.cs;artifacts/**/*.cs;bin/**/*.cs" />
+  </ItemGroup>
+</Project>

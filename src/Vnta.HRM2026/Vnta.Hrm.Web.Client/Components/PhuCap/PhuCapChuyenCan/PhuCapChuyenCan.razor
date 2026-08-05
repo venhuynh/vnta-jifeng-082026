@@ -1,0 +1,112 @@
+@page "/payroll/phu-cap-chuyen-can"
+@page "/payroll/attendance-allowance"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Components.ChamCong.MonthlyWork
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapChuyenCan.Dialogs
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapChuyenCan.Export
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapChuyenCan.Sections
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Phụ cấp chuyên cần</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+            <PhuCapChuyenCanToolbar Month="@ToolbarMonth"
+                                  Year="@ToolbarYear"
+                                  MinimumYear="@MinimumSupportedYear"
+                                  MaximumYear="@MaximumSupportedYear"
+                                  AvailableMonths="@AvailableMonthOptions"
+                                  AppliedPeriodLabel="@AppliedPeriodLabel"
+                                  CanChangeFilters="@CanChangeFilters"
+                                  CanView="@CanView"
+                                  CanInteract="@CanInteract"
+                                  CanOperate="@CanOperateOnCurrentDataset"
+                                  CanRecalculate="@CanRecalculate"
+                                  CanLock="@CanLockSelectedRecords"
+                                  CanUnlock="@CanUnlockSelectedRecords"
+                                  CanExport="@CanExport"
+                                  MonthChanged="OnSelectedMonthChangedAsync"
+                                  YearChanged="OnSelectedYearChangedAsync"
+                                  ViewRequested="OnViewRequestedAsync"
+                                  RecalculateRequested="OnRecalculateClickAsync"
+                                  LockRequested="OnLockSelectedAsync"
+                                  UnlockRequested="OnUnlockSelectedAsync"
+                                  RulesRequested="OpenRulesPopupAsync"
+                                  ExportExcelRequested="ExportAllDataToExcelAsync"
+                                  ExportPdfRequested="ExportAllDataToPdfAsync"
+                                  ColumnChooserRequested="OnColumnChooserRequested" />
+    </div>
+
+    <div class="attendance-allowance-root">
+        <div class="card attendance-allowance-grid-card">
+            <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="@LoadingText"
+                                 CssClass="attendance-allowance-loading-panel">
+                @if(HasLoadError)
+                {
+                    <PhuCapChuyenCanLoadError RetryRequested="OnRetryAsync" />
+                }
+                else
+                {
+                    <div class="attendance-allowance-grid-content">
+                        <PhuCapChuyenCanSummary SummaryBadges="@SummaryBadges"
+                                                ActiveSummaryBadgeKey="@ActiveSummaryBadgeKey"
+                                                SearchText="@SearchText"
+                                                VisibleActualAllowanceTotal="@VisibleActualAllowanceTotal"
+                                                CanInteract="@CanInteract"
+                                                FormatMoney="FormatMoney"
+                                                SummaryBadgeSelected="OnSummaryBadgeClick"
+                                                SearchTextChanged="OnSearchTextChanged" />
+                        <PhuCapChuyenCanGrid @ref="GridSection"
+                                             Records="@Records"
+                                             SelectedItems="@SelectedDataItems"
+                                             CanOperate="@CanOperateOnCurrentDataset"
+                                             PageSize="@PageSize"
+                                             EmptyStateTitle="@GetEmptyStateTitle()"
+                                             EmptyStateMessage="@GetEmptyStateMessage()"
+                                             EmptyStateActionText="@GetEmptyStateActionText()"
+                                             CanEditRow="CanEditRow"
+                                             CanRefreshRow="CanRefreshRow"
+                                             CanToggleLock="CanToggleLockState"
+                                             CanViewMonthlyWork="CanViewMonthlyWork"
+                                             HighlightText="HighlightSearchText"
+                                             RuleSummary="GetRuleSummary"
+                                             FormatMoney="FormatMoney"
+                                             LockBadgeCssClass="GetLockBadgeCssClass"
+                                             SelectedItemsChanged="OnSelectedDataItemsChanged"
+                                             EmptyStateActionRequested="OnEmptyStateActionClick"
+                                             EditRequested="OpenEditPopup"
+                                             RefreshRequested="RefreshRowAsync"
+                                             LockToggleRequested="ToggleLockStateAsync"
+                                             MonthlyWorkRequested="OpenMonthlyWorkPopupAsync" />
+                        <PhuCapChuyenCanPager SummaryText="@PagerSummaryText"
+                                              CanBrowsePages="@CanBrowsePages"
+                                              TotalPageCount="@TotalPageCount"
+                                              CurrentPageIndex="@CurrentPageIndex"
+                                              PageChanged="OnActivePageIndexChangedAsync"
+                                              PageSizeOptions="@AvailablePageSizeOptions"
+                                              PageSize="@PageSize"
+                                              PageSizeChanged="OnPageSizeChanged"
+                                              CanChangeFilters="@CanChangeFilters"
+                                              PageSizeDescription="@PageSizeDescription" />
+                    </div>
+                }
+            </HrmLoadingPanel>
+        </div>
+    </div>
+
+    <PhuCapChuyenCanExportGrid @ref="ExportSource" Records="@ExportRecords" Rendered="OnExportSourceRendered" />
+</div>
+
+<PhuCapChuyenCanRulesPopup @bind-Visible="@IsRulesPopupVisible" Rule="@AttendanceAllowanceRule" IsRuleLoading="@IsRulesLoading" />
+<PhuCapChuyenCanRecalculateConfirmPopup Visible="@IsRecalculateConfirmPopupVisible" VisibleChanged="@(_ => CloseRecalculateConfirmPopup())" IsRefreshing="@IsConfirmationBusy" PeriodLabel="@AppliedPeriodLabel" ConfirmRequested="ConfirmRecalculateAsync" />
+<PhuCapChuyenCanLockActionPopup Visible="@IsLockActionPopupVisible" VisibleChanged="OnLockActionPopupVisibleChanged" IsRefreshing="@IsRefreshing" Title="@LockActionPopupTitle" PromptText="@LockActionPromptText" ContextText="@LockActionScopeContextText" WholePeriodLabel="@PendingLockActionPeriodLabel" SelectedScope="@SelectedLockActionScope" SelectedRowsScope="@LockScopeSelectedRows" WholePeriodScope="@LockScopeWholePeriod" SelectedRowsDescription="@SelectedRowsScopeDescription" WholePeriodDescription="@WholePeriodScopeDescription" CanChooseSelectedRowsScope="@CanChooseSelectedRowsScope" CanConfirm="@CanConfirmLockAction" ShouldLock="@PendingLockActionState" ScopeSelected="SelectLockActionScope" ConfirmRequested="ConfirmLockActionAsync" />
+<ChamCongMonthlyWorkPopup Visible="@IsMonthlyWorkPopupVisible" VisibleChanged="@(_ => CloseMonthlyWorkPopup())" IsLoading="@IsMonthlyWorkPopupLoading" Title="@MonthlyWorkPopupTitle" Context="@MonthlyWorkPopupContext" Rows="@MonthlyWorkRows" RefreshRequested="RefreshMonthlyWorkPopupAsync" />
+<PhuCapChuyenCanEditPopup Visible="@IsEditPopupVisible" VisibleChanged="@(_ => CloseEditPopup())" IsSaving="@IsSavingEdit" Model="@EditModel" EditContext="@EditContext" CanEditFields="@CanEditFields" CanSave="@CanSaveEdit" SaveRequested="SaveEditAsync" />

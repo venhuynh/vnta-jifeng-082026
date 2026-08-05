@@ -1,0 +1,26 @@
+.union-fee-confirm-popup-footer,
+.union-fee-confirm-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.union-fee-confirm-actions {
+    gap: 0.5rem;
+}
+
+.union-fee-confirm-action {
+    min-width: 7rem;
+}
+
+.union-fee-confirm-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.5rem 0 0.25rem;
+}
+
+.union-fee-confirm-message {
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.5;
+}

@@ -1,0 +1,27 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Application.KhauTru.KhauTruTongHop
+
+<div class="dashboard-report">
+    <div class="dashboard-section-header">
+        <div class="dashboard-section-title">Cơ cấu khấu trừ</div>
+        <DxButton IconUrl="@VntaDevExpressIcons.Refresh" Click="RefreshRequested" Enabled="@(!IsRefreshing)" Tooltip="Tải lại dashboard khấu trừ" CssClass="dashboard-report-refresh" />
+    </div>
+    @if(NonZeroBreakdown.Count == 0)
+    {
+        <div class="dashboard-report-message">Chưa có dữ liệu cơ cấu khấu trừ cho kỳ đã chọn.</div>
+    }
+    else
+    {
+        <DxPieChart Data="@ChartPoints" InnerDiameter="0.55" T="BreakdownChartPoint" CssClass="deduction-pie-chart" CustomizeSeriesPoint="CustomizeBreakdownPoint">
+            <DxPieChartSeries T="BreakdownChartPoint" TArgument="string" TValue="double" ArgumentField="item => item.DeductionType" ValueField="item => item.Amount">
+                <DxChartSeriesLabel Visible="true"
+                                    Position="RelativePosition.Outside"
+                                    TextOverflow="ChartTextOverflow.None"
+                                    WordWrap="ChartWordWrap.None">
+                    <DxChartSeriesLabelConnector Visible="true" />
+                </DxChartSeriesLabel>
+            </DxPieChartSeries>
+            <DxChartLegend HorizontalAlignment="HorizontalAlignment.Center" VerticalAlignment="VerticalEdge.Bottom" Position="RelativePosition.Outside" />
+        </DxPieChart>
+    }
+</div>

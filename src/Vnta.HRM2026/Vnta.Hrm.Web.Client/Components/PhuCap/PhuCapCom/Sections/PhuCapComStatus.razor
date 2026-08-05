@@ -1,0 +1,5 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapCom
+
+<span class="@(string.Join(' ', "status", IsLocked ? "status-locked" : "status-open"))">
+    @(IsLocked ? "Đã khóa" : "Đang mở")
+</span>

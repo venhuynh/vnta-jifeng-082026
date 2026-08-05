@@ -1,0 +1,344 @@
+﻿.content-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* Baseline layout kế thừa từ PhuCapThamNien. */
+.toolbar {
+    flex: 0 0 auto;
+}
+
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+.toolbar-filter-editor {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toolbar-filter-label {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    white-space: nowrap;
+}
+
+::deep .toolbar-filter-item {
+    min-width: 0;
+}
+
+::deep .toolbar-filter-year {
+    width: 7rem;
+}
+
+::deep .toolbar-filter-month {
+    width: 8rem;
+}
+
+.advance-deduction-grid-header {
+    justify-content: flex-end;
+    padding: 0.75rem 1rem 0.625rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 94%, white);
+    border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 82%, transparent);
+}
+
+.advance-deduction-grid-search {
+    min-width: 18rem;
+    max-width: min(100%, 24rem);
+}
+
+.empty-state,
+.error-state {
+    min-height: 18rem;
+}
+
+@media (max-width: 960px) {
+    .advance-deduction-grid-header {
+        align-items: stretch;
+        padding: 0.75rem;
+    }
+
+    .advance-deduction-grid-search {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+    }
+}
+
+.toolbar {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+::deep .toolbar .dxbl-toolbar {
+    flex-wrap: nowrap;
+    min-width: max-content;
+}
+
+::deep .toolbar .dxbl-toolbar-title {
+    white-space: nowrap;
+}
+
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+.toolbar-inline-field {
+    gap: 0.5rem;
+}
+
+.toolbar-inline-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.toolbar-month {
+    width: 8rem;
+}
+
+.toolbar-year {
+    width: 9rem;
+}
+
+::deep .toolbar-month-item,
+::deep .toolbar-year-item {
+    min-width: max-content;
+}
+
+.advance-deduction-root {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    background-clip: border-box;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+}
+
+.advance-deduction-grid-card {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.advance-deduction-grid-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.advance-deduction-grid-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem 0.625rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 94%, white);
+    border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 82%, transparent);
+}
+
+.advance-deduction-grid-search {
+    flex: 0 0 auto;
+    min-width: 15rem;
+    max-width: min(100%, 20rem);
+    margin-left: auto;
+}
+
+::deep .advance-deduction-grid-searchbox {
+    width: 100%;
+}
+
+::deep .advance-deduction-grid-searchbox .dxbl-text-editor {
+    min-height: 2.3rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 72%, transparent);
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 92%, white);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 80%, transparent);
+}
+
+::deep .advance-deduction-grid-searchbox .dxbl-text-editor-input {
+    min-width: 11rem;
+}
+
+::deep .advance-deduction-grid-searchbox .dxbl-btn-clear {
+    opacity: 0.68;
+}
+
+.empty-state,
+.error-state {
+    height: 100%;
+    min-height: 18rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.state-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.state-message {
+    max-width: 36rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+.readonly-field {
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+    background-color: var(--dxds-color-surface-neutral-subtle-rest);
+    color: var(--dxds-color-content-neutral-default-rest);
+    word-break: break-word;
+}
+
+.edit-error-message {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    background-color: #fff2f0;
+    color: #b42318;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.75rem;
+    padding: 0.125rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge-success {
+    background-color: #e7f6ec;
+    color: #18794e;
+}
+
+.status-badge-neutral {
+    background-color: #eef2f7;
+    color: #425466;
+}
+
+.status-preview {
+    display: inline-flex;
+    margin-top: 0.5rem;
+}
+
+.employee-option {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.15rem 0;
+}
+
+.employee-option-name {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-weight: 600;
+}
+
+.employee-option-meta {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.85rem;
+}
+
+::deep .advance-deduction-loading-panel {
+    height: 100%;
+}
+
+::deep .advance-deduction-grid {
+    flex: 1 1 auto;
+    max-height: 100%;
+    border-radius: 0.25rem;
+}
+
+::deep .advance-deduction-grid .dxbl-grid-table {
+    border-top: none;
+}
+
+::deep .advance-deduction-popup {
+    width: min(52rem, calc(100vw - 2rem));
+    max-height: min(82vh, 44rem);
+    overflow-y: auto;
+}
+
+.advance-deduction-form-scroll {
+    width: 100%;
+}
+
+::deep .advance-deduction-form {
+    width: 100%;
+}
+
+::deep .lock-checkbox-item .dxbl-fl-cpt {
+    margin-bottom: 0.5rem;
+}
+
+::deep .lock-checkbox-item .dxbl-fl-ctrl {
+    display: flex;
+    align-items: center;
+    min-height: 2.5rem;
+}
+
+@media (max-width: 768px) {
+    .advance-deduction-grid-header {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 0.75rem;
+    }
+
+    .advance-deduction-grid-search {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+    }
+}
+.yes-no-status {
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.yes-no-status::before {
+    content: " ";
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    margin-right: 0.3rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.yes-no-status-yes {
+    color: var(--dxds-color-content-success-default-rest);
+}
+
+.yes-no-status-no {
+    color: var(--dxds-color-content-danger-default-rest);
+}

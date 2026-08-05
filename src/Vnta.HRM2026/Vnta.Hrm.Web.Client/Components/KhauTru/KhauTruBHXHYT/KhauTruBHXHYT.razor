@@ -1,0 +1,408 @@
+@page "/payroll/social-health-insurance-deductions"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruBHXHYT.Models
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Khấu trừ BHXH-YT</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Khấu trừ BHXH-YT"
+                   CssClass="toolbar"
+                   ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-filter-item"
+                           Tooltip="Chọn năm kỳ lương">
+                <Template>
+                    <div class="custom-item toolbar-filter-editor">
+                        <span class="toolbar-filter-label">Năm</span>
+                        <DxSpinEdit T="int"
+                                    Value="@ToolbarYear"
+                                    ValueChanged="OnToolbarYearChanged"
+                                    MinValue="@MinimumSupportedYear"
+                                    MaxValue="@MaximumSupportedYear"
+                                    Increment="1"
+                                    ShowSpinButtons="true"
+                                    Enabled="@CanChangeFilters"
+                                    CssClass="toolbar-filter-year" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-filter-item"
+                           Tooltip="Chọn tháng kỳ lương">
+                <Template>
+                    <div class="custom-item toolbar-filter-editor">
+                        <span class="toolbar-filter-label">Tháng</span>
+                        <DxComboBox TData="MonthOption"
+                                    TValue="int"
+                                    @key="ToolbarYear"
+                                    Data="@AvailableMonthOptions"
+                                    Value="@ToolbarMonth"
+                                    ValueChanged="OnToolbarMonthChanged"
+                                    ValueFieldName="@nameof(MonthOption.Value)"
+                                    TextFieldName="@nameof(MonthOption.Text)"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                    Enabled="@CanChangeFilters"
+                                    CssClass="toolbar-filter-month" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Xem"
+                           Click="OnViewRequestedAsync"
+                           Enabled="@CanReload"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tải dữ liệu khấu trừ BHXH-YT theo bộ lọc hiện tại"
+                           IconUrl="@VntaDevExpressIcons.FolderOpenArrowImport" />
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Nhóm thao tác trên dữ liệu khấu trừ BHXH-YT">
+                <Template>
+                    <div class="custom-item">
+                        <DxDropDownButton Text="Hành động"
+                                          IconUrl="@VntaDevExpressIcons.TaskList"
+                                          RenderStyle="ButtonRenderStyle.Secondary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Outline"
+                                          Enabled="@CanUseAppliedData"
+                                          CssClass="toolbar-action-dropdown">
+                            <Items>
+                                <DxDropDownButtonItem Text="Tính lại"
+                                                      IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                                                      Click="OnRecalculateClickAsync"
+                                                      Enabled="@CanRecalculate"
+                                                      Tooltip="@RecalculateTooltip" />
+                                <DxDropDownButtonItem Text="Khóa"
+                                                      IconUrl="@VntaDevExpressIcons.Lock"
+                                                      Click="OnLockSelectedAsync"
+                                                      Enabled="@CanOpenLockAction"
+                                                      BeginGroup="true" />
+                                <DxDropDownButtonItem Text="Mở khóa"
+                                                      IconUrl="@VntaDevExpressIcons.Unlock"
+                                                      Click="OnUnlockSelectedAsync"
+                                                      Enabled="@CanOpenUnlockAction" />
+                            </Items>
+                        </DxDropDownButton>
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Quy tắc"
+                           Click="OnRulesClick"
+                           Enabled="@CanOpenRules"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xem và cấu hình quy tắc tính khấu trừ BHXH-YT"
+                           IconUrl="@VntaDevExpressIcons.TextBoxDescription" />
+            <DxToolbarItem Text="Xuất dữ liệu"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất dữ liệu khấu trừ BHXH-YT"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel"
+                                   Click="ExportAllDataToExcel"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ dữ liệu khấu trừ BHXH-YT ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF"
+                                   Click="ExportAllDataToPdf"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ dữ liệu khấu trừ BHXH-YT ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra Excel"
+                                   Click="ExportSelectedRowsToExcel"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các dòng khấu trừ BHXH-YT đã chọn ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra PDF"
+                                   Click="ExportSelectedRowsToPdf"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các dòng khấu trừ BHXH-YT đã chọn ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh sách khấu trừ BHXH-YT"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanUseAppliedData"
+                           Click="OnColumnChooserItemClick"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+        </DxToolbar>
+    </div>
+
+    <div class="insurance-deduction-root">
+        @if (HasLoadError)
+        {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải dữ liệu khấu trừ BHXH-YT</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="OnRetryAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+            <div class="card insurance-deduction-grid-card">
+                <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="@LoadingText"
+                                 CssClass="insurance-deduction-loading-panel">
+                    <div class="insurance-deduction-grid-content">
+                        <div class="insurance-deduction-grid-header">
+                            <div class="insurance-deduction-summary-strip">
+                                <DxButtonGroup CssClass="insurance-deduction-total-amount-button-group"
+                                               RenderStyle="ButtonRenderStyle.Primary"
+                                               RenderStyleMode="ButtonRenderStyleMode.Outline">
+                                    <Items>
+                                        <DxButtonGroupItem Text="@($"Tổng khấu trừ: {FormatMoney(VisibleDeductionTotal)}")"
+                                                           CssClass="insurance-deduction-total-amount-button" />
+                                    </Items>
+                                </DxButtonGroup>
+                            </div>
+                            <div class="insurance-deduction-grid-search">
+                                <DxSearchBox CssClass="insurance-deduction-grid-searchbox"
+                                             NullText="Tìm kiếm nhân viên"
+                                             BindValueMode="BindValueMode.OnDelayedInput"
+                                             InputDelay="500"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             Text="@SearchText"
+                                             TextChanged="OnSearchTextChanged"
+                                             Enabled="@CanSearch" />
+                            </div>
+                        </div>
+                        <DxGrid @ref="Grid"
+                                Data="@Records"
+                                KeyFieldName="Id"
+                                CssClass="insurance-deduction-grid"
+                                ShowSearchBox="false"
+                                PageSize="@PageSize"
+                                PageSizeChanged="OnPageSizeChanged"
+                                PagerPosition="GridPagerPosition.Bottom"
+                                PagerSummaryVisible="true"
+                                PageSizeSelectorVisible="true"
+                                PageSizeSelectorItems="@(new int[] { 50, 100, 200 })"
+                                PageSizeSelectorAllRowsItemVisible="false"
+                                SkeletonRowsEnabled="true"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                TextWrapEnabled="false"
+                                FocusedRowEnabled="true"
+                                HighlightRowOnHover="true"
+                                AllowSelectRowByClick="true"
+                                SelectionMode="GridSelectionMode.Multiple"
+                                SelectedDataItems="@SelectedDataItems"
+                                SelectedDataItemsChanged="@OnSelectedDataItemsChanged"
+                                FilterCriteriaChanged="OnGridFilterCriteriaChangedAsync">
+                            <Columns>
+                                <DxGridSelectionColumn Width="3rem" />
+                                <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @(context.VisibleIndex + 1)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Tác vụ"
+                                                  MinWidth="96"
+                                                  Width="6rem"
+                                                  AllowSort="false"
+                                                  TextAlignment="GridTextAlignment.Center"
+                                                  ShowInColumnChooser="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollInsuranceDeductionRecord)context.DataItem;
+                                        }
+                                        <div class="insurance-deduction-row-menu-host"
+                                             @onclick:stopPropagation="true"
+                                             @onmousedown:stopPropagation="true">
+                                            <DxDropDownButton CssClass="insurance-deduction-row-menu-btn"
+                                                              IconCssClass="icon more-icon medium-icon"
+                                                              RenderStyle="ButtonRenderStyle.Link"
+                                                              DropDownToggleVisible="false"
+                                                              Enabled="@CanUseAppliedData"
+                                                              Tooltip="Tác vụ dòng khấu trừ BHXH-YT">
+                                                <Items>
+                                                    <DxDropDownButtonItem Text="Điều chỉnh"
+                                                                          IconUrl="@VntaDevExpressIcons.Edit"
+                                                                          Click="@(() => OpenEditPopupAsync(row))"
+                                                                          Enabled="@CanEditRow(row)"
+                                                                          Tooltip="@GetEditActionTooltip(row)" />
+                                                    <DxDropDownButtonItem Text="Làm mới"
+                                                                          IconUrl="@VntaDevExpressIcons.Refresh"
+                                                                          Click="@(() => RefreshRowAsync(row))"
+                                                                          Enabled="@CanRefreshRow(row)"
+                                                                          Tooltip="Làm mới dữ liệu tính toán của dòng khấu trừ BHXH-YT" />
+                                                    <DxDropDownButtonItem Text="@row.LockActionText"
+                                                                          IconUrl="@(row.IsLocked ? VntaDevExpressIcons.Unlock : VntaDevExpressIcons.Lock)"
+                                                                          Click="@(() => ToggleLockStateAsync(row))"
+                                                                          Enabled="@CanToggleLock(row)"
+                                                                          Tooltip="@GetLockActionTooltip(row)"
+                                                                          BeginGroup="true" />
+                                                    <DxDropDownButtonItem Text="Bảng công tháng"
+                                                                          IconUrl="@VntaDevExpressIcons.TaskList"
+                                                                          Click="@(() => OpenMonthlyWorkPopupAsync(row))"
+                                                                          Enabled="@CanViewMonthlyWork(row)"
+                                                                          Tooltip="Xem bảng công tháng của nhân viên" />
+                                                </Items>
+                                            </DxDropDownButton>
+                                        </div>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="EmployeeDisplay" Caption="Nhân viên" MinWidth="240">
+                                    <CellDisplayTemplate>
+                                        @HighlightSearchText(context.DisplayText)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Bộ phận" MinWidth="180">
+                                    <CellDisplayTemplate>
+                                        @HighlightSearchText(context.DisplayText)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" MinWidth="160">
+                                    <CellDisplayTemplate>
+                                        @HighlightSearchText(context.DisplayText)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" MinWidth="110" />
+                                <DxGridDataColumn FieldName="InsuranceSalaryBaseAmount" Caption="Tổng tiền lương đóng BHXH" MinWidth="190">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollInsuranceDeductionRecord)context.DataItem;
+                                        }
+                                        <span class="hrm-grid-amount">@FormatMoney(row.InsuranceSalaryBaseAmount)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="SocialInsuranceAmount" Caption="BHXH 8%" MinWidth="130">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollInsuranceDeductionRecord)context.DataItem;
+                                        }
+                                        <span class="hrm-grid-amount">@FormatMoney(row.SocialInsuranceAmount)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="HealthInsuranceAmount" Caption="BHYT 1,5%" MinWidth="130">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollInsuranceDeductionRecord)context.DataItem;
+                                        }
+                                        <span class="hrm-grid-amount">@FormatMoney(row.HealthInsuranceAmount)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="UnemploymentInsuranceAmount" Caption="BHTN 1%" MinWidth="130">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollInsuranceDeductionRecord)context.DataItem;
+                                        }
+                                        <span class="hrm-grid-amount">@FormatMoney(row.UnemploymentInsuranceAmount)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="TotalDeductionAmount" Caption="Tổng 10,5%" MinWidth="160">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollInsuranceDeductionRecord)context.DataItem;
+                                        }
+                                        <span class="hrm-grid-amount hrm-grid-amount--total">@FormatMoney(row.TotalDeductionAmount)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="ParticipationChangeText" Caption="Biến động" MinWidth="110" />
+                                <DxGridDataColumn FieldName="ParticipationStatusText" Caption="Tham gia" MinWidth="120" />
+                                <DxGridDataColumn FieldName="EffectiveDate" Caption="Thời điểm" MinWidth="120">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollInsuranceDeductionRecord)context.DataItem;
+                                        }
+                                        @FormatDate(row.EffectiveDate)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="IsLocked" Caption="Trạng thái" MinWidth="110">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollInsuranceDeductionRecord)context.DataItem;
+                                        }
+                                        <span class="@GetLockBadgeCssClass(row.IsLocked)">@row.LockStatusText</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" MinWidth="260" />
+                                <DxGridCommandColumn Visible="false"
+                                                     NewButtonVisible="false"
+                                                     EditButtonVisible="false"
+                                                     DeleteButtonVisible="false"
+                                                     SaveButtonVisible="false"
+                                                     CancelButtonVisible="false" />
+                            </Columns>
+
+                            <TotalSummary>
+                                <DxGridSummaryItem Name="DeductionAmountTotal"
+                                                   FieldName="@nameof(PayrollInsuranceDeductionRecord.TotalDeductionAmount)"
+                                                   SummaryType="GridSummaryItemType.Sum"
+                                                   Visible="false" />
+                            </TotalSummary>
+
+                            <EmptyDataAreaTemplate>
+                                <div class="empty-state">
+                                    <div class="state-title">@EmptyStateTitle</div>
+                                    <div class="state-message">@EmptyStateMessage</div>
+                                    <DxButton Text="@EmptyStateActionText"
+                                              Click="OnEmptyStateActionClick"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                </div>
+                            </EmptyDataAreaTemplate>
+
+                        </DxGrid>
+                    </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>
+
+<KhauTruBHXHYTRulesPopup @bind-Visible="@IsRulesPopupVisible"
+                          PeriodLabel="@RulesPeriodLabel"
+                          IsImportedPeriod="@IsImportedInsurancePeriod(ToolbarMonth, ToolbarYear)" />
+
+<KhauTruBHXHYTEditPopup Visible="@IsEditPopupVisible"
+                          VisibleChanged="@OnEditPopupVisibleChangedAsync"
+                          IsSaving="@IsSavingEdit"
+                          Title="@EditPopupTitle"
+                          Model="@EditModel"
+                          EditContext="@EditContext"
+                          ErrorMessage="@EditErrorMessage"
+                          CanEditFields="@CanEditFields"
+                          CanSave="@CanSaveEdit"
+                          SaveRequested="@SaveEditAsync" />
+
+<KhauTruBHXHYTMonthlyWorkPopup Visible="@IsMonthlyWorkPopupVisible"
+                                VisibleChanged="@(_ => CloseMonthlyWorkPopup())"
+                                IsLoading="@IsMonthlyWorkPopupLoading"
+                                Title="@MonthlyWorkPopupTitle"
+                                Context="@MonthlyWorkPopupContext"
+                                ErrorMessage="@MonthlyWorkPopupErrorMessage"
+                                Rows="@MonthlyWorkRows"
+                                RefreshRequested="@RefreshMonthlyWorkPopupAsync" />
+
+<KhauTruBHXHYTRecalculateConfirmPopup Visible="@IsRecalculateConfirmPopupVisible"
+                                       VisibleChanged="@OnRecalculateConfirmPopupVisibleChangedAsync"
+                                       IsRefreshing="@IsLoading"
+                                       PeriodLabel="@AppliedPeriodLabel"
+                                       ConfirmRequested="@ConfirmRecalculateAsync" />
+
+<KhauTruBHXHYTLockActionPopup Visible="@IsLockActionPopupVisible"
+                                VisibleChanged="@OnLockActionPopupVisibleChangedAsync"
+                                IsBusy="@IsLockActionBusy"
+                                Title="@LockActionPopupTitle"
+                                PromptText="@LockActionPromptText"
+                                ContextText="@LockActionScopeContextText"
+                                SelectedScope="@SelectedLockActionScope"
+                                SelectedRowsScope="@LockScopeSelectedRows"
+                                WholePeriodScope="@LockScopeWholePeriod"
+                                SelectedRowsDescription="@SelectedRowsScopeDescription"
+                                WholePeriodDescription="@WholePeriodScopeDescription"
+                                WholePeriodLabel="@PendingLockActionPeriodLabel"
+                                CanChooseSelectedRowsScope="@CanChooseSelectedRowsScope"
+                                CanConfirm="@CanConfirmLockAction"
+                                ShouldLock="@PendingLockActionState"
+                                ScopeSelected="@SelectLockActionScope"
+                                ConfirmRequested="@ConfirmLockActionAsync" />

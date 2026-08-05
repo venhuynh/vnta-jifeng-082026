@@ -1,0 +1,26 @@
+::deep .deduction-summary-sync-popup {
+    max-height: min(52vh, 24rem);
+    overflow-y: auto;
+}
+
+.deduction-summary-sync-content {
+    padding: 0.25rem 0;
+}
+
+.deduction-summary-sync-message {
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.55;
+}
+
+.deduction-summary-sync-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .deduction-summary-sync-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+}

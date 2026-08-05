@@ -1,0 +1,26 @@
+.status {
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.status::before {
+    content: " ";
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    margin-right: 0.3rem;
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+.status.status-open {
+    color: var(--allowance-color-success);
+}
+
+.status.status-locked {
+    color: var(--allowance-color-danger);
+}
+
+tr.dxbl-grid-focused-row .status {
+    color: inherit !important;
+}

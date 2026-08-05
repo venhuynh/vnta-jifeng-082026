@@ -1,0 +1,58 @@
+@page "/payroll/other-responsibility-allowance"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemKhac.Dialogs
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemKhac.Sections
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Phụ cấp trách nhiệm khác</PageTitle>
+
+<div class="content-root">
+    <PhuCapTrachNhiemKhacToolbar
+        State="@Coordinator.Toolbar"
+        MonthChanged="Coordinator.ChangeMonthAsync"
+        YearChanged="Coordinator.ChangeYearAsync"
+        ViewRequested="Coordinator.ViewAsync"
+        RecalculateRequested="Coordinator.OpenRecalculateDialogAsync"
+        LockRequested="@(() => Coordinator.OpenLockDialogAsync(true))"
+        UnlockRequested="@(() => Coordinator.OpenLockDialogAsync(false))"
+        RulesRequested="Coordinator.OpenRulesDialog"
+        ExportExcelRequested="Coordinator.ExportAllToExcelAsync"
+        ExportPdfRequested="Coordinator.ExportAllToPdfAsync"
+        ExportSelectedExcelRequested="Coordinator.ExportSelectedToExcelAsync"
+        ExportSelectedPdfRequested="Coordinator.ExportSelectedToPdfAsync"
+        ColumnChooserRequested="Coordinator.ShowColumnChooserAsync" />
+
+    <div class="responsibility-root">
+        @if (Coordinator.LoadError.Visible)
+        {
+            <PhuCapTrachNhiemKhacLoadError
+                State="@Coordinator.LoadError"
+                RetryRequested="Coordinator.RetryAsync" />
+        }
+        else
+        {
+            <PhuCapTrachNhiemKhacResultsGrid
+                State="@Coordinator.ResultsGrid"
+                GridChanged="Coordinator.SetGridAsync"
+                SearchTextChanged="Coordinator.SearchAsync"
+                PageSizeChanged="Coordinator.ChangePageSizeAsync"
+                SelectedGridItemsChanged="Coordinator.UpdateSelectedItemsAsync"
+                EmptyStateActionClick="Coordinator.RunEmptyStateActionAsync" />
+        }
+    </div>
+</div>
+
+<PhuCapTrachNhiemKhacLockActionPopup State="@Coordinator.LockActionDialog"
+                                      VisibleChanged="@(_ => Coordinator.CloseLockDialog())"
+                                      ScopeSelected="Coordinator.SelectLockScope"
+                                      ConfirmRequested="Coordinator.ConfirmLockActionAsync" />
+
+<PhuCapTrachNhiemKhacRulesPopup State="@Coordinator.RulesDialog"
+                                 VisibleChanged="@(_ => Coordinator.CloseRulesDialog())" />
+
+<PhuCapTrachNhiemKhacRecalculateConfirmPopup State="@Coordinator.RecalculateDialog"
+                                               VisibleChanged="@(_ => Coordinator.CloseRecalculateDialog())"
+                                               ConfirmRequested="Coordinator.ConfirmRecalculateAsync" />

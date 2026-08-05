@@ -1,0 +1,48 @@
+@using Vnta.Hrm.Web.Client.Navigation
+
+<DxTreeViewNode @key="Node.Key"
+                Text="@Node.Text"
+                AllowSelection="@Node.IsNavigable"
+                Enabled="@(Node.IsNavigable || Node.HasChildren || Node.IsRoadmapOnly)"
+                Expanded="@VntaNavMenuAccessEvaluator.IsExpanded(Node, CurrentPath)"
+                IconUrl="@Node.IconUrl"
+                IconCssClass="@Node.IconCssClass"
+                NavigateUrl="@ResolveNavigateUrl()"
+                UrlMatchMode="NavigationUrlMatchMode.CurrentPath">
+    <TextTemplate>
+        <span class="navmenu-node-text">
+            <span class="navmenu-node-label">@context.Text</span>
+            @if (Node.IsInProgress)
+            {
+                <span class="navmenu-status-badge"
+                      title="Đang triển khai"
+                      aria-label="Đang triển khai">
+                    <img class="navmenu-status-icon"
+                         src="@VntaDevExpressIcons.InProgress"
+                         alt=""
+                         aria-hidden="true" />
+                </span>
+            }
+        </span>
+    </TextTemplate>
+    <Nodes>
+        @if (Node.HasChildren)
+        {
+            @foreach (var child in Node.Children)
+            {
+                <NavMenuTreeNode @key="child.Key" Node="@child" CurrentPath="@CurrentPath" />
+            }
+        }
+    </Nodes>
+</DxTreeViewNode>
+
+@code {
+    [Parameter, EditorRequired]
+    public VntaNavMenuNode Node { get; set; } = default!;
+
+    [Parameter]
+    public string CurrentPath { get; set; } = "/";
+
+    private string? ResolveNavigateUrl()
+        => Node.Route;
+}

@@ -1,0 +1,44 @@
+@namespace Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruBHXHYT
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Tính lại khấu trừ BHXH-YT"
+         Width="min(32rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsRefreshing)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="insurance-deduction-popup-footer"
+         CssClass="insurance-deduction-recalculate-popup">
+    <BodyContentTemplate>
+        <div class="insurance-deduction-confirm-content">
+            <div class="insurance-deduction-confirm-message">
+                Hệ thống sẽ tính lại BHXH, BHYT, BHTN và tổng khấu trừ cho tất cả dòng BHXH-YT hiện có trong kỳ @PeriodLabel. Mỗi khoản được làm tròn đến đồng trước khi cộng tổng.
+            </div>
+            <div class="insurance-deduction-confirm-message">
+                Với dòng đang mở, các giá trị tính sẽ được ghi đè từ lương đóng bảo hiểm, các tỷ lệ và trạng thái tham gia đã lưu; tổng BHXH-YT sau đó được đồng bộ vào bảng tổng kết khấu trừ. Hệ thống không tạo thêm dòng và không lấy dữ liệu từ tháng trước hay nguồn bên ngoài.
+            </div>
+            <div class="insurance-deduction-confirm-message">
+                Dòng chi tiết hoặc tổng kết đã khóa sẽ được giữ nguyên.
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="insurance-deduction-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="insurance-deduction-popup-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Tính lại"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                      CssClass="insurance-deduction-popup-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

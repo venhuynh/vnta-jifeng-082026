@@ -1,0 +1,102 @@
+.employee-grade-list-grid-header {
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem 0.625rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 94%, white);
+    border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 82%, transparent);
+}
+
+.employee-grade-list-summary {
+    display: flex;
+    flex: 1 1 auto;
+    gap: 0.5rem;
+    min-width: 0;
+    padding-bottom: 0.125rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+}
+
+::deep .employee-grade-list-summary-button-group {
+    display: inline-flex;
+    min-width: max-content;
+}
+
+::deep .employee-grade-list-summary-button {
+    --summary-accent: var(--dxds-color-content-info-default-rest);
+    min-width: 5.75rem;
+    color: var(--summary-accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+}
+
+::deep .employee-grade-list-summary-button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--summary-accent) 9%, white);
+}
+
+::deep .employee-grade-list-summary-button[aria-pressed="true"],
+::deep .employee-grade-list-summary-button.dxbl-btn-selected,
+::deep .employee-grade-list-summary-button.dxbl-btn-active {
+    border-color: var(--summary-accent);
+    background: color-mix(in srgb, var(--summary-accent) 14%, white);
+    box-shadow: inset 0 -0.18rem 0 var(--summary-accent);
+}
+
+::deep .employee-grade-list-summary-button-all {
+    --summary-accent: var(--dxds-color-content-info-default-rest);
+}
+
+::deep .employee-grade-list-summary-button-assigned {
+    --summary-accent: var(--dxds-color-content-success-default-rest);
+}
+
+::deep .employee-grade-list-summary-button-unassigned {
+    --summary-accent: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+.employee-grade-list-search {
+    flex: 0 0 auto;
+    min-width: 15rem;
+    max-width: min(100%, 20rem);
+}
+
+::deep .employee-grade-list-searchbox {
+    width: 100%;
+}
+
+::deep .employee-grade-list-searchbox .dxbl-text-editor {
+    min-height: 2.3rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 72%, transparent);
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 92%, white);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 80%, transparent);
+}
+
+::deep .employee-grade-list-searchbox .dxbl-text-editor-input {
+    min-width: 11rem;
+}
+
+::deep .employee-grade-list-searchbox .dxbl-btn-clear {
+    opacity: 0.68;
+}
+
+@media (max-width: 768px) {
+    .employee-grade-list-grid-header {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 0.75rem;
+    }
+
+    .employee-grade-list-search {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+    }
+}

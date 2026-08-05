@@ -1,0 +1,118 @@
+.leave-holiday-allowance-employee-text {
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.leave-holiday-allowance-grid-text {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.leave-holiday-allowance-warning-note {
+    padding: 0.15rem 0.35rem;
+    border-radius: 0.25rem;
+    background: var(--allowance-note-background, #ffedd5);
+    color: var(--allowance-note-content, #9a3412);
+    font-weight: 700;
+}
+
+.leave-holiday-allowance-row-menu-host {
+    display: inline-flex;
+    justify-content: center;
+    width: 100%;
+}
+
+::deep .leave-holiday-allowance-row-menu-btn.dxbl-btn {
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+}
+
+::deep .leave-holiday-allowance-row-menu-btn.dxbl-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--dxds-color-content-info-default-rest) 10%, transparent);
+}
+
+.yes-no-status {
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.yes-no-status::before {
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    margin-right: 0.3rem;
+    content: " ";
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+.yes-no-status-yes {
+    color: var(--dxds-color-content-success-default-rest);
+}
+
+.yes-no-status-no {
+    color: var(--dxds-color-content-danger-default-rest);
+}
+
+.yes-no-status-neutral {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+.empty-state,
+.error-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 18rem;
+    height: 100%;
+    padding: 2rem;
+    gap: 0.75rem;
+    text-align: center;
+    flex-direction: column;
+}
+
+.state-title {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.state-message {
+    max-width: 38rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+.empty-state ::deep .dxbl-btn,
+.error-state ::deep .dxbl-btn {
+    min-width: 0;
+    min-height: 2rem;
+    padding: 0.375rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+}
+
+::deep .leave-holiday-allowance-grid {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    max-height: 100%;
+    border-radius: 0.25rem;
+}
+
+::deep .leave-holiday-allowance-grid .dxbl-grid-table {
+    border-top: none;
+}
+
+::deep .leave-holiday-allowance-grid mark {
+    padding: 0 0.15rem;
+    border-radius: 0.2rem;
+    background: #fff1b3;
+    color: inherit;
+}

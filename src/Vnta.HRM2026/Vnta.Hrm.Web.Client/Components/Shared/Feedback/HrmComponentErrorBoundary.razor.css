@@ -1,0 +1,27 @@
+.hrm-component-error {
+    align-items: center;
+    background: var(--dxds-color-surface-neutral-rest);
+    border: 1px solid var(--dxds-color-border-danger-default);
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    justify-content: center;
+    min-height: 12rem;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.hrm-component-error h2,
+.hrm-component-error p {
+    margin: 0;
+}
+
+.hrm-component-error h2 {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-size: var(--dxds-font-size-title-md);
+}
+
+.hrm-component-error p {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}

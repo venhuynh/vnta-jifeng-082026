@@ -1,0 +1,103 @@
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Application.PhuCap.PhuCapTrachNhiem
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemGanNhanVien.Models
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemGanNhanVien.Dialogs
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="VisibleChanged"
+         HeaderText="@PopupTitle"
+         Width="min(42rem, calc(100vw - 2rem))"
+         CssClass="employee-grade-list-popup"
+         CloseOnEscape="@(!IsSaving)"
+         CloseOnOutsideClick="@(!IsSaving)"
+         ShowCloseButton="@(!IsSaving)">
+    <BodyContentTemplate Context="popupBody">
+        <EditForm EditContext="@EditContext" OnValidSubmit="SaveRequested" Context="assignmentEditForm">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <DxFormLayout>
+                <DxFormLayoutItem Caption="Kỳ lương" ColSpanMd="6">
+                    <DxTextBox Text="@PayrollPeriodDisplay" ReadOnly="true" ValidationEnabled="false" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Mã nhân viên" ColSpanMd="6">
+                    <DxTextBox Text="@Assignment.EmployeeCode" ReadOnly="true" ValidationEnabled="false" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Họ tên" ColSpanMd="12">
+                    <DxTextBox Text="@Assignment.EmployeeName" ReadOnly="true" ValidationEnabled="false" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Chức vụ" ColSpanMd="12">
+                    <DxTextBox Text="@Assignment.PositionName" ReadOnly="true" ValidationEnabled="false" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Cấp bậc" ColSpanMd="12">
+                    <DxDropDownBox Value="@Model.GradeId"
+                                   ValueChanged="OnGradeValueChanged"
+                                   ValueExpression="@(() => Model.GradeId)"
+                                   QueryDisplayText="GetGradeDisplayText"
+                                   CssClass="employee-grade-lookup-editor"
+                                   DropDownBodyCssClass="employee-grade-lookup-dropdown"
+                                   DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+                                   NullText="Tìm và chọn cấp bậc"
+                                   ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                   DropDownVisible="@GradeDropDownVisible"
+                                   DropDownVisibleChanged="OnGradeDropDownVisibleChanged"
+                                   Enabled="@CanSelectGrade"
+                                   ShowValidationIcon="true"
+                                   ShowValidationSuccessState="true">
+                        <DropDownBodyTemplate Context="dropDownContext">
+                            <div class="employee-grade-lookup">
+                                <DxSearchBox CssClass="employee-grade-lookup-search"
+                                             NullText="Tìm mã, tên hoặc ghi chú cấp bậc"
+                                             BindValueMode="BindValueMode.OnInput"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             @bind-Text="GradeSearchText" />
+                                <DxGrid Data="@FilteredGradeOptions"
+                                        KeyFieldName="@nameof(PayrollResponsibilityAllowanceGradeDto.Id)"
+                                        CssClass="employee-grade-lookup-grid"
+                                        PageSize="@GradeLookupPageSize"
+                                        PageIndex="@GradeLookupPageIndex"
+                                        PageIndexChanged="OnGradeLookupPageIndexChanged"
+                                        PagerVisible="true"
+                                        PagerPosition="GridPagerPosition.Bottom"
+                                        PagerSummaryVisible="true"
+                                        PageSizeSelectorVisible="true"
+                                        PageSizeSelectorItems="@GradeLookupPageSizeSelectorItems"
+                                        FocusedRowEnabled="true"
+                                        HighlightRowOnHover="true"
+                                        TextWrapEnabled="true"
+                                        RowClick="@((GridRowClickEventArgs args) => OnGradeLookupRowClick(args, dropDownContext.DropDownBox))">
+                                    <Columns>
+                                        <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceGradeDto.Code)" Caption="Mã cấp bậc" MinWidth="140" />
+                                        <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceGradeDto.Name)" Caption="Tên cấp bậc" MinWidth="240" />
+                                        <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceGradeDto.StandardResponsibilityAllowanceAmount)" Caption="Tiền chuẩn" MinWidth="140" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+                                    </Columns>
+                                </DxGrid>
+                            </div>
+                        </DropDownBodyTemplate>
+                    </DxDropDownBox>
+                    <ValidationMessage For="@(() => Model.GradeId)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Tiền chuẩn" ColSpanMd="12">
+                    <DxTextBox Text="@SelectedStandardAllowanceAmountDisplay" ReadOnly="true" ValidationEnabled="false" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Ghi chú" ColSpanMd="12">
+                    <DxMemo @bind-Text="Model.Note" Rows="3" Enabled="@(!IsSaving)" />
+                    <ValidationMessage For="@(() => Model.Note)" />
+                </DxFormLayoutItem>
+            </DxFormLayout>
+
+            <div class="popup-actions">
+                <DxButton Text="Lưu"
+                          IconUrl="@VntaDevExpressIcons.Save"
+                          SubmitFormOnClick="true"
+                          Enabled="@(!IsSaving)"
+                          RenderStyle="ButtonRenderStyle.Primary" />
+                <DxButton Text="Hủy"
+                          IconUrl="@VntaDevExpressIcons.Cancel"
+                          Click="@(() => VisibleChanged.InvokeAsync(false))"
+                          Enabled="@(!IsSaving)" />
+            </div>
+        </EditForm>
+    </BodyContentTemplate>
+</DxPopup>

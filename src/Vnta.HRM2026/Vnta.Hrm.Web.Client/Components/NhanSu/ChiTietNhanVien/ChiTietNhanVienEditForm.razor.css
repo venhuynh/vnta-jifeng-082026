@@ -1,0 +1,19 @@
+.employee-detail-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.employee-detail-edit-messages {
+    margin-top: 0.75rem;
+}
+
+.validation-summary,
+.form-error-message {
+    color: var(--dxds-color-content-danger-default-rest);
+}
+
+::deep .employee-detail-edit-popup .dxbl-popup-footer {
+    border-top: 1px solid var(--dxds-color-border-neutral-default-rest);
+}

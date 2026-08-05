@@ -1,0 +1,105 @@
+@using Vnta.Hrm.Web.Client.Models.Payroll
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChanged"
+         HeaderText="Chi tiết lương căn bản"
+         Width="min(52rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsLoading)"
+         CloseOnEscape="@(!IsLoading)"
+         CloseOnOutsideClick="false"
+         CssClass="basic-salary-info-popup">
+    <BodyContentTemplate Context="popupBody">
+        <div class="basic-salary-info-content">
+            <div class="basic-salary-info-header">
+                <div class="basic-salary-info-name">@DisplaySalaryRecordName</div>
+                <div class="basic-salary-info-meta">
+                    <span>Mã nhân viên: @DisplayEmployeeCode</span>
+                    <span>Kỳ lương: @DisplayPayrollPeriod</span>
+                    @if (ResponseTime.HasValue)
+                    {
+                        <span>Cập nhật lúc: @FormatResponseTime(ResponseTime)</span>
+                    }
+                </div>
+            </div>
+
+            <HrmLoadingPanel Visible="@IsLoading"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             CssClass="basic-salary-info-loading-panel">
+                @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    <div class="basic-salary-info-state">
+                        <div class="basic-salary-info-state-title">Không thể tải chi tiết lương căn bản</div>
+                        <div class="basic-salary-info-state-message">@ErrorMessage</div>
+                        <DxButton Text="Thử lại"
+                                  Click="RetryAsync"
+                                  Enabled="@(!IsLoading)"
+                                  RenderStyle="ButtonRenderStyle.Primary"
+                                  RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                    </div>
+                }
+                else if (!IsLoading && Rows.Count == 0)
+                {
+                    <div class="basic-salary-info-state">
+                        <div class="basic-salary-info-state-title">Chưa có dữ liệu chi tiết lương căn bản</div>
+                        <div class="basic-salary-info-state-message">@EmptyMessage</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="basic-salary-info-grid-host">
+                        <div class="basic-salary-info-grid-tools">
+                            <DxSearchBox CssClass="basic-salary-info-search"
+                                         NullText="Tìm chi tiết"
+                                         BindValueMode="BindValueMode.OnDelayedInput"
+                                         InputDelay="300"
+                                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                         @bind-Text="SearchText" />
+                        </div>
+                        <DxGrid Data="@Rows"
+                                KeyFieldName="Key"
+                                CssClass="basic-salary-info-grid"
+                                SearchText="@SearchText"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                ShowFilterRow="true"
+                                ShowAllRows="true"
+                                TextWrapEnabled="true"
+                                HighlightRowOnHover="true">
+                            <Columns>
+                                <DxGridDataColumn Caption="STT"
+                                                  Width="4.5rem"
+                                                  MinWidth="72"
+                                                  AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @(context.VisibleIndex + 1)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="Information"
+                                                  Caption="Thuộc tính"
+                                                  Width="15rem"
+                                                  MinWidth="180" />
+                                <DxGridDataColumn FieldName="Value"
+                                                  Caption="Giá trị"
+                                                  MinWidth="260" />
+                            </Columns>
+                            <EmptyDataAreaTemplate>
+                                Không tìm thấy thông tin phù hợp.
+                            </EmptyDataAreaTemplate>
+                        </DxGrid>
+                    </div>
+                }
+            </HrmLoadingPanel>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <DxButton Text="Đóng"
+                  Click="CloseAsync"
+                  Enabled="@(!IsLoading)"
+                  IconUrl="@VntaDevExpressIcons.Cancel"
+                  RenderStyle="ButtonRenderStyle.Secondary"
+                  RenderStyleMode="ButtonRenderStyleMode.Outline" />
+    </FooterContentTemplate>
+</DxPopup>

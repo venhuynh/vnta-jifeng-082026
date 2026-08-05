@@ -1,0 +1,92 @@
+.basic-salary-info-content {
+    min-height: 22rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.basic-salary-info-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid var(--dxds-color-border-neutral-default-rest);
+}
+
+.basic-salary-info-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.basic-salary-info-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.875rem;
+}
+
+.basic-salary-info-grid-host {
+    min-height: 18rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.basic-salary-info-grid-tools {
+    display: flex;
+    justify-content: flex-end;
+}
+
+::deep .basic-salary-info-search {
+    width: min(20rem, 100%);
+}
+
+.basic-salary-info-state {
+    min-height: 18rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.basic-salary-info-state-title {
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.basic-salary-info-state-message {
+    max-width: 32rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .basic-salary-info-loading-panel {
+    flex: 1 1 auto;
+    min-height: 18rem;
+}
+
+::deep .basic-salary-info-grid {
+    flex: 1 1 auto;
+    max-height: 26rem;
+    border-radius: 0.25rem;
+}
+
+@media (max-width: 640px) {
+    .basic-salary-info-content {
+        min-height: 18rem;
+    }
+
+    .basic-salary-info-grid-host,
+    .basic-salary-info-state,
+    ::deep .basic-salary-info-loading-panel {
+        min-height: 14rem;
+    }
+
+    ::deep .basic-salary-info-search {
+        width: 100%;
+    }
+}

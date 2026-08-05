@@ -1,0 +1,11 @@
+@using DevExpress.Blazor
+
+<div class="card error-state">
+    <div class="state-title">Không thể tải dữ liệu phụ cấp trách nhiệm khác</div>
+    <div class="state-message">@State.Message</div>
+    <DxButton Text="Thử lại"
+              Click="RetryRequested"
+              Enabled="@State.CanRetry"
+              RenderStyle="ButtonRenderStyle.Primary"
+              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+</div>

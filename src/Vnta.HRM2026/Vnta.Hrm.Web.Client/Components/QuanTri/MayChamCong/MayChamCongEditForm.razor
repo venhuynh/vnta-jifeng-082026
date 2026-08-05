@@ -1,0 +1,70 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Web.Client.Models
+
+@if(Model is not null && EditFormContext is not null) {
+    <CascadingValue Value="EditFormContext.EditContext">
+        <DataAnnotationsValidator />
+
+        <DxFormLayout CssClass="attendance-device-form" CaptionPosition="CaptionPosition.Vertical">
+            <DxFormLayoutGroup Caption="@(IsCreatingNewDevice ? "Thông tin khởi tạo" : "Thông tin điều chỉnh")" ColSpanMd="12">
+                <DxFormLayoutItem Caption="Tên máy" ColSpanMd="12">
+                    <DxTextBox @bind-Text="Model.Name"
+                               CssClass="w-100"
+                               NullText="Nhập tên máy"
+                               ShowValidationIcon="true"
+                               ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.Name)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Số serial" ColSpanMd="12">
+                    <DxTextBox @bind-Text="Model.SerialNumber"
+                               CssClass="w-100"
+                               NullText="Nhập số serial"
+                               ReadOnly="@(!IsCreatingNewDevice)"
+                               ShowValidationIcon="true"
+                               ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.SerialNumber)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Vị trí lắp đặt" ColSpanMd="12">
+                    <DxTextBox @bind-Text="Model.Location"
+                               CssClass="w-100"
+                               NullText="Nhập vị trí lắp đặt"
+                               ShowValidationIcon="true"
+                               ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.Location)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Đang sử dụng" ColSpanMd="12" CssClass="usage-toggle-item">
+                    <DxCheckBox @bind-Checked="Model.IsInUse" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Mã kích hoạt" ColSpanMd="12">
+                    <DxTextBox @bind-Text="Model.ActivationCode"
+                               CssClass="w-100"
+                               NullText="Nhập mã kích hoạt theo serial thiết bị"
+                               ReadOnly="@IsActivationCodeLocked"
+                               ShowValidationIcon="true"
+                               ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.ActivationCode)" />
+                </DxFormLayoutItem>
+            </DxFormLayoutGroup>
+        </DxFormLayout>
+
+        @if(!string.IsNullOrWhiteSpace(ErrorMessage)) {
+            <div class="edit-error-message">@ErrorMessage</div>
+        }
+    </CascadingValue>
+}
+
+@code {
+    [Parameter] public AttendanceDeviceRecord? Model { get; set; }
+
+    [Parameter] public GridEditFormTemplateContext? EditFormContext { get; set; }
+
+    [Parameter] public string? ErrorMessage { get; set; }
+
+    [Parameter] public bool IsCreatingNewDevice { get; set; }
+
+    bool IsActivationCodeLocked =>
+        !IsCreatingNewDevice
+        && Model is not null
+        && AttendanceGatewayActivationCode.Validate(Model.SerialNumber ?? string.Empty, Model.ActivationCode ?? string.Empty);
+}

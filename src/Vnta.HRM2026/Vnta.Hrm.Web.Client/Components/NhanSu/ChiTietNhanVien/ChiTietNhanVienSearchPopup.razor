@@ -1,0 +1,74 @@
+@using Vnta.Hrm.Web.Client.Models.NhanSu.ChiTietNhanVien
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Tìm nhân viên"
+         Width="min(52rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsBusy)"
+         ShowFooter="false"
+         CloseOnOutsideClick="@(!IsBusy)"
+         CssClass="employee-search-popup">
+    <BodyContentTemplate Context="employeeSearchPopupContext">
+        <div class="employee-search-popup-content">
+            <DxSearchBox Text="@SearchText"
+                         TextChanged="SearchTextChanged"
+                         BindValueMode="BindValueMode.OnDelayedInput"
+                         InputDelay="300"
+                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                         NullText="Tìm theo mã hoặc họ tên"
+                         Enabled="@(!IsBusy)"
+                         CssClass="employee-search-input" />
+
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="form-error-message">@ErrorMessage</div>
+            }
+
+            <HrmLoadingPanel Visible="@IsBusy"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             Text="Đang tìm nhân viên..."
+                             CssClass="employee-search-loading-panel">
+                <DxGrid Data="@Items"
+                        KeyFieldName="@nameof(ChiTietNhanVienRecord.Id)"
+                        AllowSelectRowByClick="true"
+                        HighlightRowOnHover="true"
+                        TextWrapEnabled="false"
+                        ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                        PageSize="8"
+                        ShowSearchBox="false"
+                        RowClick="OnRowClickAsync"
+                        CssClass="employee-search-grid">
+                    <Columns>
+                        <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                            <CellDisplayTemplate Context="employeeSearchRowContext">
+                                @(employeeSearchRowContext.VisibleIndex + 1)
+                            </CellDisplayTemplate>
+                        </DxGridDataColumn>
+                        <DxGridDataColumn FieldName="@nameof(ChiTietNhanVienRecord.EmployeeCode)"
+                                          Caption="Mã nhân viên"
+                                          Width="10rem"
+                                          MinWidth="130" />
+                        <DxGridDataColumn FieldName="@nameof(ChiTietNhanVienRecord.FullName)"
+                                          Caption="Họ tên"
+                                          MinWidth="180" />
+                        <DxGridDataColumn FieldName="@nameof(ChiTietNhanVienRecord.DepartmentName)"
+                                          Caption="Phòng ban"
+                                          MinWidth="180" />
+                        <DxGridDataColumn FieldName="@nameof(ChiTietNhanVienRecord.PositionName)"
+                                          Caption="Chức vụ"
+                                          MinWidth="150" />
+                    </Columns>
+                    <EmptyDataAreaTemplate Context="employeeSearchEmptyContext">
+                        <div class="employee-search-empty-state">
+                            <div class="state-title">@EmptyTitle</div>
+                            <div class="state-message">@EmptyMessage</div>
+                        </div>
+                    </EmptyDataAreaTemplate>
+                </DxGrid>
+            </HrmLoadingPanel>
+        </div>
+    </BodyContentTemplate>
+</DxPopup>

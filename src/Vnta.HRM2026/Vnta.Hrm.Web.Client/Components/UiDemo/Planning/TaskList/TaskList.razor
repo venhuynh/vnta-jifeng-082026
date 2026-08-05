@@ -1,0 +1,176 @@
+@page "/TaskList"
+
+@using Vnta.Hrm.Web.Client.Models
+@using Vnta.Hrm.Web.Client.Services.DataProviders
+@using Microsoft.AspNetCore.Authorization
+
+@implements IDisposable
+@attribute [Authorize]
+
+@inject TasksDataProvider DataProvider
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Công việc" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Thêm công việc" Click="OnAddTaskClick" Alignment="ToolbarItemAlignment.Right" IconCssClass="add-icon icon medium-icon" />
+            <DxToolbarItem Tooltip="Chọn cột" Alignment="ToolbarItemAlignment.Right" Click="OnColumnChooserItemClick" IconCssClass="column-chooser-icon icon medium-icon" />
+            <DxToolbarItem Text="Xuất dữ liệu" Alignment="ToolbarItemAlignment.Right" IconCssClass="export-icon icon medium-icon">
+                <Items>
+                    <DxToolbarItem Text="Xuất toàn bộ sang Excel" Click="ExportAllDataToExcel" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn sang Excel" Click="ExportSelectedRowsToExcel" />
+                    <DxToolbarItem Text="Xuất toàn bộ sang CSV" Click="ExportAllDataToCsv" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn sang CSV" Click="ExportSelectedRowsDataToCsv" />
+                    <DxToolbarItem Text="Xuất toàn bộ sang PDF" Click="ExportAllDataToPdf" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn sang PDF" Click="ExportSelectedRowsDataToPdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right" CssClass="search-textbox-item" Tooltip="Tìm kiếm">
+                <Template Context="SearchContext">
+                    <div class="custom-item">
+                        <DxSearchBox CssClass="search-textbox"
+                                     NullText="Tìm kiếm"
+                                     BindValueMode="BindValueMode.OnInput"
+                                     ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                     @bind-Text=SearchText />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Tải lại" BeginGroup="true" Click="@LoadGridDataAsync" Alignment="ToolbarItemAlignment.Right" IconCssClass="refresh-icon icon medium-icon" />
+        </DxToolbar>
+    </div>
+    <div class="task-list-root">
+        <HrmLoadingPanel Visible="@(!IsDataLoaded)"
+                         IsContentBlocked="true"
+                         IsContentVisible="false"
+                         IndicatorVisible="true"
+                         IndicatorAreaVisible="true"
+                         ZIndex="101"
+                         CssClass="h-100">
+            <DxGrid @ref="Grid"
+                    Data="Data"
+                    CssClass="task-list"
+                    SearchText="@SearchText"
+                    EditMode="GridEditMode.EditRow"
+                    ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                    FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                    TextWrapEnabled="false"
+                    FocusedRowEnabled="true"
+                    ShowAllRows="true"
+                    VirtualScrollingEnabled="true"
+                    HighlightRowOnHover="true"
+                    EditNewRowPosition="GridEditNewRowPosition.LastRow"
+                    EditModelSaving="OnEditModelSaving"
+                    CustomizeEditModel="OnCustomizeEditModel">
+                <Columns>
+                    <DxGridSelectionColumn Width="1.5em" />
+                    <DxGridDataColumn FieldName="Text" Caption="Nội dung" Width="30%" MinWidth="80" />
+                    <DxGridDataColumn FieldName="Company" Width="15%" MinWidth="50" />
+                    <DxGridDataColumn FieldName="Priority" Width="10%" MinWidth="40">
+                        <CellDisplayTemplate>
+                            <span class="status @GetPriorityCss(context.Value?.ToString())">@context.Value</span>
+                        </CellDisplayTemplate>
+                        <EditSettings>
+                            <DxComboBoxSettings Data="@Priorities" />
+                        </EditSettings>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="StartDate" Caption="Ngày bắt đầu" DisplayFormat="d" Width="10%" MinWidth="50" />
+                    <DxGridDataColumn FieldName="DueDate" Caption="Hạn hoàn thành" DisplayFormat="d" Width="10%" MinWidth="50" SortIndex="0" />
+                    <DxGridDataColumn FieldName="Owner" Caption="Người phụ trách" Width="10%" MinWidth="50" />
+                    <DxGridDataColumn FieldName="Status" Width="10%" MinWidth="50">
+                        <CellDisplayTemplate>
+                            <span class="status @GetStatusCss(context.Value?.ToString())">@context.Value</span>
+                        </CellDisplayTemplate>
+                        <EditSettings>
+                            <DxComboBoxSettings Data="@Statuses" />
+                        </EditSettings>
+                    </DxGridDataColumn>
+                    <DxGridCommandColumn Width="6em" DeleteButtonVisible="false" />
+                </Columns>
+            </DxGrid>
+        </HrmLoadingPanel>
+    </div>
+</div>
+
+@code {
+    CancellationTokenSource disposalTokenSource = new CancellationTokenSource();
+
+    List<WorkTaskDetail>? Data { get; set; }
+    bool IsDataLoaded { get; set; }
+    IGrid? Grid { get; set; }
+    string? SearchText { get; set; }
+
+    string[] Statuses { get; } = new[] { "Hoàn thành", "Mở", "Đang thực hiện", "Tạm hoãn" };
+    string[] Priorities { get; } = new[] { "Cao", "Bình thường", "Thấp" };
+
+    protected override async Task OnInitializedAsync() {
+        await LoadGridDataAsync();
+        await base.OnInitializedAsync();
+    }
+
+    async Task LoadGridDataAsync() {
+        IsDataLoaded = false;
+
+        try {
+            Data = (await DataProvider.GetAsync(disposalTokenSource.Token))?.Where(x => x.Priority != null).ToList() ?? [];
+        }
+        finally {
+            IsDataLoaded = true;
+        }
+    }
+
+    Task OnAddTaskClick() => Grid!.StartEditNewRowAsync();
+    void OnColumnChooserItemClick(ToolbarItemClickEventArgs e) => Grid!.ShowColumnChooser();
+
+    Task ExportAllDataToExcel() => Grid!.ExportToXlsxAsync("cong-viec");
+    Task ExportSelectedRowsToExcel() => Grid!.ExportToXlsxAsync("cong-viec-da-chon", new GridXlExportOptions { ExportSelectedRowsOnly = true });
+    Task ExportAllDataToCsv() => Grid!.ExportToCsvAsync("cong-viec");
+    Task ExportSelectedRowsDataToCsv() => Grid!.ExportToCsvAsync("cong-viec-da-chon", new GridCsvExportOptions { ExportSelectedRowsOnly = true });
+    Task ExportAllDataToPdf() => Grid!.ExportToPdfAsync("cong-viec");
+    Task ExportSelectedRowsDataToPdf() => Grid!.ExportToPdfAsync("cong-viec-da-chon", new GridPdfExportOptions { ExportSelectedRowsOnly = true });
+
+    void OnCustomizeEditModel(GridCustomizeEditModelEventArgs e) {
+        if(e.IsNew) {
+            var model = (WorkTaskDetail)e.EditModel;
+            model.StartDate = DateTime.Today;
+            model.DueDate = DateTime.Today.AddDays(1);
+            model.Status = "Mở";
+            model.Priority = "Bình thường";
+        }
+    }
+
+    void OnEditModelSaving(GridEditModelSavingEventArgs e) {
+        if(Data is null) {
+            return;
+        }
+
+        if(e.IsNew) {
+            var editModel = (WorkTaskDetail)e.EditModel;
+            Data = new List<WorkTaskDetail>(Data) { editModel };
+        } else {
+            e.CopyChangesToDataItem();
+            Data = new List<WorkTaskDetail>(Data);
+        }
+
+        e.Reload = false;
+    }
+
+    string GetStatusCss(string? value) => value switch {
+        "Hoàn thành" => "status-completed",
+        "Mở" => "status-open",
+        "Đang thực hiện" => "status-inprogress",
+        "Tạm hoãn" => "status-deferred",
+        _ => string.Empty
+    };
+    string GetPriorityCss(string? value) => value switch {
+        "Cao" => "priority-high",
+        "Bình thường" => "priority-normal",
+        "Thấp" => "priority-low",
+        _ => string.Empty
+    };
+
+    void IDisposable.Dispose() {
+        disposalTokenSource.Cancel();
+        disposalTokenSource.Dispose();
+    }
+}
+

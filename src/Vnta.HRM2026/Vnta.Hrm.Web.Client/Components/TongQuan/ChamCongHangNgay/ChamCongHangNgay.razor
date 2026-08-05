@@ -1,0 +1,157 @@
+@page "/overview/daily-attendance"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Chấm công hằng ngày</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Chấm công hằng ngày" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="@RefreshCountdownText"
+                           IconUrl="@VntaDevExpressIcons.Attendance"
+                           Alignment="ToolbarItemAlignment.Right"
+                           RenderStyleMode="ToolbarItemRenderStyleMode.Plain"
+                           Tooltip="Thời gian còn lại trước lần tự làm mới tiếp theo" />
+            <DxToolbarItem Text="Làm mới"
+                           Tooltip="Làm mới dữ liệu chấm công"
+                           Enabled="@CanRefresh"
+                           Click="ReloadAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+        </DxToolbar>
+    </div>
+
+    <section class="daily-attendance-summary-grid" aria-label="Tổng hợp chấm công hằng ngày">
+        @foreach(var card in SummaryCards) {
+            <article class="@card.CssClass">
+                <div class="summary-card-header">
+                    <div>
+                        <div class="summary-card-title">@card.Title</div>
+                        <div class="summary-card-value">@card.ValueText</div>
+                        <div class="summary-card-subtitle">@card.Subtitle</div>
+                    </div>
+                    <span class="summary-card-icon" aria-hidden="true">
+                        <DxButton IconUrl="@card.DevExpressIconUrl"
+                                  Attributes="@DecorativeIconButtonAttributes"
+                                  RenderStyle="@card.IconRenderStyle"
+                                  RenderStyleMode="ButtonRenderStyleMode.Text" />
+                    </span>
+                </div>
+                @if(card.ShowProgress) {
+                    <DxProgressBar CssClass="summary-card-progress"
+                                   MaxValue="100"
+                                   Value="@card.ProgressPercent"
+                                   ShowLabel="false" />
+                    <div class="summary-card-footer">
+                        <span>@card.FooterText</span>
+                        <strong>@FormatPercent(card.ProgressPercent)</strong>
+                    </div>
+                } else {
+                    <div class="summary-card-footer summary-card-footer-muted">
+                        <span>@card.FooterText</span>
+                    </div>
+                }
+            </article>
+        }
+    </section>
+
+    <div class="daily-attendance-root">
+        @if(HasLoadError) {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải dữ liệu chấm công hằng ngày</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="ReloadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        } else {
+            <HrmLoadingPanel Visible="@IsLoading"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             CssClass="daily-attendance-loading-panel">
+                <div class="card daily-attendance-tree-card">
+                    <div class="daily-attendance-tree-header">
+                        <div>
+                            <div class="tree-title">Hiện diện theo bộ phận</div>
+                            <div class="tree-subtitle">Ngày @WorkDateDisplayText</div>
+                            <div class="tree-subtitle">Cập nhật @LastUpdatedDisplayText</div>
+                        </div>
+                        <div class="tree-summary-badges">
+                            <span class="metric-badge metric-badge-total">Tổng NV @Overview.TotalEmployees</span>
+                            <span class="metric-badge metric-badge-success">Đã chấm công @Overview.CheckedInEmployees</span>
+                            <span class="metric-badge metric-badge-warning">Chưa chấm công @Overview.NotCheckedInEmployees</span>
+                            <span class="metric-badge metric-badge-rate">% đã chấm công @FormatPercent(Overview.AttendanceRate)</span>
+                        </div>
+                    </div>
+
+                    <DxTreeList Data="@DepartmentAttendanceNodes"
+                                KeyFieldName="Id"
+                                ParentKeyFieldName="ParentId"
+                                CssClass="daily-attendance-treelist"
+                                AutoExpandAllNodes="true"
+                                ShowAllRows="true"
+                                PagerVisible="false"
+                                SkeletonRowsEnabled="true"
+                                ColumnResizeMode="TreeListColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="TreeListFilterMenuButtonDisplayMode.Always"
+                                TextWrapEnabled="false"
+                                FocusedRowEnabled="true"
+                                HighlightRowOnHover="true">
+                        <Columns>
+                            <DxTreeListDataColumn FieldName="DepartmentName" Caption="Phòng ban" MinWidth="260">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var node = (DailyAttendanceDepartmentNode)context.DataItem;
+                                    }
+                                    <span class="@GetDepartmentNameCssClass(node)">@node.DepartmentName</span>
+                                </CellDisplayTemplate>
+                            </DxTreeListDataColumn>
+                            <DxTreeListDataColumn FieldName="EmployeeCount" Caption="Số lượng nhân viên" Width="160" MinWidth="150" />
+                            <DxTreeListDataColumn FieldName="CheckedInCount" Caption="Đã chấm công" Width="150" MinWidth="140">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var node = (DailyAttendanceDepartmentNode)context.DataItem;
+                                    }
+                                    <span class="metric-badge metric-badge-success">@node.CheckedInCount</span>
+                                </CellDisplayTemplate>
+                            </DxTreeListDataColumn>
+                            <DxTreeListDataColumn FieldName="NotCheckedInCount" Caption="Chưa chấm công" Width="160" MinWidth="150">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var node = (DailyAttendanceDepartmentNode)context.DataItem;
+                                    }
+                                    <span class="metric-badge metric-badge-warning">@node.NotCheckedInCount</span>
+                                </CellDisplayTemplate>
+                            </DxTreeListDataColumn>
+                            <DxTreeListDataColumn FieldName="AttendanceRate" Caption="% đã chấm công" Width="170" MinWidth="160">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var node = (DailyAttendanceDepartmentNode)context.DataItem;
+                                    }
+                                    <span class="metric-badge metric-badge-rate">@FormatPercent(node.AttendanceRate)</span>
+                                </CellDisplayTemplate>
+                            </DxTreeListDataColumn>
+                        </Columns>
+                        <EmptyDataAreaTemplate>
+                            <div class="empty-state">
+                                <div class="state-title">Chưa có dữ liệu phòng ban</div>
+                                <div class="state-message">Dữ liệu sẽ hiển thị sau khi danh mục phòng ban được đồng bộ.</div>
+                                <DxButton Text="Tải lại"
+                                          Click="ReloadAsync"
+                                          RenderStyle="ButtonRenderStyle.Primary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                            </div>
+                        </EmptyDataAreaTemplate>
+                    </DxTreeList>
+                </div>
+            </HrmLoadingPanel>
+        }
+    </div>
+</div>

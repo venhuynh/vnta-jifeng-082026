@@ -1,0 +1,53 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapThamNien
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+          CloseOnEscape="@(!IsRefreshing)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="seniority-popup-footer"
+         CssClass="seniority-confirm-popup seniority-lock-action-popup">
+    <BodyContentTemplate>
+        <div class="seniority-lock-action-content">
+            <div class="seniority-confirm-message">@PromptText</div>
+            <div class="seniority-lock-action-context">@ContextText</div>
+            <div class="seniority-lock-action-options">
+                <button type="button"
+                        class="@GetScopeCssClass(SelectedRowsScope)"
+                        @onclick="@(() => SelectScopeAsync(SelectedRowsScope))"
+                        disabled="@(!CanChooseSelectedRowsScope || IsRefreshing)">
+                    <span class="seniority-lock-action-title">Các dòng đã chọn</span>
+                    <span class="seniority-lock-action-description">@SelectedRowsDescription</span>
+                </button>
+                <button type="button"
+                        class="@GetScopeCssClass(WholePeriodScope)"
+                        @onclick="@(() => SelectScopeAsync(WholePeriodScope))"
+                        disabled="@IsRefreshing">
+                    <span class="seniority-lock-action-title">Toàn bộ kỳ @WholePeriodLabel</span>
+                    <span class="seniority-lock-action-description">@WholePeriodDescription</span>
+                </button>
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="seniority-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="seniority-popup-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="@(ShouldLock ? "Khóa" : "Mở khóa")"
+                      Click="ConfirmAsync"
+                      IconUrl="@(ShouldLock ? VntaDevExpressIcons.Lock : VntaDevExpressIcons.Unlock)"
+                      CssClass="seniority-popup-action"
+                      Enabled="@CanConfirm"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

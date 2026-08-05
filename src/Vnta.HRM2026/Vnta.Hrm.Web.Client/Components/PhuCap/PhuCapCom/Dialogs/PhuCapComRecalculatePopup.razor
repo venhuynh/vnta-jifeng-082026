@@ -1,0 +1,41 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapCom
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Xác nhận tính lại phụ cấp cơm"
+         Width="min(32rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsRefreshing)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="meal-allowance-popup-footer"
+         CssClass="meal-allowance-confirm-popup">
+    <BodyContentTemplate Context="confirmPopupBody">
+        <div class="meal-allowance-confirm-content">
+            <div class="meal-allowance-confirm-message">
+                Bạn sắp tính lại dữ liệu phụ cấp cơm của kỳ <strong>@PeriodLabel</strong>.
+            </div>
+            <div class="meal-allowance-confirm-note">
+                Hệ thống cập nhật dữ liệu theo ngày công hiện có; các dòng đã khóa được giữ nguyên.
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="confirmPopupFooter">
+        <div class="meal-allowance-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="meal-allowance-popup-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Tính lại"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                      CssClass="meal-allowance-popup-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

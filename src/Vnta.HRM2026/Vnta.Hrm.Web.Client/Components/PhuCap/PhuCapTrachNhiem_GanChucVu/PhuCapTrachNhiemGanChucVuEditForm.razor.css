@@ -1,0 +1,51 @@
+.responsibility-lookup {
+    box-sizing: border-box;
+    width: min(44rem, calc(100vw - 3rem));
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+}
+
+::deep .responsibility-lookup-search {
+    width: 100%;
+}
+
+::deep .responsibility-lookup-grid {
+    max-height: 24rem;
+}
+
+::deep .responsibility-lookup-grid .dxbl-grid-table,
+::deep .responsibility-lookup-grid table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+::deep .responsibility-lookup-grid .dxbl-grid-cell,
+::deep .responsibility-lookup-grid td {
+    height: auto;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.35;
+    vertical-align: top;
+}
+
+::deep .responsibility-lookup-editor {
+    width: 100%;
+}
+
+::deep .responsibility-lookup-editor .dxbl-text-editor,
+::deep .responsibility-lookup-editor .dxbl-edit,
+::deep .responsibility-lookup-editor .dxbl-dropdown-edit {
+    min-height: 2.25rem;
+    height: auto;
+}
+
+::deep .responsibility-lookup-editor .dxbl-text-editor-input,
+::deep .responsibility-lookup-editor input {
+    min-height: 2.25rem;
+    height: auto;
+    line-height: 1.35;
+}

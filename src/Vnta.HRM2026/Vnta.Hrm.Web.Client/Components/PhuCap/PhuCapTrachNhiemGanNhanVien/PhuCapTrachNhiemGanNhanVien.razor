@@ -1,0 +1,101 @@
+@page "/payroll/responsibility-allowances/employee-assignments"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemGanNhanVien.Dialogs
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemGanNhanVien.Export
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemGanNhanVien.Sections
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - DS cấp bậc nhân viên</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <PhuCapTrachNhiemGanNhanVienToolbar Month="@ToolbarMonth"
+                                            Year="@ToolbarYear"
+                                            MinimumYear="@MinimumSupportedYear"
+                                            MaximumYear="@MaximumSupportedYear"
+                                            MonthOptions="@AvailableMonthOptions"
+                                            CanChangeFilters="@CanChangeFilters"
+                                            CanLoad="@CanLoad"
+                                            CanLoadFromPreviousMonth="@CanLoadFromPreviousMonth"
+                                            CanManageAssignments="@CanManageAssignments"
+                                            CanExport="@CanExport"
+                                            MonthChanged="OnSelectedMonthChangedAsync"
+                                            YearChanged="OnSelectedYearChangedAsync"
+                                            ViewRequested="LoadPeriodAsync"
+                                            LoadFromPreviousMonthRequested="LoadFromPreviousMonthAsync"
+                                            ExportExcelRequested="ExportToExcelAsync"
+                                            ExportPdfRequested="ExportToPdfAsync"
+                                            ColumnChooserRequested="ShowColumnChooser" />
+    </div>
+
+    <div class="employee-grade-list-root">
+        <div class="card employee-grade-list-grid-card">
+            <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             Text="@LoadingText"
+                             CssClass="employee-grade-list-loading-panel">
+                @if (HasLoadError)
+                {
+                    <PhuCapTrachNhiemGanNhanVienLoadError Message="@LoadErrorMessage"
+                                                            RetryRequested="OnRetryAsync" />
+                }
+                else
+                {
+                    <div class="employee-grade-list-grid-content">
+                        <PhuCapTrachNhiemGanNhanVienSummary Summary="@AssignmentSummary"
+                                                           SelectedKey="@SelectedGradePresenceKey"
+                                                           AssignedKey="@GradePresenceAssignedKey"
+                                                           UnassignedKey="@GradePresenceUnassignedKey"
+                                                           SearchText="@SearchText"
+                                                           CanInteract="@CanInteract"
+                                                           SelectionChanged="SelectGradePresenceAsync"
+                                                           SearchTextChanged="OnSearchTextChanged" />
+                        <PhuCapTrachNhiemGanNhanVienGrid @ref="Grid"
+                                                         Records="@Records"
+                                                         SelectedDataItems="@SelectedDataItems"
+                                                         CurrentPageIndex="@CurrentPageIndex"
+                                                         PageSize="@PageSize"
+                                                         FormatMoney="FormatMoney"
+                                                         CanManageAssignments="@CanManageAssignments"
+                                                         EmptyStateTitle="@EmptyStateTitle"
+                                                         EmptyStateMessage="@EmptyStateMessage"
+                                                         EmptyStateActionText="@EmptyStateActionText"
+                                                         GetGradeLabel="GetGradeLabel"
+                                                         GetGradeLabelCssClass="GetGradeLabelCssClass"
+                                                         SelectedDataItemsChanged="OnSelectedDataItemsChanged"
+                                                         EditRequested="OpenEditPopup"
+                                                         EmptyStateActionRequested="LoadPeriodAsync" />
+                        <PhuCapTrachNhiemGanNhanVienPager RowCount="@Records.Count"
+                                                          TotalCount="@TotalRecordCount"
+                                                          PageCount="@PageCount"
+                                                          CurrentPageIndex="@CurrentPageIndex"
+                                                          PageSize="@PageSize"
+                                                          PageSizeOptions="@PageSizeOptions"
+                                                          CanChangeFilters="@CanChangeFilters"
+                                                          CanBrowsePages="@CanBrowsePages"
+                                                          PageChanged="OnActivePageIndexChangedAsync"
+                                                          PageSizeChanged="OnPageSizeChanged" />
+                    </div>
+                }
+            </HrmLoadingPanel>
+        </div>
+    </div>
+
+    <PhuCapTrachNhiemGanNhanVienExportGrid @ref="ExportGrid" Records="@ExportRecords" />
+</div>
+
+@if (EditingRecord is not null)
+{
+    <PhuCapTrachNhiemGanNhanVienEditPopup Visible="@IsEditPopupVisible"
+                                          VisibleChanged="CloseEditPopup"
+                                          IsSaving="@IsSaving"
+                                          Assignment="@EditingRecord"
+                                          Model="@EditModel"
+                                          EditContext="@EditContext"
+                                          GradeOptions="@ActiveGrades"
+                                          SaveRequested="SaveAssignmentAsync" />
+}

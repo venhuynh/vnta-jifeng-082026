@@ -1,0 +1,42 @@
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components
+@using Vnta.Hrm.Web.Client.Models.Payroll
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapCom
+
+<DxGrid @ref="grid" Data="@Records" KeyFieldName="Id" CssClass="meal-allowance-grid" ShowSearchBox="false" PagerVisible="false" ShowAllRows="true" SkeletonRowsEnabled="true" ColumnResizeMode="GridColumnResizeMode.NextColumn" FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Never" TextWrapEnabled="false" FocusedRowEnabled="true" HighlightRowOnHover="true" AllowSelectRowByClick="true" SelectionMode="GridSelectionMode.Multiple" SelectedDataItems="@SelectedDataItems" SelectedDataItemsChanged="SelectedDataItemsChanged" FilterCriteriaChanged="FilterCriteriaChanged">
+    <Columns>
+        <DxGridSelectionColumn Width="3rem" />
+        <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false"><CellDisplayTemplate>@(CurrentPageIndex * PageSize + context.VisibleIndex + 1)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn Caption="Tác vụ" MinWidth="96" Width="6rem" AllowSort="false" TextAlignment="GridTextAlignment.Center" ShowInColumnChooser="false">
+            <CellDisplayTemplate>
+                @{ var row = (MealAllowanceRecord)context.DataItem; }
+                <div class="meal-allowance-row-menu-host" @onclick:stopPropagation="true" @onmousedown:stopPropagation="true">
+                    <DxDropDownButton CssClass="meal-allowance-row-menu-btn" IconCssClass="icon more-icon medium-icon" RenderStyle="ButtonRenderStyle.Link" DropDownToggleVisible="false" Enabled="@CanOperate" Tooltip="Tác vụ dòng phụ cấp cơm">
+                        <Items>
+                            <DxDropDownButtonItem Text="Điều chỉnh" IconUrl="@VntaDevExpressIcons.Edit" Click="@(() => EditRequested.InvokeAsync(row))" Enabled="@CanEditRow(row)" />
+                            <DxDropDownButtonItem Text="Làm mới" IconUrl="@VntaDevExpressIcons.Refresh" Tooltip="Tính lại dữ liệu phụ cấp cơm của dòng này từ dữ liệu công." Click="@(() => RefreshRequested.InvokeAsync(row))" Enabled="@CanRefreshRow(row)" />
+                            <DxDropDownButtonItem Text="@(row.IsLocked ? "Mở khóa" : "Khóa")" IconUrl="@(row.IsLocked ? VntaDevExpressIcons.Unlock : VntaDevExpressIcons.Lock)" Tooltip="@(row.IsLocked ? "Mở khóa dòng phụ cấp cơm này." : "Khóa dòng phụ cấp cơm này.")" Click="@(() => ToggleLockRequested.InvokeAsync(row))" Enabled="@CanToggleLock(row)" BeginGroup="true" />
+                            <DxDropDownButtonItem Text="Bảng công tháng" IconUrl="@VntaDevExpressIcons.TaskList" Tooltip="Xem bảng công tháng của nhân viên ở chế độ chỉ đọc." Click="@(() => MonthlyWorkRequested.InvokeAsync(row))" Enabled="@CanViewMonthlyWork(row)" />
+                        </Items>
+                    </DxDropDownButton>
+                </div>
+            </CellDisplayTemplate>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="EmployeeCode" Caption="Mã nhân viên" Width="130" MinWidth="130"><CellDisplayTemplate>@Highlight(((MealAllowanceRecord)context.DataItem).EmployeeCode, "--")</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="EmployeeName" Caption="Họ tên" MinWidth="180"><CellDisplayTemplate>@Highlight(((MealAllowanceRecord)context.DataItem).EmployeeName, "Chưa có tên")</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Phòng ban" MinWidth="280"><CellDisplayTemplate>@{ var row = (MealAllowanceRecord)context.DataItem; }<span class="meal-allowance-cell-ellipsis" title="@row.DepartmentDisplay">@Highlight(row.DepartmentDisplay, "Chưa có")</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" MinWidth="180"><CellDisplayTemplate>@{ var row = (MealAllowanceRecord)context.DataItem; }<span class="meal-allowance-cell-ellipsis" title="@row.PositionDisplay">@Highlight(row.PositionDisplay, "Chưa có")</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" Width="110" MinWidth="110" />
+        <DxGridDataColumn FieldName="Overtime1900Days" Caption="Ngày PC Cơm" Width="135" MinWidth="135"><CellDisplayTemplate>@FormatValue(((MealAllowanceRecord)context.DataItem).Overtime1900Days)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="MealAllowancePerQualifiedDay" Caption="Đơn giá/ngày" Width="140" MinWidth="140"><CellDisplayTemplate>@FormatMoney(((MealAllowanceRecord)context.DataItem).MealAllowancePerQualifiedDay)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="MealAllowanceAmount" Caption="Phụ cấp cơm" Width="145" MinWidth="145" TextAlignment="GridTextAlignment.Right"><CellDisplayTemplate>@{ var row = (MealAllowanceRecord)context.DataItem; }@if(row.MealAllowanceAmount != 0m) { <span class="hrm-grid-amount hrm-grid-amount--total">@FormatMoney(row.MealAllowanceAmount)</span> }</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="IsLocked" Caption="Trạng thái khóa" Width="130" MinWidth="130"><CellDisplayTemplate>@{ var row = (MealAllowanceRecord)context.DataItem; }<PhuCapComStatus IsLocked="@row.IsLocked" /></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="Note" Caption="Ghi chú" MinWidth="220"><CellDisplayTemplate>@{ var row = (MealAllowanceRecord)context.DataItem; }<span class="meal-allowance-cell-ellipsis" title="@FormatOptional(row.Note)">@FormatOptional(row.Note)</span></CellDisplayTemplate></DxGridDataColumn>
+    </Columns>
+    <EmptyDataAreaTemplate>
+        <div class="empty-state">
+            <div class="state-title">@EmptyStateTitle</div><div class="state-message">@EmptyStateMessage</div>
+            <DxButton Text="@EmptyStateActionText" Click="EmptyStateActionRequested" IconUrl="@EmptyStateActionIcon" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </EmptyDataAreaTemplate>
+</DxGrid>

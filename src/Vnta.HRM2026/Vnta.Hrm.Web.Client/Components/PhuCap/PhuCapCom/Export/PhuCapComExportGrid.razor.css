@@ -1,0 +1,8 @@
+.meal-allowance-export-source {
+    position: fixed;
+    top: 0;
+    left: -10000px;
+    width: 1200px;
+    visibility: hidden;
+    pointer-events: none;
+}

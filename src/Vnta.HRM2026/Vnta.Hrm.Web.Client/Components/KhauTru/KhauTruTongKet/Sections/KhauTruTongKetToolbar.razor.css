@@ -1,0 +1,36 @@
+.toolbar {
+    flex: 0 0 auto;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+::deep .toolbar .dxbl-toolbar {
+    flex-wrap: nowrap;
+    align-items: center;
+    min-width: max-content;
+}
+
+::deep .toolbar .dxbl-toolbar-title { white-space: nowrap; }
+
+.toolbar-filter-editor {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+.toolbar-filter-label {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+}
+
+::deep .toolbar-filter-year { width: 6.75rem; }
+::deep .toolbar-filter-month { width: 7.75rem; }

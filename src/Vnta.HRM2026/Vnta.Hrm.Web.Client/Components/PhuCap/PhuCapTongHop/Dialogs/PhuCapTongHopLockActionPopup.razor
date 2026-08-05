@@ -1,0 +1,63 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTongHop
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsRefreshing)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="allowance-summary-lock-action-popup-footer"
+         CssClass="allowance-summary-lock-action-popup">
+    <HeaderContentTemplate>
+        <div class="allowance-summary-popup-header">
+            <DxButton IconUrl="@(ShouldLock ? VntaDevExpressIcons.Lock : VntaDevExpressIcons.Unlock)"
+                      Attributes="@HeaderIconAttributes"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Text"
+                      CssClass="allowance-summary-popup-header-icon" />
+            <span class="allowance-summary-popup-header-title">@Title</span>
+        </div>
+    </HeaderContentTemplate>
+    <BodyContentTemplate>
+        <div class="allowance-summary-lock-action-content">
+            <div class="allowance-summary-lock-action-message">@PromptText</div>
+            <div class="allowance-summary-lock-action-context">@ContextText</div>
+            <div class="allowance-summary-lock-action-options">
+                <button type="button"
+                        class="@GetScopeCssClass(SelectedRowsScope)"
+                        @onclick="@(() => SelectScopeAsync(SelectedRowsScope))"
+                        disabled="@(!CanChooseSelectedRowsScope || IsRefreshing)">
+                    <span class="allowance-summary-lock-action-title">Các dòng đã chọn</span>
+                    <span class="allowance-summary-lock-action-description">@SelectedRowsDescription</span>
+                </button>
+                <button type="button"
+                        class="@GetScopeCssClass(WholePeriodScope)"
+                        @onclick="@(() => SelectScopeAsync(WholePeriodScope))"
+                        disabled="@IsRefreshing">
+                    <span class="allowance-summary-lock-action-title">Toàn bộ kỳ @WholePeriodLabel</span>
+                    <span class="allowance-summary-lock-action-description">@WholePeriodDescription</span>
+                </button>
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="allowance-summary-lock-action-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="allowance-summary-lock-action-button"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="@(ShouldLock ? "Khóa" : "Mở khóa")"
+                      Click="ConfirmAsync"
+                      IconUrl="@(ShouldLock ? VntaDevExpressIcons.Lock : VntaDevExpressIcons.Unlock)"
+                      CssClass="allowance-summary-lock-action-button"
+                      Enabled="@CanConfirm"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

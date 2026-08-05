@@ -1,0 +1,20 @@
+@using Vnta.Hrm.Application.PhuCap.PhuCapCom.Queries
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapCom
+
+<div class="meal-allowance-grid-header">
+    <div class="meal-allowance-summary-strip">
+        <DxButtonGroup CssClass="meal-allowance-summary-button-group" RenderStyle="ButtonRenderStyle.Secondary" RenderStyleMode="ButtonRenderStyleMode.Outline" SelectionMode="ButtonGroupSelectionMode.Single" Enabled="@CanInteract">
+            <Items>
+                <DxButtonGroupItem Text="@($"Tất cả: {Summary.TotalCount:N0}")" Tooltip="Hiển thị tất cả bản ghi của kỳ lương đang xem." CssClass="meal-allowance-summary-button meal-allowance-summary-button-all" Selected="@(SelectedKey == AllKey)" Click="@(() => SummarySelected.InvokeAsync(AllKey))" />
+                <DxButtonGroupItem Text="@($"Có phụ cấp: {Summary.WithAllowanceCount:N0}")" Tooltip="Lọc các dòng có Ngày PC Cơm lớn hơn 0." CssClass="meal-allowance-summary-button meal-allowance-summary-button-qualified" Selected="@(SelectedKey == WithAllowanceKey)" Click="@(() => SummarySelected.InvokeAsync(WithAllowanceKey))" />
+                <DxButtonGroupItem Text="@($"Không phụ cấp: {Summary.WithoutAllowanceCount:N0}")" Tooltip="Lọc các dòng có Ngày PC Cơm bằng 0." CssClass="meal-allowance-summary-button meal-allowance-summary-button-other" Selected="@(SelectedKey == WithoutAllowanceKey)" Click="@(() => SummarySelected.InvokeAsync(WithoutAllowanceKey))" />
+            </Items>
+        </DxButtonGroup>
+        <DxButtonGroup CssClass="meal-allowance-total-amount-button-group" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Outline">
+            <Items><DxButtonGroupItem Text="@($"Tổng phụ cấp: {FormatMoney(Summary.TotalAllowanceAmount)}")" Tooltip="Tổng tiền phụ cấp cơm của danh sách đang xem." CssClass="meal-allowance-total-amount-button" /></Items>
+        </DxButtonGroup>
+    </div>
+    <div class="meal-allowance-grid-search">
+        <DxSearchBox CssClass="meal-allowance-grid-searchbox" NullText="Tìm kiếm mã nhân viên, họ tên, phòng ban, chức vụ" BindValueMode="BindValueMode.OnDelayedInput" InputDelay="500" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" Text="@SearchText" TextChanged="SearchTextChanged" Enabled="@CanInteract" />
+    </div>
+</div>

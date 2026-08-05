@@ -1,0 +1,77 @@
+.deduction-summary-popup-footer,
+.deduction-summary-confirm-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.deduction-summary-confirm-actions {
+    gap: 0.5rem;
+}
+
+.deduction-summary-popup-action {
+    min-width: 7rem;
+}
+
+.deduction-summary-confirm-message {
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.5;
+}
+
+.deduction-summary-lock-action-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem 0 0.25rem;
+}
+
+.deduction-summary-lock-action-context,
+.deduction-summary-lock-action-description {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    line-height: 1.45;
+}
+
+.deduction-summary-lock-action-options {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.deduction-summary-lock-action-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 82%, transparent);
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 95%, white);
+    color: inherit;
+    text-align: left;
+}
+
+.deduction-summary-lock-action-option:not(:disabled) {
+    cursor: pointer;
+}
+
+.deduction-summary-lock-action-option:not(:disabled):hover,
+.deduction-summary-lock-action-option.is-active {
+    border-color: var(--dxds-color-border-primary-default-rest, #2563eb);
+    background: color-mix(in srgb, var(--dxds-color-surface-primary-subtle-rest, #eff6ff) 88%, white);
+}
+
+.deduction-summary-lock-action-option:focus-visible {
+    outline: 2px solid var(--dxds-color-border-primary-default-rest, #2563eb);
+    outline-offset: 2px;
+}
+
+.deduction-summary-lock-action-option.is-disabled,
+.deduction-summary-lock-action-option:disabled {
+    opacity: 0.68;
+    cursor: not-allowed;
+}
+
+.deduction-summary-lock-action-title {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-weight: 700;
+}

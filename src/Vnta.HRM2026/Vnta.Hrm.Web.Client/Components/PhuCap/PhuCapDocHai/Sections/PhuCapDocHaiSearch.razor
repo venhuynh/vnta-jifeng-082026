@@ -1,0 +1,12 @@
+@using DevExpress.Blazor
+
+<div class="hazard-allowance-grid-search">
+    <DxSearchBox CssClass="hazard-allowance-grid-searchbox"
+                 NullText="Tìm theo mã nhân viên, tên nhân viên, lý do loại trừ hoặc kỳ lương"
+                 BindValueMode="BindValueMode.OnDelayedInput"
+                 InputDelay="500"
+                 ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                 Text="@Text"
+                 TextChanged="TextChanged"
+                 Enabled="@Enabled" />
+</div>

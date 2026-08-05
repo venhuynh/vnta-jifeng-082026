@@ -1,0 +1,91 @@
+::deep .responsibility-lock-popup-footer,
+.responsibility-lock-action-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.responsibility-lock-action-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem 0 0.25rem;
+}
+
+.responsibility-lock-action-prompt {
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.5;
+}
+
+.responsibility-lock-action-context,
+.responsibility-lock-action-description {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    line-height: 1.45;
+}
+
+.responsibility-lock-action-options {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.responsibility-lock-action-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 82%, transparent);
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 95%, white);
+    color: inherit;
+    text-align: left;
+    transition: border-color 120ms ease, background-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.responsibility-lock-action-option:not(:disabled) {
+    cursor: pointer;
+}
+
+.responsibility-lock-action-option:not(:disabled):hover {
+    border-color: var(--dxds-color-border-primary-default-rest, #2563eb);
+    background: color-mix(in srgb, var(--dxds-color-surface-primary-subtle-rest, #eff6ff) 72%, white);
+    transform: translateY(-1px);
+}
+
+.responsibility-lock-action-option:focus-visible {
+    outline: 2px solid var(--dxds-color-border-primary-default-rest, #2563eb);
+    outline-offset: 2px;
+}
+
+.responsibility-lock-action-option.is-active {
+    border-color: var(--dxds-color-border-primary-default-rest, #2563eb);
+    background: color-mix(in srgb, var(--dxds-color-surface-primary-subtle-rest, #eff6ff) 88%, white);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--dxds-color-surface-primary-default-rest, #2563eb) 14%, transparent);
+}
+
+.responsibility-lock-action-option.is-disabled,
+.responsibility-lock-action-option:disabled {
+    opacity: 0.68;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.responsibility-lock-action-title {
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+@media (max-width: 768px) {
+    ::deep .responsibility-lock-popup-footer,
+    .responsibility-lock-action-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    ::deep .responsibility-lock-popup-footer .dxbl-btn,
+    .responsibility-lock-action-footer ::deep .dxbl-btn {
+        width: 100%;
+    }
+}

@@ -1,0 +1,64 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Application.CaKip.LichLamViec
+@using Vnta.Hrm.Web.Client.Models
+
+@if(Model is not null && EditContext is not null)
+{
+    <CascadingValue Value="EditContext">
+        <DxFormLayout CssClass="work-calendar-edit-form" CaptionPosition="CaptionPosition.Vertical">
+            <DxFormLayoutItem Caption="Ngày" ColSpanMd="12">
+                <DxDateEdit @bind-Date="Model.WorkDate"
+                            MinDate="@MinDate"
+                            MaxDate="@MaxDate"
+                            CssClass="w-100"
+                            NullText="Chọn ngày"
+                            ReadOnly="true"
+                            ValidationEnabled="false"
+                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                            ShowValidationIcon="true"
+                            ShowValidationSuccessState="true" />
+                <ValidationMessage For="@(() => Model!.WorkDate)" />
+            </DxFormLayoutItem>
+
+            <DxFormLayoutItem Caption="Loại ngày" ColSpanMd="12">
+                <DxComboBox Data="@DayTypeOptions"
+                            TextFieldName="Text"
+                            ValueFieldName="Value"
+                            @bind-Value="Model.DayType"
+                            CssClass="w-100"
+                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                            ShowValidationIcon="true"
+                            ShowValidationSuccessState="true" />
+                <ValidationMessage For="@(() => Model!.DayType)" />
+            </DxFormLayoutItem>
+
+            @if(Model.DayType == AttendanceWorkCalendarDayType.Holiday)
+            {
+                <DxFormLayoutItem Caption="Tên ngày lễ" ColSpanMd="12">
+                    <DxTextBox @bind-Text="Model.Name"
+                               CssClass="w-100"
+                               NullText="VD: Tết Dương lịch"
+                               ShowValidationIcon="true"
+                               ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model!.Name)" />
+                </DxFormLayoutItem>
+            }
+
+            <DxFormLayoutItem Caption="Ghi chú" ColSpanMd="12">
+                <DxMemo @bind-Text="Model.Note"
+                        CssClass="w-100"
+                        Rows="3"
+                        NullText="Ghi chú nếu có"
+                        ShowValidationIcon="true" />
+                <ValidationMessage For="@(() => Model!.Note)" />
+            </DxFormLayoutItem>
+        </DxFormLayout>
+
+        <ValidationSummary class="validation-summary" />
+
+        @if(!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <div class="edit-error-message">@ErrorMessage</div>
+        }
+    </CascadingValue>
+}

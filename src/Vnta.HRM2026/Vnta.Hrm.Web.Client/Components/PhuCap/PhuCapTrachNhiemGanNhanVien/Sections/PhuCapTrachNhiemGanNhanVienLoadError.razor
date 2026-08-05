@@ -1,0 +1,12 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemGanNhanVien.Sections
+
+<div class="error-state">
+    <div class="state-title">Không thể tải danh sách cấp bậc nhân viên</div>
+    <div class="state-message">@Message</div>
+    <DxButton Text="Thử lại" Click="RetryRequested" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained" />
+</div>
+
+@code {
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public EventCallback RetryRequested { get; set; }
+}

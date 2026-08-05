@@ -1,0 +1,40 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Quy tắc phụ cấp trách nhiệm khác"
+         Width="min(47.5rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         FooterCssClass="responsibility-rules-popup-footer"
+         CssClass="responsibility-rules-popup">
+    <BodyContentTemplate>
+        <div class="responsibility-rules-popup-content">
+            <section class="responsibility-rules-popup-card">
+                <div class="responsibility-rules-popup-title">Nguyên tắc</div>
+                <ul class="responsibility-rules-popup-list">
+                    <li>Đảm bảo dữ liệu đồng bộ 1-1 với bảng <strong>Tổng hợp phụ cấp</strong>.</li>
+                    <li>Bỏ qua các dòng đã khóa khi tính lại.</li>
+                </ul>
+            </section>
+            <section class="responsibility-rules-popup-card">
+                <div class="responsibility-rules-popup-title">Quy tắc tính lại</div>
+                <ol class="responsibility-rules-popup-list">
+                    <li>Mã kết quả tính công có cờ <code>CongHanhChinh</code> được tính là ngày công HC.</li>
+                    <li>Trong cùng ngày chỉ tính một ngày công; tổng phút đi trễ, về sớm được tự điều chỉnh trong khoảng từ <code>0</code> đến <code>480</code>.</li>
+                    <li>CTL = tổng ngày công HC sau điều chỉnh, lấy 4 chữ số thập phân.</li>
+                    <li>Thiếu công = Công chuẩn − CTL.</li>
+                    <li>Nếu thiếu công không quá 1 ngày, tiền thực tế bằng tiền phụ cấp chuẩn.</li>
+                    <li>Nếu không, tiền thực tế = tiền phụ cấp chuẩn / công chuẩn tháng × CTL.</li>
+                </ol>
+            </section>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <DxButton Text="Đóng"
+                  Click="CloseAsync"
+                  IconUrl="@VntaDevExpressIcons.Cancel"
+                  RenderStyle="ButtonRenderStyle.Secondary"
+                  RenderStyleMode="ButtonRenderStyleMode.Outline" />
+    </FooterContentTemplate>
+</DxPopup>

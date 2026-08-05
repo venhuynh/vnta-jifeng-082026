@@ -1,0 +1,48 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Quy tắc phụ cấp độc hại"
+         Width="min(52rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         CloseOnOutsideClick="false"
+         CssClass="hazard-rules-popup">
+    <BodyContentTemplate>
+        <div class="hazard-rules-content">
+            <div class="hazard-rules-section">
+                <div class="hazard-rules-title">Nguồn dữ liệu</div>
+                <ul class="hazard-rules-list">
+                    <li>Mỗi dòng chi tiết phụ cấp độc hại đồng bộ 1-1 với một dòng <strong>Tổng hợp phụ cấp</strong>.</li>
+                    <li>Bỏ qua hoàn toàn các dòng đã khóa, không tạo mới hoặc cập nhật lại dữ liệu của các dòng này.</li>
+                    <li>Các mã tính công được lấy từ bảng <strong>Code kết quả tính công</strong>, cột <span class="hazard-inline-code">Phu_Cap_Doc_Hai</span>.</li>
+                    <li>Tổng số phút đi trễ, về sớm được lấy từ bảng công tháng.</li>
+                </ul>
+            </div>
+
+            <div class="hazard-rules-section">
+                <div class="hazard-rules-title">Loại trừ bắt buộc — ưu tiên số 1</div>
+                <ul class="hazard-rules-list">
+                    <li>Loại trừ toàn bộ nhân viên thuộc <strong>Khối Văn phòng</strong>.</li>
+                    <li>Loại trừ toàn bộ nhân viên có đường dẫn <strong>Sản xuất / Phòng kế toán / Kho vật tư</strong>.</li>
+                    <li>Loại trừ toàn bộ nhân viên có chức vụ chứa <strong>Thời vụ</strong>.</li>
+                    <li>Các điều kiện này luôn được áp dụng trước mọi quy tắc tính tiền và không thể được ghi đè bằng thao tác <strong>Hưởng PC</strong>.</li>
+                </ul>
+            </div>
+
+            <div class="hazard-rules-section">
+                <div class="hazard-rules-title">Quy tắc</div>
+                <ol class="hazard-rules-list">
+                    <li>Mỗi record có mã được đánh dấu trong cột <span class="hazard-inline-code">Phu_Cap_Doc_Hai</span> được tính là <strong>1 ngày công HC</strong>.</li>
+                    <li><strong>Số ngày ĐTVS</strong> = tổng số phút đi trễ, về sớm / <strong>480</strong>; lấy 4 chữ số thập phân.</li>
+                    <li><strong>Công tính lương (CTL)</strong> = <strong>Công HC − Số ngày ĐTVS</strong>; lấy 4 chữ số thập phân và không nhỏ hơn 0.</li>
+                    <li>Tiền phụ cấp = <strong>CTL × 7.700 VND</strong>, không làm tròn.</li>
+                </ol>
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <DxButton Text="Đóng"
+                  Click="CloseAsync"
+                  RenderStyle="ButtonRenderStyle.Secondary"
+                  RenderStyleMode="ButtonRenderStyleMode.Outline"
+                  IconUrl="@VntaDevExpressIcons.Cancel" />
+    </FooterContentTemplate>
+</DxPopup>

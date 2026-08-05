@@ -1,0 +1,99 @@
+@page "/payroll/other-allowance"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Components.ChamCong.MonthlyWork
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapKhac.Sections
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+@implements IDisposable
+
+<PageTitle>VNTA - Phụ cấp khác</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <PhuCapKhacToolbar State="@Coordinator.Toolbar"
+                             MonthChanged="Coordinator.ChangeMonthAsync"
+                             YearChanged="Coordinator.ChangeYearAsync"
+                             ViewRequested="Coordinator.ViewAsync"
+                             CreateRequested="Coordinator.OpenCreateDialogAsync"
+                             CanSyncFromPreviousMonth="Coordinator.CanSyncFromPreviousMonth"
+                             SyncFromPreviousMonthRequested="Coordinator.SyncFromPreviousMonthAsync"
+                             CanOperate="Coordinator.CanOperate"
+                             CanLock="Coordinator.CanLockSelectedRows"
+                             CanUnlock="Coordinator.CanUnlockSelectedRows"
+                             LockRequested="@(() => Coordinator.OpenLockActionAsync(true))"
+                             UnlockRequested="@(() => Coordinator.OpenLockActionAsync(false))"
+                             RulesRequested="Coordinator.OpenRulesDialog" />
+    </div>
+
+    <div class="other-allowance-root">
+        @if (Coordinator.HasLoadError)
+        {
+            <div class="card other-allowance-grid-card">
+                <PhuCapKhacLoadError ErrorMessage="@Coordinator.LoadErrorMessage"
+                                         IsLoading="@Coordinator.Grid.IsLoading"
+                                         RetryRequested="Coordinator.ViewAsync" />
+            </div>
+        }
+        else
+        {
+            <div class="card other-allowance-grid-card">
+                <HrmLoadingPanel Visible="@Coordinator.Grid.IsLoading"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="@Coordinator.Grid.LoadingText"
+                                 CssClass="other-allowance-loading-panel">
+                    <div class="other-allowance-grid-content">
+                        <PhuCapKhacSummary State="@Coordinator.Grid"
+                                            SearchTextChanged="Coordinator.SearchAsync" />
+                        <PhuCapKhacGrid State="@Coordinator.Grid"
+                                        EmptyActionRequested="Coordinator.RunEmptyStateActionAsync"
+                                        EditRequested="Coordinator.OpenEditDialog"
+                                        LockStateRequested="Coordinator.ToggleLockAsync"
+                                        MonthlyWorkRequested="Coordinator.OpenMonthlyWorkDialogAsync"
+                                        CanEdit="Coordinator.CanEdit"
+                                        CanToggleLock="Coordinator.CanToggleLock"
+                                        CanViewMonthlyWork="Coordinator.CanViewMonthlyWork"
+                                        SelectedItems="Coordinator.SelectedItems"
+                                        SelectedItemsChanged="Coordinator.SelectRowsAsync" />
+                        <PhuCapKhacPager SummaryText="@Coordinator.Grid.PagerSummaryText"
+                                          CanBrowsePages="@Coordinator.Grid.CanBrowsePages"
+                                          TotalPageCount="@Coordinator.Grid.TotalPageCount"
+                                          CurrentPageIndex="@Coordinator.Grid.CurrentPageIndex"
+                                          ActivePageIndexChanged="Coordinator.ChangePageAsync"
+                                          PageSizeOptions="@PageSizeOptions"
+                                          PageSize="@Coordinator.Grid.PageSize"
+                                          PageSizeChanged="Coordinator.ChangePageSizeAsync"
+                                          CanChangeFilters="@Coordinator.Toolbar.CanChangeFilters"
+                                          PageSizeDescription="dòng/trang" />
+                    </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>
+
+<PhuCapKhacEditPopup State="@Coordinator.EditDialog"
+                      VisibleChanged="@(_ => Coordinator.CloseEditDialog())"
+                      SaveRequested="Coordinator.SaveEditAsync" />
+
+<ChamCongMonthlyWorkPopup Visible="@Coordinator.MonthlyWorkDialog.Visible"
+                          VisibleChanged="@(_ => Coordinator.CloseMonthlyWorkDialog())"
+                          IsLoading="@Coordinator.MonthlyWorkDialog.IsLoading"
+                          Title="@Coordinator.MonthlyWorkDialog.Title"
+                          Context="@Coordinator.MonthlyWorkDialog.Context"
+                          ErrorMessage="@Coordinator.MonthlyWorkDialog.ErrorMessage"
+                          Rows="@Coordinator.MonthlyWorkDialog.Rows"
+                          RefreshRequested="Coordinator.RefreshMonthlyWorkDialogAsync" />
+
+<PhuCapKhacRulesPopup State="@Coordinator.RulesDialog"
+                        VisibleChanged="@(_ => Coordinator.CloseRulesDialog())"
+                        PeriodLabel="@Coordinator.RulesDialog.PeriodLabel" />
+
+<PhuCapKhacLockActionPopup State="@Coordinator.LockActionDialog"
+                             VisibleChanged="@(_ => Coordinator.CloseLockActionDialog())"
+                             ScopeSelected="Coordinator.SelectLockActionScope"
+                             ConfirmRequested="Coordinator.ConfirmLockActionAsync" />

@@ -1,0 +1,26 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruTongHop.Models
+
+<div class="deduction-summary-export-source" aria-hidden="true">
+    <DxGrid @ref="exportGrid"
+            Data="@Records"
+            KeyFieldName="Id"
+            ShowAllRows="true"
+            PagerVisible="false"
+            TextWrapEnabled="true">
+        <Columns>
+            <DxGridDataColumn FieldName="EmployeeDisplay" Caption="Nhân viên" />
+            <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Phòng ban" />
+            <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" />
+            <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" />
+            <DxGridDataColumn FieldName="PersonalIncomeTaxDeductionAmount" Caption="Thuế TNCN" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="SocialInsuranceDeductionAmount" Caption="BHXH" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="UnionFeeDeductionAmount" Caption="Công đoàn" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="AdvanceDeductionAmount" Caption="Tạm ứng" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="OtherDeductionAmount" Caption="Khấu trừ khác" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="TotalDeductionAmount" Caption="Tổng khấu trừ" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="LockStatusText" Caption="Trạng thái" />
+            <DxGridDataColumn FieldName="Note" Caption="Ghi chú" />
+        </Columns>
+    </DxGrid>
+</div>

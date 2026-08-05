@@ -1,0 +1,242 @@
+@page "/adms/device-commands"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Application.Integrations.AttendanceGateway
+
+@attribute [Authorize(Policy = InternalAccountPolicies.DeviceAdministration)]
+
+<PageTitle>VNTA - Lệnh máy chấm công</PageTitle>
+
+@if (!CanView)
+{
+    <div class="content-root">
+        <div class="card error-state">
+            <div class="state-title">Không có quyền truy cập</div>
+            <div class="state-message">Bạn không có quyền xem danh sách lệnh máy chấm công.</div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="content-root">
+        <div class="card toolbar">
+            <DxToolbar Title="Quản lý lệnh máy chấm công" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+                <DxToolbarItem Text="Reset"
+                               Click="ResetAsync"
+                               Enabled="@(!IsLoading)"
+                               Alignment="ToolbarItemAlignment.Right"
+                               Tooltip="Đặt lại bộ lọc danh sách lệnh máy chấm công"
+                               IconUrl="@VntaDevExpressIcons.Reset" />
+                <DxToolbarItem Text="Xóa"
+                               Click="DeleteFocusedItem_Click"
+                               Enabled="@(CanDeleteSelectedCommand() && !IsLoading)"
+                               Visible="@CanManage"
+                               Alignment="ToolbarItemAlignment.Right"
+                               Tooltip="Xóa lệnh máy chấm công đã chọn"
+                               IconUrl="@VntaDevExpressIcons.Delete" />
+                <DxToolbarItem Text="Xóa tất cả"
+                               Click="DeleteAllCommandsAsync"
+                               Enabled="@(!IsLoading)"
+                               Visible="@CanManage"
+                               Alignment="ToolbarItemAlignment.Right"
+                               Tooltip="Xóa toàn bộ dữ liệu lệnh máy chấm công và đặt lại ID từ đầu"
+                               IconUrl="@VntaDevExpressIcons.Delete" />
+                <DxToolbarItem Tooltip="Làm mới danh sách lệnh máy chấm công"
+                               Click="RefreshAsync"
+                               Enabled="@(!IsLoading)"
+                               Alignment="ToolbarItemAlignment.Right"
+                               IconUrl="@VntaDevExpressIcons.Refresh" />
+                <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                               CssClass="search-textbox-item"
+                               Tooltip="Tìm kiếm lệnh máy chấm công">
+                    <Template>
+                        <div class="custom-item">
+                            <DxSearchBox CssClass="search-textbox"
+                                         Text="@State.SearchTerm"
+                                         TextChanged="OnSearchTextChanged"
+                                         NullText="Tìm serial, nội dung, mô tả"
+                                         BindValueMode="BindValueMode.OnInput"
+                                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                         Enabled="@(!IsLoading)" />
+                        </div>
+                    </Template>
+                </DxToolbarItem>
+            </DxToolbar>
+        </div>
+
+        <div class="adms-device-commands-root">
+            <div class="adms-device-commands-surface">
+                <div class="adms-device-commands-grid-host">
+                    <HrmLoadingPanel Visible="@IsLoading"
+                                     IsContentBlocked="true"
+                                     IsContentVisible="@IsDataLoaded"
+                                     IndicatorVisible="true"
+                                     IndicatorAreaVisible="true"
+                                     CssClass="adms-device-commands-loading-panel"
+                                     Text="Đang tải danh sách lệnh máy chấm công...">
+                        <DxGrid @ref="Grid"
+                                Data="@Rows"
+                                KeyFieldName="@nameof(AdmsDeviceCommandSummaryDto.Id)"
+                                CssClass="adms-device-commands-grid"
+                                SearchText="@State.SearchTerm"
+                                PageSize="20"
+                                PagerPosition="GridPagerPosition.Bottom"
+                                PageSizeSelectorVisible="true"
+                                PageSizeSelectorItems="@(new int[] { 10, 20, 50, 100 })"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                TextWrapEnabled="false"
+                                FocusedRowEnabled="true"
+                                FocusedRowChanged="OnFocusedRowChanged"
+                                HighlightRowOnHover="true"
+                                AllowSelectRowByClick="true"
+                                SelectionMode="GridSelectionMode.Multiple"
+                                SelectAllCheckboxMode="GridSelectAllCheckboxMode.Page"
+                                @bind-SelectedDataItems="SelectedDataItems"
+                                EditMode="GridEditMode.PopupEditForm"
+                                PopupEditFormHeaderText="@PopupEditFormHeaderText"
+                                CustomizeEditModel="OnCustomizeEditModel"
+                                EditModelSaving="OnEditModelSaving">
+                            <EmptyDataAreaTemplate>
+                                <div class="adms-device-commands-empty">
+                                    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                                    {
+                                        <p>@ErrorMessage</p>
+                                        <DxButton Text="Thử lại" Click="@LoadAsync" />
+                                    }
+                                    else
+                                    {
+                                        <p>Không có lệnh máy chấm công phù hợp.</p>
+                                    }
+                                </div>
+                            </EmptyDataAreaTemplate>
+
+                            <EditFormTemplate Context="editFormContext">
+                                @{
+                                    var model = (LenhMayChamCongEditModel)editFormContext.EditModel;
+                                }
+                                <LenhMayChamCongEditForm Model="@model" ErrorMessage="@EditErrorMessage" />
+                                <div class="adms-device-commands-form-actions">
+                                    <DxButton Text="Lưu"
+                                              IconUrl="@VntaDevExpressIcons.Save"
+                                              CssClass="adms-device-commands-form-action"
+                                              SubmitFormOnClick="true"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                    <DxButton Text="Hủy"
+                                              IconUrl="@VntaDevExpressIcons.Cancel"
+                                              CssClass="adms-device-commands-form-action"
+                                              Click="OnCancelCommandEditClick"
+                                              RenderStyle="ButtonRenderStyle.Secondary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                                </div>
+                            </EditFormTemplate>
+
+                            <Columns>
+                                <DxGridSelectionColumn Width="3rem" AllowSelectAll="true" />
+
+                                <DxGridCommandColumn Width="5.5rem"
+                                                     NewButtonVisible="false"
+                                                     EditButtonVisible="false"
+                                                     DeleteButtonVisible="false"
+                                                     SaveButtonVisible="false"
+                                                     CancelButtonVisible="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (AdmsDeviceCommandSummaryDto)context.DataItem;
+                                        }
+                                        @if (CanManage)
+                                        {
+                                            <DxButton CssClass="adms-device-commands-row-action-btn"
+                                                      RenderStyle="ButtonRenderStyle.Link"
+                                                      IconCssClass="adms-device-commands-edit-icon adms-device-commands-icon adms-device-commands-medium-icon"
+                                                      aria-label="Sửa"
+                                                      Click="@(() => EditItemAsync(row))"
+                                                      Enabled="@CanEditRow(row)" />
+                                            <DxButton CssClass="adms-device-commands-row-action-btn"
+                                                      RenderStyle="ButtonRenderStyle.Link"
+                                                      IconCssClass="adms-device-commands-delete-icon adms-device-commands-icon adms-device-commands-medium-icon"
+                                                      aria-label="Xóa"
+                                                      Click="@(() => OpenDeleteAsync(row))"
+                                                      Enabled="@CanDeleteRow(row)" />
+                                        }
+                                    </CellDisplayTemplate>
+                                </DxGridCommandColumn>
+
+                                <DxGridDataColumn Caption="STT"
+                                                  Width="4.5rem"
+                                                  MinWidth="72"
+                                                  AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @(context.VisibleIndex + 1)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+
+                                <DxGridDataColumn FieldName="@nameof(AdmsDeviceCommandSummaryDto.Id)"
+                                                  Caption="ID"
+                                                  MinWidth="100"
+                                                  Width="7rem" />
+
+                                <DxGridDataColumn FieldName="@nameof(AdmsDeviceCommandSummaryDto.DeviceSn)"
+                                                  Caption="Số serial"
+                                                  MinWidth="150"
+                                                  Width="11rem" />
+
+                                <DxGridDataColumn FieldName="@nameof(AdmsDeviceCommandSummaryDto.Content)"
+                                                  Caption="Lệnh máy chấm công"
+                                                  MinWidth="300">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (AdmsDeviceCommandSummaryDto)context.DataItem;
+                                        }
+                                        <div class="adms-device-commands-command-cell">
+                                            <div class="adms-device-commands-command-title">@row.Content</div>
+                                            @if (!string.IsNullOrWhiteSpace(row.Description))
+                                            {
+                                                <div class="adms-device-commands-command-description">@row.Description</div>
+                                            }
+                                        </div>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+
+                                <DxGridDataColumn FieldName="@nameof(AdmsDeviceCommandSummaryDto.CommitTime)"
+                                                  Caption="Thời điểm tạo"
+                                                  MinWidth="150"
+                                                  Width="10rem"
+                                                  DisplayFormat="dd/MM/yyyy HH:mm" />
+
+                                <DxGridDataColumn FieldName="@nameof(AdmsDeviceCommandSummaryDto.TransTime)"
+                                                  Caption="Thời điểm gửi"
+                                                  MinWidth="150"
+                                                  Width="10rem"
+                                                  DisplayFormat="dd/MM/yyyy HH:mm" />
+
+                                <DxGridDataColumn FieldName="@nameof(AdmsDeviceCommandSummaryDto.ResponseTime)"
+                                                  Caption="Phản hồi lúc"
+                                                  MinWidth="160"
+                                                  Width="11rem"
+                                                  DisplayFormat="dd/MM/yyyy HH:mm" />
+
+                                <DxGridDataColumn FieldName="@nameof(AdmsDeviceCommandSummaryDto.StatusText)"
+                                                  Caption="Trạng thái"
+                                                  MinWidth="145"
+                                                  Width="10rem">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (AdmsDeviceCommandSummaryDto)context.DataItem;
+                                        }
+                                        <span class="@GetStatusCssClass(row)">@row.StatusText</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+
+                                <DxGridDataColumn FieldName="@nameof(AdmsDeviceCommandSummaryDto.ReturnValue)"
+                                                  Caption="Kết quả"
+                                                  MinWidth="180" />
+                            </Columns>
+                        </DxGrid>
+                    </HrmLoadingPanel>
+                </div>
+            </div>
+        </div>
+    </div>
+}

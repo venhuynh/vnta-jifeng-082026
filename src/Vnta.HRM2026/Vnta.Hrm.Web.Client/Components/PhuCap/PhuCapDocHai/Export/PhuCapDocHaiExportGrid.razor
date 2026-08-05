@@ -1,0 +1,28 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Application.PhuCap.PhuCapDocHai
+
+<div class="hazard-allowance-export-source" aria-hidden="true">
+    <DxGrid @ref="ExportGrid" Data="@Records" KeyFieldName="PayrollAllowanceSummaryRecordId" ShowAllRows="true" PagerVisible="false" TextWrapEnabled="true">
+        <Columns>
+            <DxGridDataColumn Caption="Nhân viên" MinWidth="240">
+                <CellDisplayTemplate>
+                    @{ var row = (HazardAllowanceListItemDto)context.DataItem; }
+                    <div class="hazard-allowance-export-employee">@FormatEmployee(row)</div>
+                    @if (FormatPosition(row) is { } position)
+                    {
+                        <div class="hazard-allowance-export-position">@position</div>
+                    }
+                </CellDisplayTemplate>
+            </DxGridDataColumn>
+            <DxGridDataColumn FieldName="DepartmentName" Caption="Bộ phận" MinWidth="280" />
+            <DxGridDataColumn Caption="Kỳ lương"><CellDisplayTemplate>@FormatPayrollPeriod((HazardAllowanceListItemDto)context.DataItem)</CellDisplayTemplate></DxGridDataColumn>
+            <DxGridDataColumn FieldName="QualifiedWorkdayCount" Caption="Công hợp lệ" DisplayFormat="#,##0.000" />
+            <DxGridDataColumn FieldName="LateEarlyDeductionDays" Caption="Khấu trừ đi trễ/về sớm" DisplayFormat="#,##0.000" />
+            <DxGridDataColumn FieldName="PayableWorkdayCount" Caption="Công tính phụ cấp" DisplayFormat="#,##0.000" />
+            <DxGridDataColumn FieldName="HazardAllowanceAmount" Caption="Phụ cấp độc hại" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="IsEligibleForAllowance" Caption="Trạng thái hưởng"><CellDisplayTemplate>@(((HazardAllowanceListItemDto)context.DataItem).IsEligibleForAllowance ? "Hưởng PC" : "Ngoại lệ")</CellDisplayTemplate></DxGridDataColumn>
+            <DxGridDataColumn FieldName="IsLocked" Caption="Trạng thái khóa"><CellDisplayTemplate>@(((HazardAllowanceListItemDto)context.DataItem).IsLocked ? "Đã khóa" : "Đang mở")</CellDisplayTemplate></DxGridDataColumn>
+            <DxGridDataColumn FieldName="ExclusionReason" Caption="Lý do loại trừ" />
+        </Columns>
+    </DxGrid>
+</div>

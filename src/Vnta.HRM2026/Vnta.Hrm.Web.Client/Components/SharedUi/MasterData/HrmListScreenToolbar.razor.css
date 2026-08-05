@@ -1,0 +1,9 @@
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+::deep .search-textbox-item {
+    max-width: 16rem;
+}

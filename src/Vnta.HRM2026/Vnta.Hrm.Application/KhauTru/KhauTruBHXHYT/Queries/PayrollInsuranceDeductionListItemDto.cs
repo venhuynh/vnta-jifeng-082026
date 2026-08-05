@@ -1,0 +1,27 @@
+namespace Vnta.Hrm.Application.KhauTru.KhauTruBHXHYT;
+
+public sealed record PayrollInsuranceDeductionListItemDto(
+    Guid Id,
+    Guid PayrollDeductionSummaryRecordId,
+    Guid EmployeeId,
+    string? EmployeeCode,
+    string? EmployeeName,
+    string? DepartmentName,
+    string? PositionName,
+    int PayrollMonth,
+    int PayrollYear,
+    decimal InsuranceSalaryBaseAmount,
+    decimal SocialInsuranceRate,
+    decimal HealthInsuranceRate,
+    decimal UnemploymentInsuranceRate,
+    decimal TotalInsuranceRate,
+    decimal SocialInsuranceAmount,
+    decimal HealthInsuranceAmount,
+    decimal UnemploymentInsuranceAmount,
+    decimal TotalDeductionAmount,
+    bool IsParticipating,
+    short ParticipationChangeType,
+    DateOnly? EffectiveDate,
+    bool IsLocked,
+    DateTime CreatedAtUtc,
+    DateTime? UpdatedAtUtc);

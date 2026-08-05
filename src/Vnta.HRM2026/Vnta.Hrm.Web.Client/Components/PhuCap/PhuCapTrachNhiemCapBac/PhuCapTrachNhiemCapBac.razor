@@ -1,0 +1,243 @@
+@page "/payroll/responsibility-allowances/grades"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Application.PhuCap.PhuCapTrachNhiem
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Cấp bậc trách nhiệm</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Cấp bậc trách nhiệm"
+                   CssClass="toolbar"
+                   ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Mới"
+                           Click="OnCreateRequestedAsync"
+                           Enabled="@CanCreateGrade"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Thêm cấp bậc trách nhiệm cho kỳ hiện tại"
+                           IconUrl="@VntaDevExpressIcons.Add" />
+            <DxToolbarItem Text="Làm mới"
+                           Click="OnReloadRequestedAsync"
+                           Enabled="@CanUseLoadedDataActions"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tải lại dữ liệu cấp bậc trách nhiệm"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Xuất dữ liệu"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất dữ liệu cấp bậc trách nhiệm"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel"
+                                   Click="OnExportAllExcelRequestedAsync"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ dữ liệu ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF"
+                                   Click="OnExportAllPdfRequestedAsync"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ dữ liệu ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra Excel"
+                                   Click="OnExportSelectedExcelRequestedAsync"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các dòng đã chọn ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra PDF"
+                                   Click="OnExportSelectedPdfRequestedAsync"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các dòng đã chọn ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Chọn cột"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanUseLoadedDataActions"
+                           Click="OnColumnChooserRequested"
+                           Tooltip="Chọn cột hiển thị trong bảng"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+        </DxToolbar>
+    </div>
+
+    @if(HasLoadError)
+    {
+        <div class="card error-state">
+            <div class="state-title">Không thể tải bảng cấp bậc trách nhiệm</div>
+            <div class="state-message">@ScreenErrorMessage</div>
+            <DxButton Text="Thử lại"
+                      Click="OnRetryRequestedAsync"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    }
+    else
+    {
+        <div class="attendance-allowance-root">
+            <div class="card attendance-allowance-grid-card">
+            <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             Text="@LoadingText"
+                             CssClass="attendance-allowance-loading-panel">
+                <div class="attendance-allowance-grid-content">
+                    <div class="attendance-allowance-grid-header">
+                        <div class="attendance-allowance-summary-strip"></div>
+
+                        <div class="attendance-allowance-grid-search">
+                            <DxSearchBox CssClass="attendance-allowance-grid-searchbox"
+                                         NullText="Tìm mã bậc, tên bậc, ghi chú..."
+                                         BindValueMode="BindValueMode.OnDelayedInput"
+                                         InputDelay="300"
+                                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                         Text="@SearchQuery"
+                                         TextChanged="OnSearchTextChangedAsync"
+                                         Enabled="@CanSearchScreen" />
+                        </div>
+                    </div>
+
+                    <DxGrid @ref="Grid"
+                            Data="@VisibleGradeRows"
+                            KeyFieldName="Id"
+                            CssClass="attendance-allowance-grid"
+                            Height="100%"
+                            PageSize="@PageSize"
+                            PageSizeChanged="OnPageSizeChangedAsync"
+                            PagerPosition="GridPagerPosition.Bottom"
+                            PagerSummaryVisible="true"
+                            PageSizeSelectorVisible="true"
+                            PageSizeSelectorItems="@(new[] { 50, 100, 200 })"
+                            PageSizeSelectorAllRowsItemVisible="false"
+                            SkeletonRowsEnabled="true"
+                            ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                            FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                            TextWrapEnabled="false"
+                            FocusedRowEnabled="true"
+                            HighlightRowOnHover="true"
+                            AllowSelectRowByClick="true"
+                            SelectionMode="GridSelectionMode.Multiple"
+                            SelectedDataItems="@SelectedGridItems"
+                            SelectedDataItemsChanged="@OnSelectedGridItemsChangedAsync">
+                        <Columns>
+                            <DxGridSelectionColumn Width="3rem" />
+                            <DxGridCommandColumn Caption="Thao tác"
+                                                 MinWidth="120"
+                                                 Width="7rem"
+                                                 NewButtonVisible="false"
+                                                 EditButtonVisible="false"
+                                                 DeleteButtonVisible="false"
+                                                 SaveButtonVisible="false"
+                                                 CancelButtonVisible="false">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (PayrollResponsibilityAllowanceGradeDto)context.DataItem;
+                                    }
+                                    <DxButton CssClass="attendance-allowance-row-menu-btn"
+                                              RenderStyle="ButtonRenderStyle.Link"
+                                              IconUrl="@VntaDevExpressIcons.Edit"
+                                              aria-label="Sửa"
+                                              title="Sửa cấp bậc"
+                                              Click="@(() => OnEditRequestedAsync(row))"
+                                              Enabled="@CanEditLoadedGrade(row)"
+                                              @onclick:stopPropagation="true" />
+                                    <DxButton CssClass="attendance-allowance-row-menu-btn"
+                                              RenderStyle="ButtonRenderStyle.Link"
+                                              IconUrl="@VntaDevExpressIcons.Delete"
+                                              aria-label="Xóa"
+                                              title="Ngừng dùng cấp bậc"
+                                              Click="@(() => OnDeleteRequestedAsync(row))"
+                                              Enabled="@CanDeleteLoadedGrade(row)"
+                                              @onclick:stopPropagation="true" />
+                                </CellDisplayTemplate>
+                            </DxGridCommandColumn>
+                            <DxGridDataColumn FieldName="DisplayOrder" Caption="Thứ tự" Width="6rem" MinWidth="90" />
+                            <DxGridDataColumn FieldName="Code" Caption="Mã bậc" MinWidth="120" />
+                            <DxGridDataColumn FieldName="Name" Caption="Tên bậc" MinWidth="220" />
+                            <DxGridDataColumn FieldName="StandardResponsibilityAllowanceAmount" Caption="Tiền chuẩn" MinWidth="150">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (PayrollResponsibilityAllowanceGradeDto)context.DataItem;
+                                    }
+                                    @FormatCurrency(row.StandardResponsibilityAllowanceAmount)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="IsActive" Caption="Trạng thái" MinWidth="120">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (PayrollResponsibilityAllowanceGradeDto)context.DataItem;
+                                    }
+                                    <span class="@GetActiveTextCssClass(row.IsActive)">@GetActiveText(row.IsActive)</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="Note" Caption="Ghi chú" MinWidth="240" />
+                        </Columns>
+
+                        <EmptyDataAreaTemplate>
+                            <div class="empty-state">
+                                <div class="state-title">@EmptyStateTitle</div>
+                                <div class="state-message">@EmptyStateMessage</div>
+                                <DxButton Text="@EmptyStateActionText"
+                                          Click="OnEmptyStateActionRequestedAsync"
+                                          Enabled="@CanUseEmptyStateAction"
+                                          RenderStyle="ButtonRenderStyle.Primary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                            </div>
+                        </EmptyDataAreaTemplate>
+                    </DxGrid>
+                </div>
+            </HrmLoadingPanel>
+        </div>
+        </div>
+    }
+</div>
+
+<DxPopup Visible="@IsEditorVisible"
+         VisibleChanged="@OnEditorVisibilityChangedAsync"
+         HeaderText="@EditorPopupTitle"
+         Width="min(54rem, calc(100vw - 2rem))"
+         ShowCloseButton="@CanCloseEditorPopup"
+         ShowFooter="true"
+         CloseOnOutsideClick="false">
+    <BodyContentTemplate Context="popupBody">
+        @if(EditorEditContext is not null)
+        {
+            <div>
+                <EditForm EditContext="@EditorEditContext">
+                    <DataAnnotationsValidator />
+                    <HrmLoadingPanel Visible="@IsEditorSaving"
+                                     IsContentBlocked="true"
+                                     IsContentVisible="true"
+                                     IndicatorVisible="true"
+                                     IndicatorAreaVisible="true"
+                                     Text="@EditorLoadingText"
+                                     CssClass="attendance-allowance-loading-panel">
+                        <PhuCapTrachNhiemCapBacEditForm Model="@EditorModel"
+                                                        CanSave="@CanSaveEditor"
+                                                        ErrorMessage="@EditorErrorMessage" />
+                    </HrmLoadingPanel>
+                </EditForm>
+            </div>
+        }
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <div>
+            <DxButton Text="Hủy"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      Click="@OnCancelEditorRequestedAsync"
+                      Enabled="@CanCloseEditorPopup"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="@EditorPrimaryActionText"
+                      IconUrl="@VntaDevExpressIcons.Save"
+                      Click="@OnSaveEditorRequestedAsync"
+                      Enabled="@CanSaveEditor"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

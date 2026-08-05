@@ -1,0 +1,90 @@
+﻿@page "/Account/LoginWithRecoveryCode"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Vnta.Hrm.Infrastructure.Identity
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject IdentityRedirectManager RedirectManager
+@inject ILogger<LoginWithRecoveryCode> Logger
+
+<PageTitle>VNTA HRM 2026 - Xác thực mã khôi phục</PageTitle>
+<div class="main-content">
+    <div class="block-content card">
+        <StatusMessage Message="@message" />
+        <EditForm Model="Input" FormName="login-with-2fa" OnValidSubmit="OnValidSubmitAsync" method="post" Context="LoginWithFA">
+            <DataAnnotationsValidator />
+            <DxFormLayout CaptionPosition=@CaptionPosition.Vertical>
+                <DxFormLayoutItem ColSpanMd="12">
+                    <div class="title">
+                        <div class="title-header-text">Xác thực mã khôi phục</div>
+                        <div class="title-content-text">
+                            Bạn đã chọn đăng nhập bằng mã khôi phục. Lần đăng nhập này sẽ không được ghi nhớ cho đến khi bạn nhập mã từ ứng dụng xác thực
+                            hoặc tắt xác thực hai lớp rồi đăng nhập lại.
+                        </div>
+                    </div>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Mã khôi phục" ColSpanMd="12" BeginRow="true">
+                    <InteractiveServerTextBox Name="Input.RecoveryCode" CssClass="large-input" Value="@Input.RecoveryCode" />
+                    <ValidationMessage class="text-danger" For="() => Input.RecoveryCode" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
+                    <DxButton CssClass="w-100" SubmitFormOnClick="true" Text="Đăng nhập"></DxButton>
+                </DxFormLayoutItem>
+            </DxFormLayout>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private string? message;
+    private ApplicationUser user = default!;
+
+    private InputModel? input;
+
+    [SupplyParameterFromForm]
+    private InputModel Input {
+        get => input ??= new();
+        set => input = value;
+    }
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        // Đảm bảo người dùng đã hoàn tất bước nhập tài khoản và mật khẩu.
+        user = await SignInManager.GetTwoFactorAuthenticationUserAsync() ??
+            throw new InvalidOperationException("Unable to load two-factor authentication user.");
+    }
+
+    private async Task OnValidSubmitAsync() {
+        var recoveryCode = Input.RecoveryCode.Replace(" ", string.Empty);
+
+        var result = await SignInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
+
+        var userId = await UserManager.GetUserIdAsync(user);
+
+        if (result.Succeeded) {
+            Logger.LogInformation("User with ID '{UserId}' logged in with a recovery code.", userId);
+            RedirectManager.RedirectToPostLogin(ReturnUrl);
+        }
+        else if (result.IsLockedOut) {
+            Logger.LogWarning("User account locked out.");
+            RedirectManager.RedirectTo("Account/Lockout");
+        }
+        else {
+            Logger.LogWarning("Invalid recovery code entered for user with ID '{UserId}' ", userId);
+            message = "Lỗi: Mã khôi phục không hợp lệ.";
+        }
+    }
+
+    private sealed class InputModel {
+        [Required]
+        [DataType(DataType.Text)]
+        [Display(Name = "Mã khôi phục")]
+        public string RecoveryCode { get; set; } = "";
+    }
+}
+
+

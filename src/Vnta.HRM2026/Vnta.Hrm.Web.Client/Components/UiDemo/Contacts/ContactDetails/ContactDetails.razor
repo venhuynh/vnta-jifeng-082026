@@ -1,0 +1,187 @@
+@page "/ContactDetails"
+@using Vnta.Hrm.Web.Client.Services
+@using Vnta.Hrm.Web.Client.Models
+@using Vnta.Hrm.Web.Client.Services.DataProviders
+@using Microsoft.AspNetCore.Authorization
+
+@implements IDisposable
+
+@attribute [Authorize]
+
+@inject NavigationManager NavigationManager
+@inject ClipboardManager ClipboardManager
+@inject ContactDataProvider DataProvider
+@inject IHrmDialogService DialogService
+@inject IHrmToastService ToastService
+
+<DxLayoutBreakpoint DeviceSize="DeviceSize.XSmall | DeviceSize.Small | DeviceSize.Medium" @bind-IsActive="@IsSmallScreen" />
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <Items>
+                <DxToolbarItem IconCssClass="back-icon icon medium-icon" Tooltip="Go to Back" Click="@NavigateBack" />
+                <DxToolbarItem>
+                    <Template>
+                        <div class="custom-item">
+                            <div class="title">@Contact?.Name</div>
+                        </div>
+                    </Template>
+                </DxToolbarItem>
+                <DxToolbarItem Alignment="ToolbarItemAlignment.Right">
+                    <Template>
+                        <DxButton Text="Terminate" Click="@OnTerminateClick" RenderStyleMode="ButtonRenderStyleMode.Outline" RenderStyle="ButtonRenderStyle.Danger" />
+                    </Template>
+                </DxToolbarItem>
+                <DxToolbarItem Alignment="ToolbarItemAlignment.Right" Text="Actions">
+                    <Items>
+                        <AuthorizeView Context="authContext">
+                            <DxToolbarItem Text="Assign to Me" Click="@(_ => SelectedTasks = null)" Enabled="@(CanAssignToMe(authContext.User.Identity?.Name))" />
+                            <AuthorizeView Roles="Admin">
+                                <DxToolbarItem Text="Archive" Click="OnArchive" Enabled="@(SelectedTasks?.Count() > 0)" />
+                            </AuthorizeView>
+                        </AuthorizeView>
+                    </Items>
+                </DxToolbarItem>
+                <DxToolbarItem Alignment="ToolbarItemAlignment.Right" Click="@CopyToClipboard" Tooltip="Copy Full Name to the Clipboard" Enabled="@IsDataLoaded" IconCssClass="copy-icon icon medium-icon" />
+                <DxToolbarItem Alignment="ToolbarItemAlignment.Right" Click="@LoadDataAsync" Tooltip="Reload Data" IconCssClass="refresh-icon icon medium-icon" />
+            </Items>
+        </DxToolbar>
+    </div>
+    <div class="contact-details">
+        <HrmLoadingPanel Visible="@(!IsDataLoaded)"
+                         IsContentBlocked="true"
+                         IsContentVisible="false"
+                         IndicatorVisible="true"
+                         IndicatorAreaVisible="true"
+                         ZIndex="101"
+                         CssClass="h-100">
+            <DxGridLayout ColumnSpacing="1rem" RowSpacing="1rem" CssClass="h-100">
+                <Columns>
+                    @if(!IsSmallScreen) {
+                        <DxGridLayoutColumn Width="38em" />
+                        <DxGridLayoutColumn Width="1fr" />
+                    } else {
+                        <DxGridLayoutColumn Width="100%" />
+                    }
+                </Columns>
+                <Rows>
+                    @if(!IsSmallScreen) {
+                        <DxGridLayoutRow Areas="item1 item2" />
+                    } else {
+                        <DxGridLayoutRow Areas="item1" />
+                        <DxGridLayoutRow Areas="item2" />
+                    }
+                </Rows>
+                <Items>
+                    <DxGridLayoutItem Area="item1">
+                        <Template>
+                            <div class="card h-100">
+                                <ContactForm Data="@Contact" DataChanged="@OnContactChanged" />
+                            </div>
+                        </Template>
+                    </DxGridLayoutItem>
+                    <DxGridLayoutItem Area="item2">
+                        <Template>
+                            <DxTabs CssClass="card tabs">
+                                <DxTabPage Text="Tasks" CssClass="tab-page">
+                                    <Tasks Data="@Contact?.Tasks" DataChanged="@OnTasksChanged" @bind-SelectedTasks="@SelectedTasks" />
+                                </DxTabPage>
+                                <DxTabPage Text="Activities" CssClass="tab-page">
+                                    <Activities Data="@Contact?.Activities" DataChanged="@OnActivitiesChanged" />
+                                </DxTabPage>
+                                <DxTabPage Text="Opportunities" CssClass="tab-page">
+                                    <Opportunities Data="@Contact?.Opportunities" />
+                                </DxTabPage>
+                                <DxTabPage Text="Notes" CssClass="tab-page">
+                                    <Notes Data="@Contact?.Notes" DataChanged="@OnNotesChanged" Manager="@Contact?.Manager" />
+                                </DxTabPage>
+                            </DxTabs>
+                        </Template>
+                    </DxGridLayoutItem>
+                </Items>
+            </DxGridLayout>
+        </HrmLoadingPanel>
+    </div>
+</div>
+
+@code {
+    CancellationTokenSource disposalTokenSource = new CancellationTokenSource();
+
+    [SupplyParameterFromQuery(Name = "id")]
+    int? Id { get; set; }
+
+    [CascadingParameter] Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    bool EditMode { get; set; }
+    ContactDetail? Contact { get; set; }
+    List<Opportunity>? Opportunities { get; set; }
+    List<Note>? Notes { get; set; }
+    IEnumerable<WorkTask>? SelectedTasks { get; set; }
+    bool IsDataLoaded { get; set; }
+    bool IsSmallScreen { get; set; }
+
+    bool CanAssignToMe(string? name) => SelectedTasks?.Count() > 0 && SelectedTasks.All(task => task.Manager != name);
+
+    protected override async Task OnInitializedAsync() {
+        await LoadDataAsync();
+        await base.OnInitializedAsync();
+    }
+
+    async Task LoadDataAsync() {
+        IsDataLoaded = false;
+
+        try {
+            Contact = await DataProvider.GetAsync(Id ?? 12, true, disposalTokenSource.Token);
+        }
+        finally {
+            IsDataLoaded = true;
+        }
+    }
+
+    void NavigateBack() => NavigationManager.NavigateTo("ContactList");
+
+    void OnArchive() {
+        if(Contact?.Tasks is null || SelectedTasks is null) {
+            return;
+        }
+
+        var archivedTasks = SelectedTasks.ToHashSet();
+        Contact.Tasks = Contact.Tasks.Where(task => !archivedTasks.Contains(task)).ToList();
+        SelectedTasks = null;
+    }
+
+    async Task CopyToClipboard() {
+        await ClipboardManager.CopyTextAsync(Contact!.Name ?? "");
+        ToastService.ShowSuccess("Đã sao chép họ tên liên hệ vào clipboard.");
+    }
+
+    async Task OnTerminateClick() {
+        if(await OpenConfirmDialogAsync("Bạn có chắc muốn xóa liên hệ này?"))
+            NavigateBack();
+    }
+
+    async Task OnArchiveClick() {
+        if(await OpenConfirmDialogAsync("Bạn có chắc muốn lưu trữ công việc này?"))
+            NavigateBack();
+    }
+
+    Task<bool> OpenConfirmDialogAsync(string text) =>
+        DialogService.ConfirmAsync(
+            text,
+            title: "Xác nhận xóa",
+            okText: "Xóa",
+            cancelText: "Hủy",
+            renderStyle: MessageBoxRenderStyle.Danger);
+
+    void OnTasksChanged(List<WorkTask> tasks) => Contact!.Tasks = tasks;
+    void OnActivitiesChanged(List<Activity> activities) => Contact!.Activities = activities;
+    void OnNotesChanged(List<Note> notes) => Contact!.Notes = notes;
+    void OnContactChanged(ContactDetail contact) => Contact = contact;
+
+    void IDisposable.Dispose() {
+        disposalTokenSource.Cancel();
+        disposalTokenSource.Dispose();
+    }
+}
+

@@ -1,0 +1,29 @@
+@namespace Vnta.Hrm.Web.Client.Components.Shared.Feedback
+
+<ErrorBoundary @ref="errorBoundary">
+    <ChildContent>
+        @ChildContent
+    </ChildContent>
+    <ErrorContent Context="exception">
+        <section class="hrm-component-error" role="alert" aria-live="assertive">
+            <h2>@Title</h2>
+            <p>@Message</p>
+            <DxButton Text="Thử lại" RenderStyle="ButtonRenderStyle.Primary" Click="Recover" />
+        </section>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    [Parameter]
+    public string Title { get; set; } = "Không thể hiển thị khu vực này";
+
+    [Parameter]
+    public string Message { get; set; } = "Dữ liệu hiện có chưa bị thay đổi. Hãy thử lại.";
+
+    private ErrorBoundary? errorBoundary;
+
+    private void Recover() => errorBoundary?.Recover();
+}

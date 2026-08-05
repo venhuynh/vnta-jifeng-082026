@@ -1,0 +1,50 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         FooterCssClass="other-deduction-popup-footer"
+         CssClass="other-deduction-confirm-popup other-deduction-lock-action-popup">
+    <BodyContentTemplate>
+        <div class="other-deduction-lock-action-content">
+            <div class="other-deduction-confirm-message">@PromptText</div>
+            <div class="other-deduction-lock-action-context">@ContextText</div>
+            <div class="other-deduction-lock-action-options">
+                <button type="button"
+                        class="@GetScopeCssClass(SelectedRowsScope)"
+                        @onclick="@(() => SelectScopeAsync(SelectedRowsScope))"
+                        disabled="@(!CanChooseSelectedRowsScope)">
+                    <span class="other-deduction-lock-action-title">Các dòng đã chọn</span>
+                    <span class="other-deduction-lock-action-description">@SelectedRowsDescription</span>
+                </button>
+                <button type="button"
+                        class="@GetScopeCssClass(WholePeriodScope)"
+                        @onclick="@(() => SelectScopeAsync(WholePeriodScope))">
+                    <span class="other-deduction-lock-action-title">Toàn bộ kỳ @WholePeriodLabel</span>
+                    <span class="other-deduction-lock-action-description">@WholePeriodDescription</span>
+                </button>
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="other-deduction-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="other-deduction-popup-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="@(ShouldLock ? "Khóa" : "Mở khóa")"
+                      Click="ConfirmAsync"
+                      IconUrl="@(ShouldLock ? VntaDevExpressIcons.Lock : VntaDevExpressIcons.Unlock)"
+                      CssClass="other-deduction-popup-action"
+                      Enabled="@CanConfirm"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

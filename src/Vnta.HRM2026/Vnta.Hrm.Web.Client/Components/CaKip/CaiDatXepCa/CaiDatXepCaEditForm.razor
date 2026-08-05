@@ -1,0 +1,95 @@
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Web.Client.Models
+
+@if (Model is not null && EditFormContext is not null)
+{
+    <CascadingValue Value="EditFormContext.EditContext">
+        <div class="shift-scheduling-form-scroll">
+            <DataAnnotationsValidator />
+
+            <DxFormLayout CssClass="shift-scheduling-setting-form" CaptionPosition="CaptionPosition.Vertical">
+                <DxFormLayoutGroup Caption="@FormGroupCaption" ColSpanMd="12">
+                    <DxFormLayoutItem Caption="Phân loại" ColSpanMd="12">
+                        <DxComboBox Data="@ClassificationTypeOptions"
+                                    TextFieldName="Text"
+                                    ValueFieldName="Value"
+                                    @bind-Value="Model.ClassificationType"
+                                    CssClass="w-100" />
+                        <ValidationMessage For="@(() => Model.ClassificationType)" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Giá trị" ColSpanMd="12">
+                        <DxTextBox @bind-Text="Model.Value"
+                                   CssClass="w-100"
+                                   NullText="Nhập giá trị áp dụng"
+                                   ShowValidationIcon="true"
+                                   ShowValidationSuccessState="true" />
+                        <ValidationMessage For="@(() => Model.Value)" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Hình thức áp dụng" ColSpanMd="12">
+                        <DxComboBox Data="@AssignmentScopeModeOptions"
+                                    TextFieldName="Text"
+                                    ValueFieldName="Value"
+                                    @bind-Value="Model.AssignmentScopeMode"
+                                    CssClass="w-100" />
+                        <ValidationMessage For="@(() => Model.AssignmentScopeMode)" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Trạng thái hoạt động" ColSpanMd="12" CssClass="shift-checkbox-item">
+                        <DxCheckBox @bind-Checked="Model.IsActive">Còn hoạt động</DxCheckBox>
+                        <div class="status-preview">
+                            <span class="@GetStatusBadgeCssClass(Model.IsActive)">@Model.ActivityStatusText</span>
+                        </div>
+                    </DxFormLayoutItem>
+                </DxFormLayoutGroup>
+
+                <DxFormLayoutGroup Caption="Thông tin hệ thống" ColSpanMd="12">
+                    <DxFormLayoutItem Caption="ID" ColSpanMd="12">
+                        <div class="readonly-field">@Model.Id</div>
+                    </DxFormLayoutItem>
+                </DxFormLayoutGroup>
+            </DxFormLayout>
+
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="edit-error-message">@ErrorMessage</div>
+            }
+        </div>
+    </CascadingValue>
+}
+
+@code {
+    [Parameter]
+    public ShiftSchedulingSettingRecord? Model { get; set; }
+
+    [Parameter]
+    public GridEditFormTemplateContext? EditFormContext { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public bool IsCreatingNewSetting { get; set; }
+
+    private string FormGroupCaption => IsCreatingNewSetting
+        ? "Tạo mới cài đặt xếp ca"
+        : "Điều chỉnh cài đặt xếp ca";
+
+    private static IReadOnlyList<OptionItem<ShiftSchedulingClassificationType>> ClassificationTypeOptions { get; } =
+    [
+        new(ShiftSchedulingClassificationType.TheoPhongBan, "Theo phòng ban"),
+        new(ShiftSchedulingClassificationType.TheoNhanVien, "Theo nhân viên")
+    ];
+
+    private static IReadOnlyList<OptionItem<ShiftSchedulingAssignmentScopeMode>> AssignmentScopeModeOptions { get; } =
+    [
+        new(ShiftSchedulingAssignmentScopeMode.CoDinh, "Cố định"),
+        new(ShiftSchedulingAssignmentScopeMode.TheoKhoangNgay, "Theo khoảng ngày")
+    ];
+
+    private static string GetStatusBadgeCssClass(bool isActive) => isActive
+        ? "status-badge status-badge-active"
+        : "status-badge status-badge-inactive";
+
+    private sealed record OptionItem<TValue>(TValue Value, string Text);
+}

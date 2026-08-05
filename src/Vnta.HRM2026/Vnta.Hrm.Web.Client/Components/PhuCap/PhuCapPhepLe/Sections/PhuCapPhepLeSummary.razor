@@ -1,0 +1,22 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe
+@using DevExpress.Blazor
+
+<div class="leave-holiday-allowance-grid-header">
+    <div class="leave-holiday-allowance-summary-strip">
+        <DxButtonGroup CssClass="leave-holiday-allowance-summary-button-group" RenderStyle="ButtonRenderStyle.Secondary" RenderStyleMode="ButtonRenderStyleMode.Outline" SelectionMode="ButtonGroupSelectionMode.Single" Enabled="@CanInteract">
+            <Items>
+                <DxButtonGroupItem Text="@($"Tất cả {AllRecordCount:N0}")" CssClass="leave-holiday-allowance-summary-button leave-holiday-allowance-summary-button-all" Selected="@IsAllSelected" Click="AllRequested" />
+                <DxButtonGroupItem Text="@($"Đang mở {OpenRecordCount:N0}")" CssClass="leave-holiday-allowance-summary-button leave-holiday-allowance-summary-button-open" Selected="@IsOpenSelected" Click="OpenRequested" />
+                <DxButtonGroupItem Text="@($"Đã khóa {LockedRecordCount:N0}")" CssClass="leave-holiday-allowance-summary-button leave-holiday-allowance-summary-button-locked" Selected="@IsLockedSelected" Click="LockedRequested" />
+            </Items>
+        </DxButtonGroup>
+        <DxButtonGroup CssClass="leave-holiday-allowance-total-amount-button-group" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Outline">
+            <Items><DxButtonGroupItem Text="@($"Tổng trang hiện tại (sau lọc): {TotalAmountDisplay}")" CssClass="leave-holiday-allowance-total-amount-button" /></Items>
+        </DxButtonGroup>
+    </div>
+    <div class="leave-holiday-allowance-grid-search">
+        <DxSearchBox CssClass="leave-holiday-allowance-grid-searchbox" NullText="Tìm nhân viên, bộ phận, chức vụ hoặc ghi chú Phép/Lễ"
+                     BindValueMode="BindValueMode.OnDelayedInput" InputDelay="500" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                     Text="@SearchText" TextChanged="SearchTextChanged" Enabled="@CanSearch" />
+    </div>
+</div>

@@ -1,0 +1,50 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe
+@using DevExpress.Blazor
+@using Vnta.Hrm.Web.Client.Services.Ui
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="@OnVisibleChanged"
+         HeaderText="Quy tắc tính lại phụ cấp Phép - Lễ"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         CssClass="leave-holiday-rules-popup">
+    <BodyContentTemplate Context="rulesPopupBody">
+        <div class="rules-popup-content">
+            <div class="rules-popup-section">
+                <div class="rules-popup-title">Quy tắc chung</div>
+                <ul class="rules-list">
+                    <li>Đảm bảo dữ liệu đồng bộ <strong>1-1</strong> với bảng <strong>Tổng hợp phụ cấp</strong>.</li>
+                    <li>Bỏ qua các dòng đã khóa.</li>
+                </ul>
+            </div>
+
+            <div class="rules-popup-section">
+                <div class="rules-popup-title">Công HC và Phép</div>
+                <ul class="rules-list">
+                    <li>Các code áp dụng để tính <strong>1 Công HC</strong> lấy từ bảng <strong>Code kết quả tính công</strong>, cột <strong>Phép – Lễ</strong>.</li>
+                    <li>Mỗi record có mã thuộc các code này được tính là <strong>1 ngày công HC</strong> (viết tắt: <strong>Công HC</strong>).</li>
+                    <li><strong>Phép:</strong> số ngày có mã code được quy định × lương cơ bản ngày.</li>
+                </ul>
+            </div>
+
+            <div class="rules-popup-section">
+                <div class="rules-popup-title">Lễ</div>
+                <ul class="rules-list">
+                    <li>Cho phép chỉnh tay.</li>
+                    <li>Người dùng nhập số lượng ngày.</li>
+                    <li>Số tiền = lương cơ bản ngày của từng người × số lượng ngày người dùng nhập vào.</li>
+                </ul>
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="rulesPopupFooter">
+        <DxButton Text="Đóng"
+                  Click="@CloseAsync"
+                  IconUrl="@VntaDevExpressIcons.Cancel"
+                  RenderStyle="ButtonRenderStyle.Secondary"
+                  RenderStyleMode="ButtonRenderStyleMode.Contained" />
+    </FooterContentTemplate>
+</DxPopup>

@@ -1,0 +1,16 @@
+.attendance-allowance-employee-text { font-weight: 600; color: var(--dxds-color-content-neutral-default-rest); }
+.attendance-allowance-row-menu-host { display: inline-flex; justify-content: center; width: 100%; }
+::deep .attendance-allowance-row-menu-btn.dxbl-btn { min-width: 2.25rem; min-height: 2.25rem; padding: 0.25rem; border-radius: 0.5rem; }
+::deep .attendance-allowance-row-menu-btn.dxbl-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--dxds-color-content-info-default-rest) 10%, transparent); }
+.yes-no-status { font-size: 0.9em; white-space: nowrap; }
+.yes-no-status::before { content: " "; display: inline-block; width: 0.6em; height: 0.6em; margin-right: 0.3rem; border-radius: 50%; background-color: currentColor; }
+.yes-no-status-yes { color: var(--dxds-color-content-success-default-rest); }
+.yes-no-status-no { color: var(--dxds-color-content-danger-default-rest); }
+.yes-no-status-neutral { color: var(--dxds-color-content-neutral-subtle-rest); }
+.empty-state, .error-state { height: 100%; min-height: 18rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; padding: 2rem; text-align: center; }
+.state-title { font-size: 1.125rem; font-weight: 600; color: var(--dxds-color-content-neutral-default-rest); }
+.state-message { max-width: 38rem; color: var(--dxds-color-content-neutral-subtle-rest); }
+.empty-state ::deep .dxbl-btn, .error-state ::deep .dxbl-btn { min-height: 2rem; min-width: 0; padding: 0.375rem 1rem; border-radius: 0.25rem; font-size: 0.875rem; font-weight: 600; line-height: 1.25rem; }
+::deep .attendance-allowance-grid { flex: 1 1 auto; min-height: 0; min-width: 0; max-height: 100%; border-radius: 0.25rem; }
+::deep .attendance-allowance-grid .dxbl-grid-table { border-top: none; }
+::deep .attendance-allowance-grid mark { padding: 0 0.15rem; border-radius: 0.2rem; background: #fff1b3; color: inherit; }

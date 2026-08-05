@@ -1,0 +1,240 @@
+@implements IDisposable
+
+@using System.Globalization
+@using Vnta.Hrm.Application.Integrations.AttendanceGateway
+@using Vnta.Hrm.Web.Client.Models
+@using Vnta.Hrm.Web.Client.Services.Ui
+
+@inject IAttendanceLogReadService AttendanceLogReadService
+@inject IHrmToastService ToastService
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChanged"
+         HeaderText="Chi tiết tổng kết dữ liệu thô"
+         Width="min(48rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         CloseOnOutsideClick="false"
+         CssClass="attendance-logs-detail-popup">
+    <BodyContentTemplate Context="popupBody">
+        @if(Summary is not null) {
+            <div class="attendance-logs-detail-content">
+                <div class="detail-header">
+                    <div>
+                        <div class="detail-title">@Summary.EmployeeDisplay</div>
+                        <div class="detail-subtitle">@BuildDetailSubtitle(Summary)</div>
+                    </div>
+                    <span class="@GetEmployeeMatchBadgeCssClass(Summary.IsMatchedEmployee)">@GetEmployeeMatchText(Summary.IsMatchedEmployee)</span>
+                </div>
+
+                <div class="attendance-log-detail-grid-section">
+                    <div class="attendance-log-detail-grid-title">Dữ liệu chấm công thô</div>
+                    <HrmLoadingPanel Visible="@IsLoadingLogs"
+                                     IsContentBlocked="true"
+                                     IsContentVisible="true"
+                                     IndicatorVisible="true"
+                                     IndicatorAreaVisible="true"
+                                     CssClass="attendance-log-detail-loading-panel"
+                                     Text="Đang tải dữ liệu chấm công thô...">
+                        @if(!string.IsNullOrWhiteSpace(LogErrorMessage)) {
+                            <div class="attendance-log-detail-state">
+                                <div class="attendance-log-detail-state-title">Không thể tải dữ liệu chấm công thô</div>
+                                <div class="attendance-log-detail-state-message">@LogErrorMessage</div>
+                                <DxButton Text="Thử lại"
+                                          Click="LoadLogsAsync"
+                                          Enabled="@(!IsLoadingLogs)"
+                                          RenderStyle="ButtonRenderStyle.Primary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                            </div>
+                        } else {
+                            <DxGrid Data="@Logs"
+                                    KeyFieldName="@nameof(AttendanceLogListItemDto.Id)"
+                                    CssClass="attendance-log-detail-grid"
+                                    ShowAllRows="true"
+                                    ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                    FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                    TextWrapEnabled="false"
+                                    HighlightRowOnHover="true">
+                                <Columns>
+                                    <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                        <CellDisplayTemplate>
+                                            @(context.VisibleIndex + 1)
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+                                    <DxGridDataColumn FieldName="@nameof(AttendanceLogListItemDto.DeviceCode)"
+                                                      Caption="Mã máy"
+                                                      MinWidth="130" />
+                                    <DxGridDataColumn FieldName="@nameof(AttendanceLogListItemDto.AttTime)"
+                                                      Caption="Thời điểm chấm"
+                                                      MinWidth="160">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var log = (AttendanceLogListItemDto)context.DataItem;
+                                            }
+                                            @FormatDateTime(log.AttTime)
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+                                    <DxGridDataColumn FieldName="@nameof(AttendanceLogListItemDto.Verify)"
+                                                      Caption="Xác thực"
+                                                      MinWidth="120">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var log = (AttendanceLogListItemDto)context.DataItem;
+                                            }
+                                            @FormatVerifyMode(log.Verify)
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+                                </Columns>
+                                <EmptyDataAreaTemplate>
+                                    Không có dữ liệu chấm công thô phù hợp.
+                                </EmptyDataAreaTemplate>
+                            </DxGrid>
+                        }
+                    </HrmLoadingPanel>
+                </div>
+            </div>
+        }
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <DxButton Text="Đóng" Click="CloseAsync" />
+    </FooterContentTemplate>
+</DxPopup>
+
+@code {
+    private static readonly CultureInfo DisplayCulture = CultureInfo.GetCultureInfo("vi-VN");
+    private readonly CancellationTokenSource disposalTokenSource = new();
+
+    private IReadOnlyList<AttendanceLogListItemDto> Logs { get; set; } = [];
+    private Guid? LoadedSummaryId { get; set; }
+    private DateOnly? LoadedWorkDate { get; set; }
+    private string? LogErrorMessage { get; set; }
+    private bool IsLoadingLogs { get; set; }
+
+    [Parameter]
+    public AttendanceDailySummaryRecord? Summary { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> VisibleChanged { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if(!Visible || Summary is null)
+        {
+            return;
+        }
+
+        if(LoadedSummaryId == Summary.Id && LoadedWorkDate == Summary.WorkDate)
+        {
+            return;
+        }
+
+        await LoadLogsAsync();
+    }
+
+    private async Task LoadLogsAsync()
+    {
+        if(Summary is null || disposalTokenSource.IsCancellationRequested)
+        {
+            return;
+        }
+
+        LogErrorMessage = null;
+        IsLoadingLogs = true;
+
+        try
+        {
+            var workDate = Summary.WorkDate.ToDateTime(TimeOnly.MinValue);
+            var rows = await AttendanceLogReadService.SearchAsync(
+                new AttendanceLogFilter(
+                    null,
+                    workDate,
+                    workDate,
+                    Summary.EmployeeId,
+                    Take: 5000),
+                disposalTokenSource.Token);
+
+            Logs = rows;
+            LoadedSummaryId = Summary.Id;
+            LoadedWorkDate = Summary.WorkDate;
+        }
+        catch(OperationCanceledException)
+        {
+            if(!disposalTokenSource.IsCancellationRequested)
+            {
+                throw;
+            }
+        }
+        catch(Exception)
+        {
+            Logs = [];
+            LogErrorMessage = "Có lỗi khi truy vấn bảng attendance_logs theo ngày công và nhân viên đã chọn.";
+            ToastService.ShowError("Không thể tải dữ liệu chấm công thô.");
+        }
+        finally
+        {
+            IsLoadingLogs = false;
+        }
+    }
+
+    private async Task OnVisibleChanged(bool visible)
+    {
+        Visible = visible;
+
+        if(!visible)
+        {
+            Logs = [];
+            LoadedSummaryId = null;
+            LoadedWorkDate = null;
+            LogErrorMessage = null;
+        }
+
+        await VisibleChanged.InvokeAsync(visible);
+    }
+
+    private Task CloseAsync() => OnVisibleChanged(false);
+
+    private static string GetEmployeeMatchBadgeCssClass(bool isMatched) => isMatched
+        ? "match-badge match-badge-success"
+        : "match-badge match-badge-warning";
+
+    private static string GetEmployeeMatchText(bool isMatched) => isMatched ? "Đã ghép" : "Chưa ghép";
+
+    private static string BuildDetailSubtitle(AttendanceDailySummaryRecord summary)
+    {
+        var workDate = FormatDate(summary.WorkDate);
+        return $"{workDate} | {summary.PunchCount:N0} lượt chấm";
+    }
+
+    private static string FormatDateTime(DateTime? value)
+    {
+        if(!value.HasValue)
+        {
+            return "--";
+        }
+
+        var displayValue = value.Value.Kind == DateTimeKind.Utc
+            ? value.Value.ToLocalTime()
+            : value.Value;
+
+        return displayValue.ToString("dd/MM/yyyy HH:mm:ss", DisplayCulture);
+    }
+
+    private static string FormatDate(DateOnly value) => value.ToString("dd/MM/yyyy", DisplayCulture);
+
+    private static string FormatVerifyMode(string? verify) => verify switch
+    {
+        "1" => "Vân tay",
+        "3" => "Thẻ",
+        "15" => "Khuôn mặt",
+        "0" => "Mật khẩu",
+        _ => string.IsNullOrWhiteSpace(verify) ? "Không xác định" : $"Mã {verify}"
+    };
+
+    public void Dispose()
+    {
+        disposalTokenSource.Cancel();
+        disposalTokenSource.Dispose();
+    }
+}

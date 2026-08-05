@@ -1,0 +1,114 @@
+@page "/payroll/allowance-summary"
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Components.ChamCong.MonthlyWork
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Tổng hợp phụ cấp</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <PhuCapTongHopToolbar Month="@ToolbarMonth"
+                              Year="@ToolbarYear"
+                              MinimumYear="@MinimumSupportedYear"
+                              MaximumYear="@MaximumSupportedYear"
+                              AvailableMonths="@AvailableToolbarMonthOptions"
+                              CanChangeFilters="@CanChangeFilters"
+                              CanView="@CanView"
+                              CanOperate="@CanOperateOnCurrentDataset"
+                              CanSync="@CanSyncFromPreviousMonth"
+                              CanRefresh="@CanRefreshAllowances"
+                              CanLock="@CanOpenLockAction"
+                              CanUnlock="@CanOpenUnlockAction"
+                              CanExport="@CanExport"
+                              ExportTooltip="@ExportTooltip"
+                              ExportExcelTooltip="@ExportExcelTooltip"
+                              ExportPdfTooltip="@ExportPdfTooltip"
+                              YearChanged="OnToolbarYearChanged"
+                              MonthChanged="OnToolbarMonthChanged"
+                              ViewRequested="OnViewRequestedAsync"
+                              SyncRequested="OnSyncFromPreviousMonthClick"
+                              RefreshRequested="OpenRefreshConfirmPopupAsync"
+                              LockRequested="OnLockSelectedAsync"
+                              UnlockRequested="OnUnlockSelectedAsync"
+                              ExportExcelRequested="ExportAllDataToExcelAsync"
+                              ExportPdfRequested="ExportAllDataToPdfAsync"
+                              ColumnChooserRequested="OnColumnChooserRequested" />
+    </div>
+
+    <div class="attendance-allowance-root">
+        <div class="card attendance-allowance-grid-card">
+            <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                              IsContentBlocked="true"
+                              IsContentVisible="true"
+                              IndicatorVisible="true"
+                              IndicatorAreaVisible="true"
+                              Text="@LoadingText"
+                              CssClass="attendance-allowance-loading-panel">
+                @if (HasLoadError)
+                {
+                    <PhuCapTongHopLoadError Message="@LoadErrorMessage" RetryRequested="OnRetryAsync" />
+                }
+                else
+                {
+                    <div class="attendance-allowance-grid-content">
+                        <PhuCapTongHopSummary SummaryBadges="@SummaryBadges"
+                                              ActiveSummaryBadgeKey="@ActiveSummaryBadgeKey"
+                                              VisibleAllowanceSummaries="@VisibleAllowanceSummaries"
+                                              SearchText="@SearchText"
+                                              CanInteract="@CanInteract"
+                                              CanChangeFilters="@CanChangeFilters"
+                                              FormatSummaryMoney="FormatSummaryMoney"
+                                              SummaryBadgeRequested="OnSummaryBadgeClick"
+                                              SearchChanged="OnSearchTextChanged" />
+                        <PhuCapTongHopGrid Records="@Records"
+                                            SelectedDataItems="@SelectedDataItems"
+                                            CurrentPageIndex="@CurrentPageIndex"
+                                            PageSize="@PageSize"
+                                            CanOperate="@CanOperateOnCurrentDataset"
+                                            EmptyStateTitle="@EmptyStateTitle"
+                                            EmptyStateMessage="@EmptyStateMessage"
+                                            EmptyStateActionText="@EmptyStateActionText"
+                                            CanEditRow="CanEditRow"
+                                            CanRefreshRow="CanRefreshRow"
+                                            CanToggleLock="CanToggleLock"
+                                            CanViewMonthlyWork="CanViewMonthlyWork"
+                                            LockActionText="GetLockActionText"
+                                            HighlightSearchText="HighlightSearchText"
+                                            FormatMoney="FormatMoney"
+                                            LockBadgeCssClass="GetLockBadgeCssClass"
+                                            SelectedDataItemsChanged="OnSelectedDataItemsChanged"
+                                            FilterCriteriaChanged="OnGridFilterCriteriaChangedAsync"
+                                            EmptyStateActionRequested="OnEmptyStateActionClick"
+                                            EditRequested="@(row => OpenManualEditPopupAsync(row))"
+                                            RefreshRequested="RefreshRowAsync"
+                                            ToggleLockRequested="ToggleLockAsync"
+                                            MonthlyWorkRequested="OpenMonthlyWorkPopupAsync"
+                                            GridAttached="AttachGrid" />
+                        <PhuCapTongHopPager SummaryText="@PagerSummaryText"
+                                             CanBrowsePages="@CanBrowsePages"
+                                             TotalPageCount="@TotalPageCount"
+                                             CurrentPageIndex="@CurrentPageIndex"
+                                             PageChanged="OnActivePageIndexChangedAsync"
+                                             PageSizeOptions="@PageSizeOptions"
+                                             PageSize="@PageSize"
+                                             PageSizeChanged="OnPageSizeChanged"
+                                             CanChangeFilters="@CanChangeFilters"
+                                             PageSizeDescription="@PageSizeDescription" />
+                    </div>
+                }
+            </HrmLoadingPanel>
+        </div>
+    </div>
+</div>
+
+<PhuCapTongHopExportGrid Records="@ExportRecords" GridAttached="AttachExportGrid" />
+
+@if (ManualEditModel is not null)
+{
+    <PhuCapTongHopManualEditPopup Visible="@IsManualEditPopupVisible" VisibleChanged="@(_ => CloseManualEditPopup())" IsSaving="@IsSavingManualValues" Model="@ManualEditModel" ErrorMessage="@ManualEditErrorMessage" CanSave="@CanSaveManualValues" SaveRequested="SaveManualValuesAsync" />
+}
+<PhuCapTongHopSyncConfirmPopup Visible="@IsSyncConfirmPopupVisible" VisibleChanged="@(_ => CloseSyncConfirmPopup())" IsSyncing="@IsSyncingFromPreviousMonth" SourcePeriodLabel="@SyncSourcePeriodDisplay" TargetPeriodLabel="@SyncTargetPeriodDisplay" ConfirmRequested="ConfirmSyncFromPreviousMonthAsync" />
+<PhuCapTongHopRefreshConfirmPopup Visible="@IsRefreshConfirmPopupVisible" VisibleChanged="@(_ => CloseRefreshConfirmPopup())" IsRefreshing="@IsRefreshingAllowances" PeriodLabel="@CurrentPayrollPeriodDisplay" ConfirmRequested="ConfirmRefreshAllowancesAsync" />
+<PhuCapTongHopLockActionPopup Visible="@IsLockActionPopupVisible" VisibleChanged="@(_ => CloseLockActionPopup())" IsRefreshing="@IsTogglingLock" Title="@LockActionPopupTitle" PromptText="@LockActionPromptText" ContextText="@LockActionScopeContextText" SelectedScope="@SelectedLockActionScope" SelectedRowsScope="@LockScopeSelectedRows" WholePeriodScope="@LockScopeWholePeriod" SelectedRowsDescription="@SelectedRowsScopeDescription" WholePeriodDescription="@WholePeriodScopeDescription" WholePeriodLabel="@PendingLockActionPeriodDisplay" CanChooseSelectedRowsScope="@CanChooseSelectedRowsScope" CanConfirm="@CanConfirmLockAction" ShouldLock="@PendingLockActionState" ScopeSelected="SelectLockActionScope" ConfirmRequested="ConfirmLockActionAsync" />
+<ChamCongMonthlyWorkPopup Visible="@IsMonthlyWorkPopupVisible" VisibleChanged="@(_ => CloseMonthlyWorkPopup())" IsLoading="@IsMonthlyWorkPopupLoading" Title="@MonthlyWorkPopupTitle" Context="@MonthlyWorkPopupContext" ErrorMessage="@MonthlyWorkPopupErrorMessage" Rows="@MonthlyWorkRows" RefreshRequested="RefreshMonthlyWorkPopupAsync" />

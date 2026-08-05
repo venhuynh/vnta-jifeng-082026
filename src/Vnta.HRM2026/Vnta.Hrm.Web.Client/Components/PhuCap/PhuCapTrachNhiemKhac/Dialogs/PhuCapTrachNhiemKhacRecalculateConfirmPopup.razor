@@ -1,0 +1,35 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Xác nhận tính lại"
+         Width="min(32rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsBusy)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsBusy)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="responsibility-confirm-popup-footer"
+         CssClass="responsibility-confirm-popup">
+    <BodyContentTemplate>
+        <div class="responsibility-confirm-popup-content">
+            <div class="responsibility-confirm-popup-message">
+                Hệ thống sẽ tính lại phụ cấp trách nhiệm khác của kỳ @PeriodLabel từ dữ liệu nguồn.
+                Các dòng đã khóa được giữ nguyên; dữ liệu các dòng chưa khóa được cập nhật trong chi tiết phụ cấp trách nhiệm khác.
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="responsibility-confirm-popup-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      Enabled="@(!IsBusy)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Tính lại"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                      Enabled="@CanConfirm"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

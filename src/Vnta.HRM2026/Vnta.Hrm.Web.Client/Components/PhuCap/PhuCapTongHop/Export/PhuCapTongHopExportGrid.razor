@@ -1,0 +1,31 @@
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTongHop.Models
+@using Vnta.Hrm.Web.Client.Models.Payroll
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTongHop
+
+<div class="allowance-summary-export-source" aria-hidden="true">
+    <DxGrid @ref="grid" Data="@Records" ShowAllRows="true" PagerVisible="false" TextWrapEnabled="true">
+        <Columns>
+            <DxGridDataColumn FieldName="EmployeeCode" Caption="Mã nhân viên" /><DxGridDataColumn FieldName="EmployeeName" Caption="Họ tên" /><DxGridDataColumn FieldName="DepartmentName" Caption="Phòng ban" /><DxGridDataColumn FieldName="PositionName" Caption="Chức vụ" /><DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" />
+            <DxGridDataColumn FieldName="ResponsibilityAllowanceAmount" Caption="Trách nhiệm" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" /><DxGridDataColumn FieldName="SeniorityAllowanceAmount" Caption="Thâm niên" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" /><DxGridDataColumn FieldName="AttendanceAllowanceAmount" Caption="Chuyên cần" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" /><DxGridDataColumn FieldName="MealAllowanceAmount" Caption="Cơm" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" /><DxGridDataColumn FieldName="HazardAllowanceAmount" Caption="Độc hại" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" /><DxGridDataColumn FieldName="OtherAllowanceAmount" Caption="Khác" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" /><DxGridDataColumn FieldName="LeaveHolidayAllowanceAmount" Caption="Phép-Lễ" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" /><DxGridDataColumn FieldName="TotalAllowanceAmount" Caption="Tổng phụ cấp" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" /><DxGridDataColumn FieldName="LockStatusText" Caption="Trạng thái" /><DxGridDataColumn FieldName="Note" Caption="Ghi chú" />
+        </Columns>
+    </DxGrid>
+</div>
+
+@code {
+    [Parameter] public IReadOnlyList<PayrollAllowanceSummaryExportRecord> Records { get; set; } = [];
+    [Parameter] public Action<IGrid?> GridAttached { get; set; } = _ => { };
+
+    private IGrid? grid;
+    private IGrid? attachedGrid;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (grid is not null && !ReferenceEquals(grid, attachedGrid))
+        {
+            attachedGrid = grid;
+            GridAttached(grid);
+        }
+    }
+}

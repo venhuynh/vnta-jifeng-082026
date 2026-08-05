@@ -1,0 +1,76 @@
+::deep .attendance-allowance-lock-action-popup {
+    max-height: min(52vh, 24rem);
+    overflow-y: auto;
+}
+
+.attendance-allowance-lock-action-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+.attendance-allowance-lock-action-message {
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.55;
+}
+
+.attendance-allowance-lock-action-note,
+.attendance-allowance-lock-action-description {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.attendance-allowance-lock-action-options {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.attendance-allowance-lock-action-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.75rem;
+    background: var(--dxds-color-surface-neutral-default-rest);
+    color: inherit;
+    text-align: left;
+}
+
+.attendance-allowance-lock-action-option:not(:disabled) {
+    cursor: pointer;
+}
+
+.attendance-allowance-lock-action-option:not(:disabled):hover,
+.attendance-allowance-lock-action-option.is-active {
+    border-color: var(--dxds-color-border-primary-default-rest);
+    background: var(--dxds-color-surface-primary-subtle-rest);
+}
+
+.attendance-allowance-lock-action-option.is-disabled,
+.attendance-allowance-lock-action-option:disabled {
+    opacity: 0.68;
+    cursor: not-allowed;
+}
+
+.attendance-allowance-lock-action-title {
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.attendance-allowance-lock-action-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .attendance-allowance-lock-action-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+}

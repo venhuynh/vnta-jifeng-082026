@@ -1,0 +1,57 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Application.PhuCap.PhuCapTongHop
+
+<div class="dashboard-report">
+    <div class="dashboard-section-header">
+        <div>
+            <div class="dashboard-section-title">So sánh phụ cấp theo tháng</div>
+            <div class="dashboard-subtitle">Số tiền và chênh lệch so với tháng liền trước trong năm @PayrollYear.</div>
+        </div>
+        <DxButton IconUrl="@VntaDevExpressIcons.Refresh" Click="RefreshRequested" Enabled="@(!IsRefreshing)" Tooltip="Tải lại dashboard phụ cấp" CssClass="dashboard-report-refresh" />
+    </div>
+    @if(Comparison.Count == 0)
+    {
+        <div class="dashboard-report-message">Chưa có dữ liệu so sánh phụ cấp cho kỳ đã chọn.</div>
+    }
+    else
+    {
+        <div class="dashboard-comparison-grid-host" style="@ComparisonGridHostStyle">
+            <DxGrid Data="@Comparison" CssClass="dashboard-comparison-grid" ShowAllRows="true" PagerVisible="false" TextWrapEnabled="false" HighlightRowOnHover="true" ColumnResizeMode="GridColumnResizeMode.NextColumn" FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always" UnboundColumnData="GetMonthlyComparisonUnboundColumnData">
+                <Columns>
+                    <DxGridDataColumn FieldName="AllowanceType" Caption="Tên phụ cấp" Width="14rem" FixedPosition="GridColumnFixedPosition.Left" />
+                    @foreach(var month in ComparisonMonths)
+                    {
+                        <DxGridBandColumn Caption="@month.Caption" Name="@month.BandName">
+                            <HeaderCaptionTemplate>
+                                <div class="dashboard-department-month-band-header">
+                                    <span>@month.Caption</span>
+                                    <span class="dashboard-department-month-band-total">Tổng: @FormatMoney(month.TotalAmount)</span>
+                                </div>
+                            </HeaderCaptionTemplate>
+                            <Columns>
+                                <DxGridDataColumn FieldName="@GetAmountFieldName(month.Value)" Caption="Số tiền" Name="@($"{month.BandName}-amount")" UnboundType="GridUnboundColumnType.Decimal" Width="10rem" MinWidth="115" AllowSort="false" SearchEnabled="false">
+                                    <CellDisplayTemplate Context="cell">
+                                        @{ var amount = GetAmount((PayrollAllowanceDashboardAllowanceComparisonDto)cell.DataItem, month.Value); }
+                                        @if(amount != 0m)
+                                        {
+                                            @FormatMoney(amount)
+                                        }
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@GetChangeFieldName(month.Value)" Caption="Tăng giảm" Name="@($"{month.BandName}-change")" UnboundType="GridUnboundColumnType.Decimal" Width="10rem" MinWidth="120" AllowSort="false" SearchEnabled="false">
+                                    <CellDisplayTemplate Context="cell">
+                                        @{ var change = GetChange((PayrollAllowanceDashboardAllowanceComparisonDto)cell.DataItem, month.Value); }
+                                        @if(change != 0m)
+                                        {
+                                            <span class="@GetChangeCssClass(change)">@FormatChange(change)</span>
+                                        }
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                            </Columns>
+                        </DxGridBandColumn>
+                    }
+                </Columns>
+            </DxGrid>
+        </div>
+    }
+</div>

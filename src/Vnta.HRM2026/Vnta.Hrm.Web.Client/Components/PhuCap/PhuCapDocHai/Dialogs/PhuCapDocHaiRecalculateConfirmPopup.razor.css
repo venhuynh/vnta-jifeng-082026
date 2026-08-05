@@ -1,0 +1,36 @@
+.hazard-confirm-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.5rem 0.25rem;
+}
+
+.hazard-confirm-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    background: var(--dxds-color-surface-brand-subtle-rest);
+}
+
+.hazard-confirm-message {
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.5;
+}
+
+.hazard-confirm-message p {
+    margin: 0;
+}
+
+.hazard-confirm-message p + p {
+    margin-top: 0.625rem;
+}
+
+.hazard-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}

@@ -1,0 +1,16 @@
+::deep .leave-holiday-edit-popup {
+    max-width: min(96vw, 520px);
+}
+
+.leave-holiday-allowance-edit-actions,
+.leave-holiday-edit-popup-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.leave-holiday-edit-popup-action {
+    min-width: 7rem;
+}

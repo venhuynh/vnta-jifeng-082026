@@ -1,0 +1,110 @@
+@namespace Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruBHXHYT
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="@OnVisibleChanged"
+         HeaderText="Quy tắc khấu trừ BHXH/YT"
+         Width="min(48rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         FooterCssClass="insurance-deduction-popup-footer"
+         CssClass="insurance-rules-popup">
+    <BodyContentTemplate Context="popupBody">
+        <div class="insurance-rules-content">
+            <section class="insurance-rule-card insurance-rule-card-accent">
+                <div class="insurance-rule-card-title">Kỳ đang xem</div>
+                <div class="insurance-rule-card-body">
+                    Quy tắc tham chiếu cho kỳ lương <strong>@PeriodLabel</strong>. Nguồn hiện hành không phân phiên bản theo kỳ,
+                    vì vậy chọn 06/2026 không làm thay đổi sang một bộ quy tắc khác.
+                </div>
+            </section>
+            @if (IsImportedPeriod)
+            {
+                <section class="insurance-rule-card insurance-rule-card-warning">
+                    <div class="insurance-rule-card-title">Dữ liệu nhập từ Excel</div>
+                    <div class="insurance-rule-card-body">
+                        Dữ liệu khấu trừ BHXH-YT của kỳ 06/2026 được nhập từ Excel. Màn hình không hỗ trợ tính lại hoặc điều chỉnh dữ liệu của kỳ này.
+                    </div>
+                </section>
+            }
+            <div class="insurance-rules-subtitle">
+                Áp dụng trên tổng tiền lương đóng BHXH theo danh sách tăng, giảm hằng tháng.
+            </div>
+
+            <section class="insurance-rule-card insurance-rule-card-accent">
+                <div class="insurance-rule-card-title">Tỷ lệ khấu trừ tham chiếu</div>
+                <div class="insurance-rule-card-body">
+                    <strong>BHXH 8% + BHYT 1,5% + BHTN 1% = <span class="insurance-rule-rate-total">10,5%</span></strong>
+                    <span> trên tổng tiền lương đóng BHXH.</span>
+                </div>
+            </section>
+
+            <section class="insurance-split-list">
+                <div class="insurance-split-item">
+                    <div class="insurance-split-label">BHXH</div>
+                    <div class="insurance-split-rate">8%</div>
+                    <div class="insurance-split-description">Trích theo tổng tiền lương đóng BHXH của nhân viên.</div>
+                </div>
+                <div class="insurance-split-item">
+                    <div class="insurance-split-label">BHYT</div>
+                    <div class="insurance-split-rate">1,5%</div>
+                    <div class="insurance-split-description">Trích theo cùng nền lương đóng BHXH.</div>
+                </div>
+                <div class="insurance-split-item">
+                    <div class="insurance-split-label">BHTN</div>
+                    <div class="insurance-split-rate">1%</div>
+                    <div class="insurance-split-description">Trích theo cùng nền lương đóng BHXH.</div>
+                </div>
+            </section>
+
+            <section class="insurance-rule-card">
+                <div class="insurance-rule-card-title">Điều kiện và ngoại lệ</div>
+                <div class="insurance-rule-card-body">
+                    Khi nhân viên không tham gia bảo hiểm, hệ thống tính cả ba khoản bằng 0. Các tỷ lệ của dòng được kiểm tra
+                    trong khoảng 0% đến 100%; số tiền và tổng tỷ lệ luôn do backend tính lại. Dòng đã khóa không được điều chỉnh
+                    hoặc tính lại.
+                </div>
+            </section>
+
+            <section class="insurance-rule-card">
+                <div class="insurance-rule-card-title">Cách load dữ liệu và bảng phụ</div>
+                <div class="insurance-rule-card-body">
+                    Grid BHXH/YT đọc dữ liệu chi tiết từ bảng <span class="insurance-inline-code">payroll_monthly_employee_social_health_insurance</span>.
+                    Khi nhấn Làm mới, màn hình gọi lại API danh sách theo năm/tháng hiện tại để reload bảng này.
+                </div>
+            </section>
+
+            <section class="insurance-rule-card">
+                <div class="insurance-rule-card-title">Đồng bộ bảng phụ</div>
+                <div class="insurance-rule-card-body">
+                    Khi lưu, backend tính lại BHXH, BHYT, BHTN từ tổng tiền lương đóng BHXH, sau đó đồng bộ tổng 10,5% về
+                    <span class="insurance-inline-code">payroll_monthly_employee_deductions.BHXH_YT</span>.
+                    Bảng khấu trừ tổng hợp này vẫn là bảng phụ để các luồng tính lương hiện tại đọc được tổng BHXH/YT trong giai đoạn chuyển tiếp.
+                </div>
+            </section>
+
+            <section class="insurance-rule-card insurance-rule-card-warning">
+                <div class="insurance-rule-card-title">Nguồn dữ liệu cần chốt</div>
+                <div class="insurance-rule-card-body">
+                    Tổng tiền lương đóng BHXH hiện chưa được định nghĩa là lấy từ bảng nào. Vì vậy giá trị này đang được nhập hoặc chỉnh trực tiếp trong màn hình BHXH/YT cho đến khi nghiệp vụ chốt nguồn dữ liệu chính thức.
+                </div>
+            </section>
+
+            <section class="insurance-rule-card">
+                <div class="insurance-rule-card-title">Ghi chú vận hành</div>
+                <div class="insurance-rule-card-body">
+                    Danh sách tăng, giảm hằng tháng là căn cứ đối chiếu trạng thái tham gia bảo hiểm trước khi nhập hoặc import số tiền BHXH/YT.
+                </div>
+            </section>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <DxButton Text="Đóng"
+                  Click="@CloseAsync"
+                  IconUrl="@VntaDevExpressIcons.Cancel"
+                  CssClass="insurance-deduction-popup-action"
+                  RenderStyle="ButtonRenderStyle.Secondary"
+                  RenderStyleMode="ButtonRenderStyleMode.Outline" />
+    </FooterContentTemplate>
+</DxPopup>

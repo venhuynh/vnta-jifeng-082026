@@ -1,0 +1,88 @@
+@namespace Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruBHXHYT
+
+@using Microsoft.AspNetCore.Components.Forms
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="min(40rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsSaving)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsSaving)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="insurance-deduction-popup-footer"
+         CssClass="insurance-deduction-edit-popup">
+    <BodyContentTemplate Context="editPopupBody">
+        @if (Model is not null && EditContext is not null)
+        {
+            <CascadingValue Value="@EditContext" IsFixed="true">
+                <DataAnnotationsValidator />
+                <div class="insurance-deduction-form-scroll">
+                    <DxFormLayout CssClass="insurance-deduction-form" CaptionPosition="CaptionPosition.Vertical">
+                        <DxFormLayoutGroup Caption="Thông tin dòng khấu trừ" ColSpanMd="12">
+                            <DxFormLayoutItem Caption="Nhân viên" ColSpanMd="12">
+                                <DxTextBox Text="@Model.EmployeeDisplay" ReadOnly="true" ValidationEnabled="false" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Kỳ lương" ColSpanMd="6">
+                                <DxTextBox Text="@Model.PayrollPeriodDisplay" ReadOnly="true" ValidationEnabled="false" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Trạng thái" ColSpanMd="6">
+                                <DxTextBox Text="@Model.LockStatusText" ReadOnly="true" ValidationEnabled="false" />
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+
+                        <DxFormLayoutGroup Caption="Giá trị được phép điều chỉnh" ColSpanMd="12">
+                            <DxFormLayoutItem Caption="Tổng tiền lương đóng BHXH" ColSpanMd="12">
+                                <DxSpinEdit TValue="decimal" @bind-Value="Model.InsuranceSalaryBaseAmount" MinValue="0m" Increment="100000m" Mask="n2" Enabled="@CanEditFields" />
+                                <ValidationMessage For="@(() => Model.InsuranceSalaryBaseAmount)" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Tỷ lệ BHXH (%)" ColSpanMd="4">
+                                <DxSpinEdit TValue="decimal" @bind-Value="Model.SocialInsuranceRate" MinValue="0m" MaxValue="1m" Increment="0.005m" Mask="p2" Enabled="@CanEditFields" />
+                                <ValidationMessage For="@(() => Model.SocialInsuranceRate)" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Tỷ lệ BHYT (%)" ColSpanMd="4">
+                                <DxSpinEdit TValue="decimal" @bind-Value="Model.HealthInsuranceRate" MinValue="0m" MaxValue="1m" Increment="0.005m" Mask="p2" Enabled="@CanEditFields" />
+                                <ValidationMessage For="@(() => Model.HealthInsuranceRate)" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Tỷ lệ BHTN (%)" ColSpanMd="4">
+                                <DxSpinEdit TValue="decimal" @bind-Value="Model.UnemploymentInsuranceRate" MinValue="0m" MaxValue="1m" Increment="0.005m" Mask="p2" Enabled="@CanEditFields" />
+                                <ValidationMessage For="@(() => Model.UnemploymentInsuranceRate)" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Tham gia BHXH-YT-BHTN" ColSpanMd="4">
+                                <DxCheckBox @bind-Checked="Model.IsParticipating" Enabled="@CanEditFields">Có tham gia</DxCheckBox>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Biến động" ColSpanMd="4">
+                                <DxSpinEdit TValue="short" @bind-Value="Model.ParticipationChangeType" MinValue="@((short)0)" MaxValue="@((short)3)" Enabled="@CanEditFields" />
+                                <div class="insurance-deduction-field-help">0: không đổi; 1: tăng; 2: giảm; 3: điều chỉnh.</div>
+                                <ValidationMessage For="@(() => Model.ParticipationChangeType)" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Thời điểm hiệu lực" ColSpanMd="4">
+                                <DxDateEdit @bind-Date="Model.EffectiveDate" Enabled="@CanEditFields" />
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+
+                        <DxFormLayoutGroup Caption="Kết quả hệ thống tính lại khi lưu" ColSpanMd="12">
+                            <DxFormLayoutItem Caption="Tổng tỷ lệ hiện tại" ColSpanMd="6">
+                                <DxTextBox Text="@FormatRate(Model.CurrentTotalInsuranceRate)" ReadOnly="true" ValidationEnabled="false" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Tổng khấu trừ hiện tại" ColSpanMd="6">
+                                <DxTextBox Text="@FormatMoney(Model.CurrentTotalDeductionAmount)" ReadOnly="true" ValidationEnabled="false" />
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+                    </DxFormLayout>
+                </div>
+            </CascadingValue>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <div class="insurance-deduction-edit-error-message">@ErrorMessage</div>
+        }
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="insurance-deduction-edit-actions">
+            <DxButton Text="Hủy" Click="CloseAsync" IconUrl="@VntaDevExpressIcons.Cancel" CssClass="insurance-deduction-popup-action" Enabled="@(!IsSaving)" RenderStyle="ButtonRenderStyle.Secondary" RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Lưu" Click="SaveAsync" IconUrl="@VntaDevExpressIcons.Save" CssClass="insurance-deduction-popup-action" Enabled="@CanSave" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

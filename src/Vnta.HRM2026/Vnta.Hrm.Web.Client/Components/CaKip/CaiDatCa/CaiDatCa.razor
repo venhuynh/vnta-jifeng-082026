@@ -1,0 +1,173 @@
+@page "/attendance/shifts"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models
+
+@attribute [Authorize(Policy = InternalAccountPolicies.ShiftManagement)]
+@rendermode InteractiveServer
+
+<PageTitle>Cài đặt ca</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Cài đặt ca" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Mới"
+                           Click="OnAddShiftClick"
+                           Enabled="@CanCreate"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tạo ca làm mới"
+                           IconUrl="@VntaDevExpressIcons.Add" />
+            <DxToolbarItem Text="Điều chỉnh"
+                           Click="OnEditShiftClick"
+                           Enabled="@CanEditSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Điều chỉnh ca làm đã chọn"
+                           IconUrl="@VntaDevExpressIcons.Edit" />
+            <DxToolbarItem Text="Xóa"
+                           Click="OnDeleteShiftsClick"
+                           Enabled="@CanDeleteSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xóa ca làm đã chọn"
+                           IconUrl="@VntaDevExpressIcons.Delete" />
+            <DxToolbarItem Tooltip="Làm mới danh sách ca làm"
+                           Enabled="@CanInteract"
+                           Click="ReloadAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Xuất dữ liệu"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất dữ liệu ca làm"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel" Click="ExportAllDataToExcel" Enabled="@CanExport" Tooltip="Xuất toàn bộ danh sách ca làm ra Excel" IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF" Click="ExportAllDataToPdf" Enabled="@CanExport" Tooltip="Xuất toàn bộ danh sách ca làm ra PDF" IconUrl="@VntaDevExpressIcons.Pdf" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra Excel" Click="ExportSelectedRowsToExcel" Enabled="@CanExportSelected" Tooltip="Xuất các ca làm đã chọn ra Excel" IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra PDF" Click="ExportSelectedRowsToPdf" Enabled="@CanExportSelected" Tooltip="Xuất các ca làm đã chọn ra PDF" IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh sách ca làm"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanInteract"
+                           Click="OnColumnChooserItemClick"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="search-textbox-item"
+                           Tooltip="Tìm kiếm ca làm">
+                <Template>
+                    <div class="custom-item">
+                        <DxSearchBox CssClass="search-textbox"
+                                     NullText="Tìm kiếm"
+                                     BindValueMode="BindValueMode.OnInput"
+                                     ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                     @bind-Text="SearchText" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+        </DxToolbar>
+    </div>
+
+    <div class="attendance-shifts-root">
+        @if(HasLoadError) {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải danh sách ca làm</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="ReloadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        } else {
+            <HrmLoadingPanel Visible="@IsLoading"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             Text="@LoadingText"
+                             CssClass="attendance-shifts-loading-panel">
+                <DxGrid @ref="Grid"
+                        Data="@Shifts"
+                        KeyFieldName="Id"
+                        CssClass="attendance-shifts-grid"
+                        SearchText="@SearchText"
+                        EditMode="GridEditMode.PopupEditForm"
+                        PopupEditFormCssClass="attendance-shifts-popup"
+                        PopupEditFormHeaderText="Thông tin ca làm"
+                        PageSize="20"
+                        PagerPosition="GridPagerPosition.TopAndBottom"
+                        PageSizeSelectorVisible="true"
+                        PageSizeSelectorItems="@(new int[] { 10, 20, 50 })"
+                        SkeletonRowsEnabled="true"
+                        ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                        FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                        TextWrapEnabled="false"
+                        FocusedRowEnabled="true"
+                        HighlightRowOnHover="true"
+                        AllowSelectRowByClick="true"
+                        SelectionMode="GridSelectionMode.Multiple"
+                        SelectedDataItems="@SelectedDataItems"
+                        SelectedDataItemsChanged="@OnSelectedDataItemsChanged"
+                        CustomizeEditModel="OnCustomizeEditModel"
+                        EditModelSaving="OnEditModelSaving">
+                    <Columns>
+                        <DxGridSelectionColumn Width="3rem" />
+                        <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                            <CellDisplayTemplate>
+                                @(context.VisibleIndex + 1)
+                            </CellDisplayTemplate>
+                        </DxGridDataColumn>
+                        <DxGridDataColumn FieldName="Code" Caption="Mã ca" MinWidth="120" />
+                        <DxGridDataColumn FieldName="Name" Caption="Tên ca" MinWidth="180" />
+                        <DxGridDataColumn FieldName="ShortName" Caption="Tên ngắn" MinWidth="120" />
+                        <DxGridDataColumn FieldName="DepartmentGroup" Caption="Nhóm bộ phận" MinWidth="160" />
+                        <DxGridDataColumn FieldName="TimeRangeText" Caption="Khung giờ" MinWidth="140" />
+                        <DxGridDataColumn FieldName="IsOvernight" Caption="Qua ngày" MinWidth="110" />
+                        <DxGridDataColumn FieldName="BreakTimeText" Caption="Giờ nghỉ" MinWidth="140" />
+                        <DxGridDataColumn FieldName="WorkingDaysText" Caption="Ngày làm" MinWidth="180" />
+                        <DxGridDataColumn FieldName="StatusText" Caption="Trạng thái" MinWidth="130" />
+                        <DxGridDataColumn FieldName="ColorHex" Caption="Màu" MinWidth="100" />
+                        <DxGridCommandColumn Visible="false"
+                                             NewButtonVisible="false"
+                                             EditButtonVisible="false"
+                                             DeleteButtonVisible="false"
+                                             SaveButtonVisible="false"
+                                             CancelButtonVisible="false" />
+                    </Columns>
+                    <EmptyDataAreaTemplate>
+                        <div class="empty-state">
+                            <div class="state-title">Chưa có ca làm</div>
+                            <div class="state-message">Danh sách ca làm sẽ hiển thị tại đây sau khi có dữ liệu trong bảng `shifts`.</div>
+                            <DxButton Text="Tạo ca làm"
+                                      Click="OnAddShiftClick"
+                                      RenderStyle="ButtonRenderStyle.Primary"
+                                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                        </div>
+                    </EmptyDataAreaTemplate>
+                    <EditFormTemplate Context="editFormContext">
+                        @{
+                            var editModel = (AttendanceShiftRecord)editFormContext.EditModel;
+                        }
+                        <CaiDatCaEditForm Model="@editModel"
+                                          EditFormContext="@editFormContext"
+                                          ErrorMessage="@EditErrorMessage"
+                                          IsCreatingNewShift="@IsCreatingNewShift" />
+                        <div class="attendance-shifts-form-actions">
+                            <DxButton Text="Lưu"
+                                      IconUrl="@VntaDevExpressIcons.Save"
+                                      CssClass="attendance-shifts-form-action"
+                                      SubmitFormOnClick="true"
+                                      RenderStyle="ButtonRenderStyle.Primary"
+                                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                            <DxButton Text="Hủy"
+                                      IconUrl="@VntaDevExpressIcons.Cancel"
+                                      CssClass="attendance-shifts-form-action"
+                                      Click="OnCancelShiftEditClick"
+                                      RenderStyle="ButtonRenderStyle.Secondary"
+                                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                        </div>
+                    </EditFormTemplate>
+                </DxGrid>
+            </HrmLoadingPanel>
+        }
+    </div>
+</div>

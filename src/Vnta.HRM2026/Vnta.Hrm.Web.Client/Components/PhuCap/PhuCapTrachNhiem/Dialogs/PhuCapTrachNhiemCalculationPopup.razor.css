@@ -1,0 +1,11 @@
+::deep .responsibility-popup { max-width: min(96vw, 1220px); }
+.responsibility-popup-body { display: grid; gap: 1rem; padding: .4rem; }
+.responsibility-preview-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; }
+.responsibility-preview-card, .responsibility-formula-box { border: 1px solid #e2e8f0; border-radius: .9rem; padding: .9rem 1rem; background: #f8fafc; }
+.responsibility-preview-label, .responsibility-formula-title { color: #64748b; font-size: .76rem; font-weight: 800; text-transform: uppercase; }
+.responsibility-preview-value, .responsibility-formula-result { margin-top: .35rem; color: #0f172a; font-weight: 800; }
+.responsibility-formula-text { margin-top: .45rem; }
+.responsibility-editor-table { width: 100%; border-collapse: collapse; }
+.responsibility-editor-table th, .responsibility-editor-table td { padding: .7rem .65rem; border-bottom: 1px solid #e2e8f0; text-align: left; }
+.responsibility-empty-banner { border: 1px solid #dbeafe; border-radius: .8rem; padding: .75rem .9rem; background: #eff6ff; color: #1d4ed8; }
+@media (max-width: 900px) { .responsibility-preview-grid { grid-template-columns: 1fr; } }

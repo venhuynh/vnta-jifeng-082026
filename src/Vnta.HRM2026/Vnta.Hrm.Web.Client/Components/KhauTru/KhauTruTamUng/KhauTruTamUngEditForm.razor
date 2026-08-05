@@ -1,0 +1,159 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Web.Client.Models.Employees
+@using Vnta.Hrm.Web.Client.Models.Payroll
+
+@if(Model is not null && EditFormContext is not null)
+{
+    <CascadingValue Value="EditFormContext.EditContext">
+        <div class="advance-deduction-form-scroll">
+            <DataAnnotationsValidator />
+
+            <DxFormLayout CssClass="advance-deduction-form" CaptionPosition="CaptionPosition.Vertical">
+                <DxFormLayoutGroup Caption="@(IsCreatingNewRecord ? "Khởi tạo dòng khấu trừ Tạm ứng" : "Điều chỉnh dòng khấu trừ Tạm ứng")"
+                                   ColSpanMd="12">
+                    <DxFormLayoutItem Caption="Nhân viên" ColSpanMd="12">
+                        <DxComboBox TData="EmployeeRecord"
+                                    TValue="Guid?"
+                                    Data="@Employees"
+                                    TextFieldName="FullName"
+                                    ValueFieldName="Id"
+                                    SearchMode="ListSearchMode.AutoSearch"
+                                    SearchFilterCondition="ListSearchFilterCondition.Contains"
+                                    @bind-Value="Model.EmployeeId"
+                                    CssClass="w-100"
+                                    NullText="Chọn nhân viên"
+                                    ShowValidationIcon="true"
+                                    ShowValidationSuccessState="true">
+                            <ItemDisplayTemplate Context="employeeContext">
+                                @{
+                                    var employee = (EmployeeRecord)employeeContext.DataItem;
+                                }
+                                <div class="employee-option">
+                                    <div class="employee-option-name">@($"{employee.EmployeeCode} - {employee.FullName}")</div>
+                                    <div class="employee-option-meta">@($"{employee.DepartmentName ?? "Chưa có phòng ban"} / {employee.PositionName ?? "Chưa có chức vụ"}")</div>
+                                </div>
+                            </ItemDisplayTemplate>
+                            <EditBoxDisplayTemplate Context="employeeContext">
+                                @{
+                                    var employee = employeeContext.DataItem as EmployeeRecord;
+                                }
+                                <span>
+                                    @(employee is null
+                                        ? "Chọn nhân viên"
+                                        : $"{employee.EmployeeCode} - {employee.FullName}")
+                                </span>
+                            </EditBoxDisplayTemplate>
+                        </DxComboBox>
+                        <ValidationMessage For="@(() => Model.EmployeeId)" />
+                    </DxFormLayoutItem>
+
+                    <DxFormLayoutItem Caption="Tháng" ColSpanMd="6">
+                        <DxSpinEdit TValue="int"
+                                    @bind-Value="Model.PayrollMonth"
+                                    MinValue="1"
+                                    MaxValue="12"
+                                    CssClass="w-100"
+                                    ShowValidationIcon="true"
+                                    ShowValidationSuccessState="true" />
+                        <ValidationMessage For="@(() => Model.PayrollMonth)" />
+                    </DxFormLayoutItem>
+
+                    <DxFormLayoutItem Caption="Năm" ColSpanMd="6">
+                        <DxSpinEdit TValue="int"
+                                    @bind-Value="Model.PayrollYear"
+                                    MinValue="2000"
+                                    MaxValue="2100"
+                                    CssClass="w-100"
+                                    ShowValidationIcon="true"
+                                    ShowValidationSuccessState="true" />
+                        <ValidationMessage For="@(() => Model.PayrollYear)" />
+                    </DxFormLayoutItem>
+
+                    <DxFormLayoutItem Caption="Số tiền tạm ứng" ColSpanMd="6">
+                        <DxSpinEdit TValue="decimal"
+                                    @bind-Value="Model.StandardAllowanceAmount"
+                                    MinValue="0"
+                                    Increment="100000"
+                                    CssClass="w-100"
+                                    Mask="n2"
+                                    ShowValidationIcon="true"
+                                    ShowValidationSuccessState="true" />
+                        <ValidationMessage For="@(() => Model.StandardAllowanceAmount)" />
+                    </DxFormLayoutItem>
+
+                    <DxFormLayoutItem Caption="Số kỳ thu hồi" ColSpanMd="6">
+                        <DxSpinEdit TValue="decimal"
+                                    @bind-Value="Model.StandardWorkdayCount"
+                                    MinValue="0"
+                                    Increment="1m"
+                                    CssClass="w-100"
+                                    Mask="n2"
+                                    ShowValidationIcon="true"
+                                    ShowValidationSuccessState="true" />
+                        <ValidationMessage For="@(() => Model.StandardWorkdayCount)" />
+                    </DxFormLayoutItem>
+
+                    <DxFormLayoutItem Caption="Số kỳ đã khấu trừ" ColSpanMd="6">
+                        <DxSpinEdit TValue="decimal"
+                                    @bind-Value="Model.ActualWorkdayCount"
+                                    MinValue="0"
+                                    Increment="1m"
+                                    CssClass="w-100"
+                                    Mask="n2"
+                                    ShowValidationIcon="true"
+                                    ShowValidationSuccessState="true" />
+                        <ValidationMessage For="@(() => Model.ActualWorkdayCount)" />
+                    </DxFormLayoutItem>
+
+                    <DxFormLayoutItem Caption="Tỷ lệ thu hồi" ColSpanMd="6">
+                        <div class="readonly-field">@Model.AttendanceRateDisplay</div>
+                    </DxFormLayoutItem>
+
+                    <DxFormLayoutItem Caption="Số tiền khấu trừ thực tế" ColSpanMd="12">
+                        <div class="readonly-field">@Model.ActualAllowanceAmountDisplay</div>
+                    </DxFormLayoutItem>
+
+                    <DxFormLayoutItem Caption="Khóa dòng dữ liệu" ColSpanMd="12" CssClass="lock-checkbox-item">
+                        <DxCheckBox @bind-Checked="Model.IsLocked">Đánh dấu dòng này là đã khóa</DxCheckBox>
+                        <div class="status-preview">
+                            <span class="@GetLockBadgeCssClass(Model.IsLocked)">@Model.LockStatusText</span>
+                        </div>
+                    </DxFormLayoutItem>
+                </DxFormLayoutGroup>
+
+                <DxFormLayoutGroup Caption="Thông tin hệ thống" ColSpanMd="12">
+                    <DxFormLayoutItem Caption="ID" ColSpanMd="12">
+                        <div class="readonly-field">@Model.Id</div>
+                    </DxFormLayoutItem>
+                </DxFormLayoutGroup>
+            </DxFormLayout>
+
+            @if(!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="edit-error-message">@ErrorMessage</div>
+            }
+        </div>
+    </CascadingValue>
+}
+
+@code {
+    [Parameter]
+    public AttendanceAllowanceResultRecord? Model { get; set; }
+
+    [Parameter]
+    public GridEditFormTemplateContext? EditFormContext { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<EmployeeRecord> Employees { get; set; } = [];
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public bool IsCreatingNewRecord { get; set; }
+
+    private static string GetLockBadgeCssClass(bool isLocked) => isLocked
+        ? "status-badge status-badge-neutral"
+        : "status-badge status-badge-success";
+}

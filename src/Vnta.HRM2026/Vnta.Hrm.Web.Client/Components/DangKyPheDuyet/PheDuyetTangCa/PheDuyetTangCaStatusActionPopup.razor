@@ -1,0 +1,40 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Application.DangKyPheDuyet.DangKyTangCa
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsSaving)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsSaving)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="overtime-approval-popup-footer"
+         CssClass="overtime-approval-status-action-popup">
+    <BodyContentTemplate>
+        <div class="overtime-approval-confirm-body">
+            <div class="overtime-approval-confirm-title">@PromptText</div>
+            <div class="overtime-approval-confirm-context">@ImpactText</div>
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="overtime-approval-confirm-error" role="alert">@ErrorMessage</div>
+            }
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="overtime-approval-popup-footer-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      Enabled="@(!IsSaving)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="@ConfirmText"
+                      Click="ConfirmAsync"
+                      Enabled="@CanConfirm"
+                      IconUrl="@ConfirmIconUrl"
+                      RenderStyle="@ConfirmRenderStyle"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

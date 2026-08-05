@@ -1,0 +1,35 @@
+@using Vnta.Hrm.Web.Client.Services
+@using Vnta.Hrm.Web.Client.Tools
+@using Microsoft.Extensions.AI
+
+<div class="chat-container">
+    <DxAIChat Initialized="OnChatInitialized"
+              IncludeFunctionCallInfo="true"
+              UseStreaming="true"
+              CssClass="chat"
+              ResponseContentFormat="ResponseContentFormat.Markdown"
+              ShowHeader="true"
+              ChatResponseProviderServiceKey="@ChatResponseProviderServiceKeys.Scheduler"
+              HeaderText="Trợ lý lập lịch AI">
+        <MessageContentTemplate>
+            <div class="chat-content">@MarkdownRenderer.ToSafeHtml(context.Text)</div>
+        </MessageContentTemplate>
+        <PromptSuggestions>
+            <DxAIChatPromptSuggestion SendOnClick="true"
+                                      Title="Kiểm tra thời gian trống"
+                                      Text="Kiểm tra khung 9 giờ sáng trong tuần này"
+                                      PromptMessage="Liệt kê các khung thời gian trống lúc 9 giờ sáng trong phần còn lại của tuần này."/>
+            <DxAIChatPromptSuggestion Title="Lên lịch cuộc hẹn"
+                                      Text="Đặt lịch họp cổ đông vào thứ Sáu này."
+                                      PromptMessage="Lên lịch 'Họp cổ đông' vào thứ Sáu này từ 12 giờ đến 13 giờ."/>
+        </PromptSuggestions>
+    </DxAIChat>
+</div>
+
+@code {
+    void OnChatInitialized(IAIChat chat) {
+        var prompt = AIChatPrompts.GetSchedulerChatPrompt(SchedulerTools.GetCurrentTime());
+        chat.LoadMessages([new(ChatRole.System, prompt)]);
+    }
+}
+

@@ -1,0 +1,40 @@
+﻿@page "/Account/Login"
+
+<PageTitle>VNTA HRM 2026 - Đăng nhập</PageTitle>
+
+<section class="block-content card" aria-labelledby="login-title">
+    <StatusMessage Message="@errorMessage" />
+    <EditForm Model="@Input"
+              method="post"
+              OnValidSubmit="LoginUser"
+              FormName="login"
+              Context="Login">
+            <DataAnnotationsValidator />
+            <DxFormLayout CaptionPosition=@CaptionPosition.Vertical>
+            <DxFormLayoutItem ColSpanMd="12">
+                <div class="title">
+                    <h1 id="login-title" class="title-text">Đăng nhập</h1>
+                </div>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Tài khoản" ColSpanMd="12" BeginRow="true">
+                <InteractiveServerTextBox Name="Input.Account" Value="@Input.Account" NullText="Nhập tài khoản" autocomplete="username" />
+                <ValidationMessage class="text-danger" For="() => Input.Account" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Mật khẩu" ColSpanMd="12" BeginRow="true">
+                <InteractiveServerPasswordTextBox Name="Input.Password" Value="@Input.Password" NullText="Nhập mật khẩu" autocomplete="current-password" />
+                <ValidationMessage class="text-danger" For="() => Input.Password" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
+                <InteractiveServerCheckbox Name="Input.RememberMe" InputId="rememberme" Value="@Input.RememberMe" LabelText="Ghi nhớ đăng nhập" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
+                <DxButton CssClass="w-100" SubmitFormOnClick="true" Text="Đăng nhập" />
+            </DxFormLayoutItem>
+            </DxFormLayout>
+    </EditForm>
+    <div class="login-support" role="note">
+        <span class="login-support-title">Bạn cần hỗ trợ tài khoản hoặc mật khẩu?</span>
+        <span>Liên hệ Phòng Nhân sự hoặc quản trị viên để được mở, phê duyệt hoặc đặt lại tài khoản.</span>
+    </div>
+</section>
+

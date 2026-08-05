@@ -1,0 +1,13 @@
+@using Microsoft.AspNetCore.Components
+
+<div class="error-state">
+    <div class="state-title">Không thể tải dữ liệu phụ cấp chuyên cần</div>
+    <DxButton Text="Thử lại"
+              Click="RetryRequested"
+              RenderStyle="ButtonRenderStyle.Primary"
+              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+</div>
+
+@code {
+    [Parameter] public EventCallback RetryRequested { get; set; }
+}

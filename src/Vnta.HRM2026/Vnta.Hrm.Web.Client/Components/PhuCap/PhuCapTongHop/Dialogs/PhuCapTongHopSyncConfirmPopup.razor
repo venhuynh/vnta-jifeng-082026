@@ -1,0 +1,51 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTongHop
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Lấy từ tháng trước"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsSyncing)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsSyncing)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="allowance-summary-sync-confirm-popup-footer"
+         CssClass="allowance-summary-sync-confirm-popup">
+    <HeaderContentTemplate>
+        <div class="allowance-summary-popup-header">
+            <DxButton IconUrl="@VntaDevExpressIcons.Refresh"
+                      Attributes="@HeaderIconAttributes"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Text"
+                      CssClass="allowance-summary-popup-header-icon" />
+            <span class="allowance-summary-popup-header-title">Lấy từ tháng trước</span>
+        </div>
+    </HeaderContentTemplate>
+    <BodyContentTemplate>
+        <div class="allowance-summary-sync-confirm-content">
+            <div class="allowance-summary-sync-confirm-message">
+                Sẽ lấy snapshot từ kỳ @SourcePeriodLabel để khởi tạo dữ liệu tổng hợp phụ cấp của kỳ @TargetPeriodLabel.
+            </div>
+            <div class="allowance-summary-sync-confirm-context">
+                Kỳ đích chỉ giữ nhân viên có dữ liệu chấm công; record của nhân viên không còn chấm công sẽ bị xóa, kể cả khi đã khóa. Các dòng đã khóa của nhân viên vẫn còn chấm công được giữ nguyên.
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="allowance-summary-sync-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="allowance-summary-sync-confirm-button"
+                      Enabled="@(!IsSyncing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Đồng bộ"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.Refresh"
+                      CssClass="allowance-summary-sync-confirm-button"
+                      Enabled="@(!IsSyncing)"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

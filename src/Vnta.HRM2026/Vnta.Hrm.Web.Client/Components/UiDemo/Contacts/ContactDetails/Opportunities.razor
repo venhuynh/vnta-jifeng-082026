@@ -1,0 +1,111 @@
+@using Vnta.Hrm.Web.Client.Models
+
+
+@inherits DataPresenter<List<Opportunity>>
+
+@inject IHrmToastService ToastService
+
+<DxLayoutBreakpoint DeviceSize="DeviceSize.Medium | DeviceSize.Small | DeviceSize.XSmall" @bind-IsActive="@IsSmallScreen" />
+
+<DxGridLayout ColumnSpacing="1em" RowSpacing="1em">
+    <Columns>
+        @if(IsSmallScreen) {
+            <DxGridLayoutColumn Width="minmax(6.25rem, 18.75rem)" />
+            <DxGridLayoutColumn />
+        } else {
+            <DxGridLayoutColumn Width="minmax(6.25rem, 18.75rem)" />
+            <DxGridLayoutColumn Width="minmax(6.25rem, 18.75rem)" />
+            <DxGridLayoutColumn />
+        }
+    </Columns>
+    <Rows>
+        @if(IsSmallScreen) {
+            <DxGridLayoutRow Areas="active" Height="auto" />
+            @for(var index = 0; index < Active.Count; index++) {
+                <DxGridLayoutRow Areas="@($"item{index}")" Height="auto" />
+            }
+
+            <DxGridLayoutRow Areas="closed" Height="auto" />
+            @for(var index = Active.Count; index < TotalCount; index++) {
+                <DxGridLayoutRow Areas="@($"item{index}")" Height="auto" />
+            }
+        } else {
+            <DxGridLayoutRow Areas="active active" Height="auto" />
+            @for(var index = 0; index < Active.Count; index += 2) {
+                <DxGridLayoutRow Areas="@GetDesktopRowAreas(index, Active.Count)" Height="auto" />
+            }
+
+            <DxGridLayoutRow Areas="closed closed" Height="auto" />
+            @for(var index = Active.Count; index < TotalCount; index += 2) {
+                <DxGridLayoutRow Areas="@GetDesktopRowAreas(index, TotalCount)" Height="auto" />
+            }
+        }
+    </Rows>
+    <Items>
+        <DxGridLayoutItem Area="active">
+            <Template>
+                <div class="group-header">Active</div>
+            </Template>
+        </DxGridLayoutItem>
+        <DxGridLayoutItem Area="closed">
+            <Template>
+                <div class="group-header">Closed</div>
+            </Template>
+        </DxGridLayoutItem>
+        @{
+            int index = 0;
+        }
+        @foreach(var opportunity in Active) {
+            <DxGridLayoutItem Area="@($"item{index++}")">
+                <Template>
+                    @RenderOpportunity(opportunity, "active")
+                </Template>
+            </DxGridLayoutItem>
+        }
+        @foreach(var opportunity in Closed) {
+            <DxGridLayoutItem Area="@($"item{index++}")">
+                <Template>
+                    @RenderOpportunity(opportunity, "closed")
+                </Template>
+            </DxGridLayoutItem>
+        }
+    </Items>
+</DxGridLayout>
+
+@code {
+    List<Opportunity> Active { get; set; } = [];
+    List<Opportunity> Closed { get; set; } = [];
+    bool IsSmallScreen { get; set; }
+    int TotalCount => Active.Count + Closed.Count;
+
+    protected override void OnParametersSet() {
+        var items = Data ?? [];
+        Active = items.Take(2).ToList();
+        Closed = items.Skip(2).ToList();
+        base.OnParametersSet();
+    }
+
+    RenderFragment RenderOpportunity(Opportunity opportunity, string cssClass) {
+        return 
+            @<div class="opportunity @cssClass" @key="opportunity" @onclick="HandleOpportunityClick">
+                <div class="opportunity-body">
+                    <div class="name">@opportunity.Name</div>
+                    <div class="product-info">
+                        Products: @opportunity.Products, total:
+                        @opportunity.Total.ToString("C2")
+                    </div>
+                    <div class="owner">Owner: @opportunity.Manager</div>
+                </div>
+            </div>;
+    }
+
+    void HandleOpportunityClick() {
+        ToastService.ShowInfo("Đã chọn cơ hội.");
+    }
+
+    string GetDesktopRowAreas(int startIndex, int totalCount) =>
+        startIndex + 1 < totalCount
+            ? $"item{startIndex} item{startIndex + 1}"
+            : $"item{startIndex} .";
+}
+

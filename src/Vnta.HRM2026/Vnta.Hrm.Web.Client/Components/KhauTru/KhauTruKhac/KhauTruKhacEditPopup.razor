@@ -1,0 +1,65 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="520px"
+         ShowCloseButton="@(!IsSaving)"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         FooterCssClass="other-deduction-popup-footer"
+         CssClass="other-deduction-edit-popup">
+    <BodyContentTemplate Context="editPopupBody">
+        <EditForm EditContext="@editContext" Context="editFormContext" class="other-deduction-edit-form">
+            <DataAnnotationsValidator />
+            <DxFormLayout CaptionPosition="@CaptionPosition.Vertical">
+                <DxFormLayoutItem Caption="Nhân viên" ColSpanMd="12">
+                    <DxTextBox Text="@Model.EmployeeDisplay"
+                               ReadOnly="true"
+                               ValidationEnabled="false"
+                               CssClass="other-deduction-edit-readonly" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Mô tả" ColSpanMd="12">
+                    <DxTextBox Text="@Model.Description"
+                               ReadOnly="true"
+                               ValidationEnabled="false"
+                               CssClass="other-deduction-edit-readonly" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Khấu trừ khác" ColSpanMd="12">
+                    <DxSpinEdit T="decimal"
+                                @bind-Value="Model.DeductionAmount"
+                                MinValue="0m"
+                                Increment="50000m"
+                                DisplayFormat="N0"
+                                ShowSpinButtons="true"
+                                ShowValidationIcon="true"
+                                Enabled="@CanEditFields" />
+                    <ValidationMessage For="@(() => Model.DeductionAmount)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Ghi chú" ColSpanMd="12">
+                    <DxMemo @bind-Text="Model.Note"
+                            NullText="Nhập ghi chú điều chỉnh"
+                            Rows="4"
+                            Enabled="@CanEditFields" />
+                </DxFormLayoutItem>
+            </DxFormLayout>
+        </EditForm>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="other-deduction-edit-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="other-deduction-popup-action"
+                      Enabled="@(!IsSaving)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Lưu"
+                      Click="SaveAsync"
+                      IconUrl="@VntaDevExpressIcons.Save"
+                      CssClass="other-deduction-popup-action"
+                      Enabled="@CanSave"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

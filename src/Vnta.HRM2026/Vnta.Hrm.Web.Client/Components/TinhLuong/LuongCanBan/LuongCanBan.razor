@@ -1,0 +1,279 @@
+@page "/payroll/basic-salaries"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models.Payroll
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Lương căn bản</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Lương căn bản"
+                   CssClass="toolbar"
+                   ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Mới"
+                           Click="OnAddSalaryRecordClick"
+                           Enabled="@CanCreate"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tạo bản ghi lương căn bản mới"
+                           IconUrl="@VntaDevExpressIcons.Add" />
+            <DxToolbarItem Text="Điều chỉnh"
+                           Click="OnEditSalaryRecordClick"
+                           Enabled="@CanEditSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Điều chỉnh bản ghi lương căn bản đã chọn"
+                           IconUrl="@VntaDevExpressIcons.Edit" />
+            <DxToolbarItem Text="Xóa"
+                           Click="OnDeleteSalaryRecordsClick"
+                           Enabled="@CanDeleteSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xóa bản ghi lương căn bản đã chọn"
+                           IconUrl="@VntaDevExpressIcons.Delete" />
+            <DxToolbarItem Tooltip="Làm mới danh sách lương căn bản"
+                           Enabled="@CanRefresh"
+                           Click="RefreshAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Lấy từ tháng trước"
+                           Click="OnSyncFromPreviousMonthClickAsync"
+                           Enabled="@CanSyncFromPreviousMonth"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="@SyncFromPreviousMonthTooltip"
+                           IconUrl="@VntaDevExpressIcons.Download" />
+            <DxToolbarItem Text="Chi tiết"
+                           Click="OnShowSalaryDetailClick"
+                           Enabled="@CanShowDetailSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xem chi tiết bản ghi lương căn bản đã chọn"
+                           IconUrl="@VntaDevExpressIcons.View" />
+            <DxToolbarItem Text="Xuất dữ liệu"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất dữ liệu lương căn bản"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel"
+                                   Click="ExportAllDataToExcel"
+                                   Tooltip="Xuất toàn bộ danh sách lương căn bản ra Excel"
+                                   Enabled="@CanExport"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF"
+                                   Click="ExportAllDataToPdf"
+                                   Tooltip="Xuất toàn bộ danh sách lương căn bản ra PDF"
+                                   Enabled="@CanExport"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra Excel"
+                                   Click="ExportSelectedRowsToExcel"
+                                   Tooltip="Xuất các bản ghi lương căn bản đã chọn ra Excel"
+                                   Enabled="@CanExportSelected"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra PDF"
+                                   Click="ExportSelectedRowsToPdf"
+                                   Tooltip="Xuất các bản ghi lương căn bản đã chọn ra PDF"
+                                   Enabled="@CanExportSelected"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh sách lương căn bản"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanInteract"
+                           Click="OnColumnChooserItemClick"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+        </DxToolbar>
+    </div>
+
+    <div class="basic-salaries-root">
+        @if (HasLoadError)
+        {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải danh sách lương căn bản</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="ReloadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+            <div class="card basic-salaries-grid-card">
+                <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="@LoadingPanelText"
+                                 CssClass="basic-salaries-loading-panel">
+                    <div class="basic-salaries-grid-content">
+                        <div class="basic-salaries-grid-header">
+                            <div class="basic-salaries-grid-context">
+                                <div class="basic-salaries-grid-title">Danh sách lương căn bản</div>
+                                <div class="basic-salaries-grid-caption">Quản lý lương căn bản theo nhân viên và kỳ lương.</div>
+                            </div>
+                            <div class="basic-salaries-grid-search">
+                                <DxSearchBox CssClass="basic-salaries-grid-searchbox"
+                                             NullText="Tìm kiếm lương căn bản"
+                                             BindValueMode="BindValueMode.OnDelayedInput"
+                                             InputDelay="400"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             Text="@SearchText"
+                                             TextChanged="OnSearchTextChanged"
+                                             Enabled="@CanInteract" />
+                            </div>
+                        </div>
+                        <DxGrid @ref="Grid"
+                                Data="@VisibleSalaryRecords"
+                                KeyFieldName="Id"
+                                CssClass="basic-salaries-grid"
+                                ShowSearchBox="false"
+                                PageSize="@PageSize"
+                                PageSizeChanged="OnPageSizeChanged"
+                                PagerPosition="GridPagerPosition.Bottom"
+                                PagerSummaryVisible="true"
+                                PageSizeSelectorVisible="true"
+                                PageSizeSelectorItems="@(new int[] { 20, 50, 100 })"
+                                SkeletonRowsEnabled="true"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                TextWrapEnabled="false"
+                                FocusedRowEnabled="true"
+                                HighlightRowOnHover="true"
+                                AllowSelectRowByClick="true"
+                                SelectionMode="GridSelectionMode.Multiple"
+                                SelectedDataItems="@SelectedDataItems"
+                                SelectedDataItemsChanged="@OnSelectedDataItemsChanged">
+                            <Columns>
+                                <DxGridSelectionColumn Width="3rem" />
+                                <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @(context.VisibleIndex + 1)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Tác vụ"
+                                                  MinWidth="96"
+                                                  Width="6rem"
+                                                  AllowSort="false"
+                                                  TextAlignment="GridTextAlignment.Center"
+                                                  ShowInColumnChooser="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var salaryRecord = (BasicSalaryRecord)context.DataItem;
+                                        }
+                                        <div class="basic-salary-row-menu-host"
+                                             @onclick:stopPropagation="true"
+                                             @onmousedown:stopPropagation="true">
+                                            <DxDropDownButton CssClass="basic-salary-row-menu-btn"
+                                                              IconCssClass="icon more-icon medium-icon"
+                                                              RenderStyle="ButtonRenderStyle.Link"
+                                                              DropDownToggleVisible="false"
+                                                              Enabled="@CanInteract"
+                                                              Tooltip="Tác vụ dòng lương căn bản">
+                                                <Items>
+                                                    <DxDropDownButtonItem Text="Điều chỉnh"
+                                                                          IconUrl="@VntaDevExpressIcons.Edit"
+                                                                          Click="@(() => OpenEditPopup(salaryRecord))"
+                                                                          Enabled="@CanEditSalaryRecord(salaryRecord)" />
+                                                    <DxDropDownButtonItem Text="Chi tiết"
+                                                                          IconUrl="@VntaDevExpressIcons.View"
+                                                                          Click="@(() => OpenSalaryDetailAsync(salaryRecord))"
+                                                                          Enabled="@CanShowSalaryDetail(salaryRecord)" />
+                                                    <DxDropDownButtonItem Text="Xóa"
+                                                                          IconUrl="@VntaDevExpressIcons.Delete"
+                                                                          Click="@(() => DeleteSalaryRecordAsync(salaryRecord))"
+                                                                          Enabled="@CanDeleteSalaryRecord(salaryRecord)"
+                                                                          BeginGroup="true" />
+                                                </Items>
+                                            </DxDropDownButton>
+                                        </div>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="EmployeeName" Caption="Nhân viên" MinWidth="220">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var salaryRecord = (BasicSalaryRecord)context.DataItem;
+                                        }
+                                        <div class="basic-salary-name-cell">
+                                            <span class="basic-salary-name-text" title="@salaryRecord.EmployeeDisplayText">@HighlightSearchText(salaryRecord.EmployeeDisplayText)</span>
+                                        </div>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="EmployeeCode" Caption="Mã nhân viên" MinWidth="140">
+                                    <CellDisplayTemplate>
+                                        @HighlightSearchText(context.DisplayText)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="DepartmentDisplayText" Caption="Phòng ban" MinWidth="180">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var salaryRecord = (BasicSalaryRecord)context.DataItem;
+                                        }
+                                        <span class="basic-salary-department-text" title="@salaryRecord.DepartmentDisplayText">@HighlightSearchText(salaryRecord.DepartmentDisplayText)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="PositionDisplayText" Caption="Chức danh" MinWidth="160">
+                                    <CellDisplayTemplate>
+                                        @HighlightSearchText(context.DisplayText)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="PayrollMonth" Caption="Tháng" Width="90" MinWidth="90" />
+                                <DxGridDataColumn FieldName="PayrollYear" Caption="Năm" Width="100" MinWidth="100" />
+                                <DxGridDataColumn FieldName="BasicSalary" Caption="Lương căn bản" MinWidth="160" DisplayFormat="n0" />
+                                <DxGridDataColumn FieldName="StandardWorkingDays" Caption="Ngày công chuẩn" MinWidth="140" DisplayFormat="n2" />
+                                <DxGridDataColumn FieldName="DailySalary" Caption="Lương ngày" MinWidth="140" DisplayFormat="n2" />
+                                <DxGridDataColumn FieldName="HourlySalary" Caption="Lương giờ" MinWidth="140" DisplayFormat="n2" />
+                                <DxGridDataColumn FieldName="CreatedAtUtc" Caption="Ngày tạo" MinWidth="150">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var salaryRecord = (BasicSalaryRecord)context.DataItem;
+                                        }
+                                        @FormatDateTime(salaryRecord.CreatedAtUtc)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="UpdatedAtUtc" Caption="Cập nhật lần cuối" MinWidth="160">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var salaryRecord = (BasicSalaryRecord)context.DataItem;
+                                        }
+                                        @FormatDateTime(salaryRecord.UpdatedAtUtc)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                            </Columns>
+                            <EmptyDataAreaTemplate>
+                                <div class="empty-state">
+                                    <div class="state-title">@EmptyStateTitle</div>
+                                    <div class="state-message">@EmptyStateMessage</div>
+                                    <DxButton Text="@EmptyStateActionText"
+                                              Click="OnEmptyStateActionClick"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                </div>
+                            </EmptyDataAreaTemplate>
+                        </DxGrid>
+                    </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>
+
+<LuongCanBanInfoPopup @bind-Visible="IsDetailPopupVisible"
+                      SalaryRecord="@SelectedSalaryRecord"
+                      Rows="@DetailRows"
+                      ResponseTime="@DetailResponseTime"
+                      IsLoading="@IsDetailLoading"
+                      ErrorMessage="@DetailErrorMessage"
+                      EmptyMessage="@DetailEmptyMessage"
+                      RetryRequested="RetrySalaryDetailAsync" />
+
+<LuongCanBanEditPopup Visible="@IsEditPopupVisible"
+                       VisibleChanged="CloseEditPopupAsync"
+                       IsSaving="@IsSavingEdit"
+                       Title="@EditPopupTitle"
+                       Model="@EditModel"
+                       ErrorMessage="@EditErrorMessage"
+                       IsCreatingNewSalaryRecord="@IsCreatingNewSalaryRecord"
+                       CanEditFields="@CanEditPopupFields"
+                       CanSave="@CanSaveEdit"
+                       SaveRequested="SaveSalaryRecordAsync" />

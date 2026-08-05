@@ -1,0 +1,271 @@
+.popup-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.popup-banner {
+    padding: 1rem 1.1rem;
+    border-radius: 0.8rem;
+    border: 1px solid rgba(37, 99, 235, 0.16);
+    background:
+        radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 42%),
+        linear-gradient(135deg, rgba(37, 99, 235, 0.09), rgba(16, 185, 129, 0.06));
+}
+
+.popup-banner-title {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-size: 1.02rem;
+    font-weight: 700;
+}
+
+.popup-banner-text,
+.employee-panel-description {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.employee-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.employee-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1rem 0.75rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 94%, white);
+    border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 82%, transparent);
+}
+
+.employee-panel-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.employee-panel-title {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-size: 1.02rem;
+    font-weight: 700;
+}
+
+.employee-panel-search {
+    flex: 0 0 auto;
+    min-width: 18rem;
+    max-width: min(100%, 24rem);
+}
+
+.employee-quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.quick-action-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-width: min(100%, 24rem);
+}
+
+.quick-action-caption {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.popup-summary-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.popup-summary-card {
+    position: relative;
+    overflow: hidden;
+    padding: 1rem 1.15rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    border-radius: 0.75rem;
+    background:
+        linear-gradient(135deg, color-mix(in srgb, white 92%, transparent), transparent 54%),
+        color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 92%, white);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+}
+
+.popup-summary-card::after {
+    content: "";
+    position: absolute;
+    inset: auto -1.5rem -1.5rem auto;
+    width: 5rem;
+    height: 5rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, currentColor 14%, transparent);
+    opacity: 0.55;
+}
+
+.popup-summary-label {
+    font-size: 0.84rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.popup-summary-value {
+    margin-top: 0.45rem;
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.employee-grid {
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 80%, transparent);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.popup-validation-message {
+    padding: 0.9rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(220, 38, 38, 0.18);
+    background: rgba(254, 242, 242, 0.95);
+    color: #b91c1c;
+    font-weight: 600;
+}
+
+.popup-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.readonly-field {
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 94%, white);
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.28rem 0.68rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.status-badge-neutral {
+    color: #475569;
+    background: rgba(148, 163, 184, 0.16);
+}
+
+.status-badge-warning {
+    color: #b45309;
+    background: rgba(245, 158, 11, 0.18);
+}
+
+.status-badge-info {
+    color: #1d4ed8;
+    background: rgba(59, 130, 246, 0.14);
+}
+
+.status-badge-success {
+    color: #0f766e;
+    background: rgba(16, 185, 129, 0.14);
+}
+
+.status-badge-danger {
+    color: #b91c1c;
+    background: rgba(239, 68, 68, 0.14);
+}
+
+.empty-state,
+.employee-empty-state {
+    height: 100%;
+    min-height: 18rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.state-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.state-message {
+    max-width: 40rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .employee-searchbox,
+::deep .team-filter-combobox,
+::deep .assignment-combobox {
+    width: 100%;
+}
+
+::deep .employee-searchbox .dxbl-text-editor,
+::deep .team-filter-combobox .dxbl-editor,
+::deep .assignment-combobox .dxbl-editor {
+    min-height: 2.35rem;
+}
+
+::deep .employee-searchbox .dxbl-text-editor {
+    border-radius: 999px;
+}
+
+@media (max-width: 1200px) {
+    .popup-summary-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .popup-summary-strip {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .employee-panel-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .employee-panel-search {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+    }
+
+    .quick-action-filter {
+        min-width: 0;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .popup-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+}

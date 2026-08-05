@@ -1,0 +1,182 @@
+@namespace Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruBHXHYT
+
+<DxLayoutBreakpoint DeviceSize="DeviceSize.XSmall | DeviceSize.Small | DeviceSize.Medium"
+                    IsActive="@IsCompactLayout"
+                    IsActiveChanged="OnCompactLayoutChangedAsync" />
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="@PopupWidth"
+         Height="@PopupHeight"
+         ShowCloseButton="false"
+         ShowFooter="false"
+         CloseOnEscape="@(!IsLoading)"
+         CloseOnOutsideClick="false"
+         CssClass="insurance-deduction-monthly-work-popup">
+    <HeaderContentTemplate>
+        <div class="insurance-deduction-monthly-work-header">
+            <div class="insurance-deduction-monthly-work-heading">
+                <div class="insurance-deduction-monthly-work-title-row">
+                    <span class="insurance-deduction-monthly-work-title">@Title</span>
+                    @if (!string.IsNullOrWhiteSpace(SourceLockText))
+                    {
+                        <span class="insurance-deduction-monthly-work-lock @SourceLockCssClass">@SourceLockText</span>
+                    }
+                </div>
+                <div class="insurance-deduction-monthly-work-context">@Context</div>
+            </div>
+            <div class="insurance-deduction-monthly-work-header-actions">
+                <DxButton Text="Làm mới"
+                          Click="RefreshAsync"
+                          Enabled="@(!IsLoading)"
+                          IconUrl="@VntaDevExpressIcons.Refresh"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                <DxButton Click="CloseAsync"
+                          Enabled="@(!IsLoading)"
+                          IconUrl="@VntaDevExpressIcons.Cancel"
+                          Tooltip="Đóng bảng công tháng"
+                          RenderStyle="ButtonRenderStyle.Secondary"
+                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            </div>
+        </div>
+    </HeaderContentTemplate>
+    <BodyContentTemplate Context="popupContext">
+        <HrmLoadingPanel Visible="@IsLoading"
+                         IsContentBlocked="true"
+                         IsContentVisible="true"
+                         IndicatorVisible="true"
+                         IndicatorAreaVisible="true"
+                         Text="Đang tải bảng công tháng...">
+            <div class="insurance-deduction-monthly-work-content @(IsCompactLayout ? "is-compact" : string.Empty)">
+                @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    <div class="form-error-message">@ErrorMessage</div>
+                }
+                else if (Rows.Count == 0)
+                {
+                    <div class="state-message">Không có dữ liệu bảng công tháng cho nhân viên này trong kỳ đã chọn.</div>
+                }
+                else
+                {
+                    <section class="insurance-deduction-monthly-work-summary" aria-label="Tổng hợp công tháng">
+                        @foreach (var card in SummaryCards)
+                        {
+                            <article class="@card.CssClass">
+                                <div class="insurance-deduction-monthly-work-summary-card-header">
+                                    <div>
+                                        <div class="insurance-deduction-monthly-work-summary-card-title">@card.Title</div>
+                                        <div class="insurance-deduction-monthly-work-summary-card-value">@card.ValueText</div>
+                                    </div>
+                                    <span class="insurance-deduction-monthly-work-summary-card-icon" aria-hidden="true">
+                                        <DxButton IconUrl="@card.DevExpressIconUrl"
+                                                  Attributes="@DecorativeIconButtonAttributes"
+                                                  RenderStyle="@card.IconRenderStyle"
+                                                  RenderStyleMode="ButtonRenderStyleMode.Text" />
+                                    </span>
+                                </div>
+                            </article>
+                        }
+                    </section>
+
+                    <section class="insurance-deduction-monthly-work-grid-summaries" aria-label="Bộ lọc bảng công tháng">
+                        <div class="insurance-deduction-monthly-work-grid-summary-group">
+                            <span class="insurance-deduction-monthly-work-grid-summary-label">Loại ngày công</span>
+                            <DxButtonGroup CssClass="insurance-deduction-monthly-work-summary-button-group"
+                                           RenderStyle="ButtonRenderStyle.Secondary"
+                                           RenderStyleMode="ButtonRenderStyleMode.Outline"
+                                           SelectionMode="ButtonGroupSelectionMode.Single"
+                                           Enabled="@(!IsLoading)">
+                                <Items>
+                                    @foreach (var badge in DayTypeSummaryBadges)
+                                    {
+                                        <DxButtonGroupItem Text="@($"{badge.ShortLabel} {badge.Count:N0}")"
+                                                           Tooltip="@badge.Label"
+                                                           CssClass="@GetDayTypeSummaryCssClass(badge.Key)"
+                                                           Selected="@(badge.Key == SelectedDayTypeSummaryKey)"
+                                                           Click="@(() => SelectDayTypeSummaryAsync(badge.Key))" />
+                                    }
+                                </Items>
+                            </DxButtonGroup>
+                        </div>
+                        <div class="insurance-deduction-monthly-work-grid-summary-group">
+                            <span class="insurance-deduction-monthly-work-grid-summary-label">Trạng thái</span>
+                            <DxButtonGroup CssClass="insurance-deduction-monthly-work-summary-button-group"
+                                           RenderStyle="ButtonRenderStyle.Secondary"
+                                           RenderStyleMode="ButtonRenderStyleMode.Outline"
+                                           SelectionMode="ButtonGroupSelectionMode.Single"
+                                           Enabled="@(!IsLoading)">
+                                <Items>
+                                    @foreach (var badge in StatusSummaryBadges)
+                                    {
+                                        <DxButtonGroupItem Text="@($"{badge.ShortLabel} {badge.Count:N0}")"
+                                                           Tooltip="@badge.Label"
+                                                           CssClass="@GetStatusSummaryCssClass(badge.Key)"
+                                                           Selected="@(badge.Key == SelectedStatusSummaryKey)"
+                                                           Click="@(() => SelectStatusSummaryAsync(badge.Key))" />
+                                    }
+                                </Items>
+                            </DxButtonGroup>
+                        </div>
+                    </section>
+
+                    <div class="insurance-deduction-monthly-work-grid-host">
+                        <div class="insurance-deduction-monthly-work-grid-tools">
+                            <DxSearchBox CssClass="insurance-deduction-monthly-work-search"
+                                         NullText="Tìm ngày, loại ngày, ca, trạng thái"
+                                         BindValueMode="BindValueMode.OnDelayedInput"
+                                         InputDelay="300"
+                                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                         @bind-Text="SearchText" />
+                        </div>
+                        <DxGrid Data="@FilteredRows"
+                                KeyFieldName="@nameof(KhauTruBHXHYTMonthlyWorkdayRow.Id)"
+                                CssClass="insurance-deduction-monthly-work-grid"
+                                Height="100%"
+                                PageSize="100"
+                                PagerVisible="false"
+                                SearchText="@SearchText"
+                                TextWrapEnabled="false"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                ShowFilterRow="true"
+                                HighlightRowOnHover="true">
+                            <Columns>
+                                <DxGridDataColumn Caption="STT" Width="4.25rem" MinWidth="64" TextAlignment="GridTextAlignment.Center" AllowSort="false">
+                                    <CellDisplayTemplate>@(context.VisibleIndex + 1)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(KhauTruBHXHYTMonthlyWorkdayRow.WorkDate)" Caption="Ngày" Width="4.75rem" MinWidth="72" TextAlignment="GridTextAlignment.Center">
+                                    <CellDisplayTemplate><span class="monthly-work-date">@(( (KhauTruBHXHYTMonthlyWorkdayRow)context.DataItem).WorkDate.ToString("dd/MM"))</span></CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Thứ" Width="6.25rem" MinWidth="90" TextAlignment="GridTextAlignment.Center" AllowSort="false">
+                                    <CellDisplayTemplate>@GetWeekdayDisplay(((KhauTruBHXHYTMonthlyWorkdayRow)context.DataItem).WorkDate)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(KhauTruBHXHYTMonthlyWorkdayRow.DayType)" Caption="Loại ngày" Width="7.5rem" MinWidth="112" TextAlignment="GridTextAlignment.Center">
+                                    <CellDisplayTemplate><span class="@GetDayTypeCssClass((KhauTruBHXHYTMonthlyWorkdayRow)context.DataItem)">@(( (KhauTruBHXHYTMonthlyWorkdayRow)context.DataItem).DayType)</span></CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(KhauTruBHXHYTMonthlyWorkdayRow.ShiftShortName)" Caption="Ca" Width="5.25rem" MinWidth="80" TextAlignment="GridTextAlignment.Center">
+                                    <CellDisplayTemplate><span class="@GetShiftCssClass((KhauTruBHXHYTMonthlyWorkdayRow)context.DataItem)" style="@GetShiftStyle((KhauTruBHXHYTMonthlyWorkdayRow)context.DataItem)">@(( (KhauTruBHXHYTMonthlyWorkdayRow)context.DataItem).ShiftShortName)</span></CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Vào - Ra" Width="7.75rem" MinWidth="116" TextAlignment="GridTextAlignment.Center" AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @{ var row = (KhauTruBHXHYTMonthlyWorkdayRow)context.DataItem; }
+                                        @if (string.IsNullOrWhiteSpace(row.CheckInAt) && string.IsNullOrWhiteSpace(row.CheckOutAt)) { <span>--</span> }
+                                        else { <span class="monthly-work-check-time"><span class="check-in">@row.CheckInAt</span>@if (!string.IsNullOrWhiteSpace(row.CheckInAt) && !string.IsNullOrWhiteSpace(row.CheckOutAt)) { <span class="check-separator">-</span> }<span class="check-out">@row.CheckOutAt</span></span> }
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(KhauTruBHXHYTMonthlyWorkdayRow.Status)" Caption="Trạng thái" Width="7rem" MinWidth="96" TextAlignment="GridTextAlignment.Center">
+                                    <CellDisplayTemplate><span class="monthly-work-status-code">@DisplayOrPlaceholder(((KhauTruBHXHYTMonthlyWorkdayRow)context.DataItem).Status)</span></CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(KhauTruBHXHYTMonthlyWorkdayRow.OvertimeMinutes15)" Caption="OT 1.5" Width="6.25rem" MinWidth="88" TextAlignment="GridTextAlignment.Right"><CellDisplayTemplate>@FormatOptionalHours(((KhauTruBHXHYTMonthlyWorkdayRow)context.DataItem).OvertimeMinutes15)</CellDisplayTemplate></DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(KhauTruBHXHYTMonthlyWorkdayRow.OvertimeMinutes20)" Caption="OT 2.0" Width="6.25rem" MinWidth="88" TextAlignment="GridTextAlignment.Right"><CellDisplayTemplate>@FormatOptionalHours(((KhauTruBHXHYTMonthlyWorkdayRow)context.DataItem).OvertimeMinutes20)</CellDisplayTemplate></DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(KhauTruBHXHYTMonthlyWorkdayRow.OvertimeMinutes30)" Caption="OT 3.0" Width="6.25rem" MinWidth="88" TextAlignment="GridTextAlignment.Right"><CellDisplayTemplate>@FormatOptionalHours(((KhauTruBHXHYTMonthlyWorkdayRow)context.DataItem).OvertimeMinutes30)</CellDisplayTemplate></DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(KhauTruBHXHYTMonthlyWorkdayRow.LateEarlyTotalMinutes)" Caption="ĐT/VS" Width="6.25rem" MinWidth="88" TextAlignment="GridTextAlignment.Right"><CellDisplayTemplate>@FormatOptionalMinutes(((KhauTruBHXHYTMonthlyWorkdayRow)context.DataItem).LateEarlyTotalMinutes)</CellDisplayTemplate></DxGridDataColumn>
+                            </Columns>
+                        </DxGrid>
+                    </div>
+                }
+            </div>
+        </HrmLoadingPanel>
+    </BodyContentTemplate>
+</DxPopup>

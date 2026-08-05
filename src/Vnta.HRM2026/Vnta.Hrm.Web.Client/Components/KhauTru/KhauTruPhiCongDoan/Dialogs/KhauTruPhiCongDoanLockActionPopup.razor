@@ -1,0 +1,51 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         FooterCssClass="union-fee-deduction-popup-footer"
+         CssClass="union-fee-deduction-confirm-popup union-fee-deduction-lock-action-popup">
+    <BodyContentTemplate>
+        <div class="union-fee-deduction-lock-action-content">
+            <div class="union-fee-deduction-confirm-message">@PromptText</div>
+            <div class="union-fee-deduction-lock-action-context">@ContextText</div>
+            <div class="union-fee-deduction-lock-action-options">
+                <button type="button"
+                        class="@GetScopeCssClass(SelectedRowsScope)"
+                        @onclick="@(() => SelectScopeAsync(SelectedRowsScope))"
+                        disabled="@(!CanChooseSelectedRowsScope)">
+                    <span class="union-fee-deduction-lock-action-title">Các dòng đã chọn</span>
+                    <span class="union-fee-deduction-lock-action-description">@SelectedRowsDescription</span>
+                </button>
+                <button type="button"
+                        class="@GetScopeCssClass(WholePeriodScope)"
+                        @onclick="@(() => SelectScopeAsync(WholePeriodScope))">
+                    <span class="union-fee-deduction-lock-action-title">Toàn bộ kỳ @WholePeriodLabel</span>
+                    <span class="union-fee-deduction-lock-action-description">@WholePeriodDescription</span>
+                </button>
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="union-fee-deduction-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="union-fee-deduction-popup-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="@(ShouldLock ? "Khóa" : "Mở khóa")"
+                      Click="ConfirmAsync"
+                      IconUrl="@(ShouldLock ? VntaDevExpressIcons.Lock : VntaDevExpressIcons.Unlock)"
+                      CssClass="union-fee-deduction-popup-action"
+                      Enabled="@CanConfirm"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>
+@namespace Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruPhiCongDoan

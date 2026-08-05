@@ -1,0 +1,36 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Xác nhận tính công"
+         Width="min(32rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRebuilding)"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         FooterCssClass="bang-cong-ngay-confirm-popup-footer"
+         CssClass="bang-cong-ngay-confirm-popup">
+    <BodyContentTemplate>
+        <div class="bang-cong-ngay-confirm-content">
+            <div class="bang-cong-ngay-confirm-message">
+                Sẽ tính lại bảng công ngày @WorkDateLabel từ dữ liệu chấm công gốc. Các dòng chưa khóa có thể bị ghi đè; các dòng đã khóa sẽ được giữ nguyên.
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="bang-cong-ngay-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="bang-cong-ngay-confirm-action"
+                      Enabled="@(!IsRebuilding)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Tính công"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.Refresh"
+                      CssClass="bang-cong-ngay-confirm-action"
+                      Enabled="@(!IsRebuilding)"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

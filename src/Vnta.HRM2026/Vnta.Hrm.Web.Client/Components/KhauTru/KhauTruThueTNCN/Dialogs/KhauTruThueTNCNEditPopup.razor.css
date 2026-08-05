@@ -1,0 +1,7 @@
+.personal-income-tax-edit-form {
+    padding: 0.5rem 0;
+}
+
+::deep .personal-income-tax-edit-popup .edit-error-message {
+    color: var(--hrm-danger, #b42318);
+}

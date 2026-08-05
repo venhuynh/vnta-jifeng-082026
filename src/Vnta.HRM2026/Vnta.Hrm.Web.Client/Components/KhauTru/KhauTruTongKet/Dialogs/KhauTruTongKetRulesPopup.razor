@@ -1,0 +1,43 @@
+@namespace Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruTongHop
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Quy tắc tổng kết khấu trừ"
+         Width="560px"
+         ShowCloseButton="true"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         FooterCssClass="deduction-summary-popup-footer"
+         CssClass="deduction-summary-rules-popup">
+    <BodyContentTemplate>
+        <div class="rules-popup-content">
+            <div class="rules-popup-period" role="status">
+                Kỳ đang xem: <strong>@PayrollPeriodDisplay</strong>
+            </div>
+            <div class="rules-popup-section">
+                <div class="rules-popup-title">Nguồn tổng hợp</div>
+                <div>Mỗi dòng tổng kết thuộc một nhân viên trong một kỳ lương. Snapshot tổng kết đọc số tiền từ các chi tiết BHXH-YT, Thuế TNCN, Công đoàn, Tạm ứng và Khấu trừ khác.</div>
+            </div>
+            <div class="rules-popup-section">
+                <div class="rules-popup-title">Làm mới tổng kết</div>
+                <div>Khi làm mới một dòng, hệ thống đồng bộ snapshot từ các chi tiết hiện có; nguồn chi tiết không tồn tại được tính là 0. Thao tác này không ghi đè bản ghi chi tiết.</div>
+            </div>
+            <div class="rules-popup-section">
+                <div class="rules-popup-title">Khóa dữ liệu</div>
+                <div>Dòng tổng kết đã khóa không bị ghi đè khi lấy dữ liệu từ tháng trước hoặc làm mới. Mở khóa trước khi cần đồng bộ lại dữ liệu của dòng đó.</div>
+            </div>
+            <div class="rules-popup-note">
+                Các quy tắc trên là quy tắc tổng hợp tĩnh đang áp dụng cho mọi kỳ lương được hỗ trợ, bao gồm @PayrollPeriodDisplay. Quy tắc tính của từng khoản được quản lý tại nguồn chi tiết tương ứng.
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <DxButton Text="Đóng"
+                  Click="CloseAsync"
+                  IconUrl="@VntaDevExpressIcons.Cancel"
+                  CssClass="deduction-summary-popup-action"
+                  RenderStyle="ButtonRenderStyle.Secondary"
+                  RenderStyleMode="ButtonRenderStyleMode.Outline" />
+    </FooterContentTemplate>
+</DxPopup>

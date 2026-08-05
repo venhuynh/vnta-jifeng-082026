@@ -1,0 +1,21 @@
+@page "/"
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
+
+@inject NavigationManager NavigationManager
+
+@code {
+    private const string DefaultAuthenticatedRoute = "/payroll/other-allowance";
+
+    bool HasRedirected { get; set; }
+
+    protected override void OnAfterRender(bool firstRender) {
+        if(!firstRender || HasRedirected) {
+            return;
+        }
+
+        HasRedirected = true;
+        NavigationManager.NavigateTo(DefaultAuthenticatedRoute, replace: true);
+    }
+}

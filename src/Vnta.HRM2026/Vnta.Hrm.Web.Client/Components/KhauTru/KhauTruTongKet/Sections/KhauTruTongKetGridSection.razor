@@ -1,0 +1,202 @@
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components
+@using Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruTongHop.Models
+@using Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruTongHop.State
+@namespace Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruTongHop
+
+<div class="deduction-summary-root">
+    @if(HasLoadError)
+    {
+        <div class="card error-state">
+            <div class="state-title">Không thể tải dữ liệu tổng kết khấu trừ</div>
+            <div class="state-message">@LoadErrorMessage</div>
+            <DxButton Text="Thử lại"
+                      Click="RetryRequested"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    }
+    else
+    {
+        <div class="card deduction-summary-grid-card">
+            <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             CssClass="deduction-summary-loading-panel"
+                             Text="@LoadingText">
+                <div class="deduction-summary-grid-content">
+                    <div class="deduction-summary-grid-header">
+                        <div class="employee-summary-strip deduction-summary-lock-strip">
+                            <DxButtonGroup CssClass="deduction-summary-lock-button-group"
+                                           RenderStyle="ButtonRenderStyle.Secondary"
+                                           RenderStyleMode="ButtonRenderStyleMode.Outline"
+                                           SelectionMode="ButtonGroupSelectionMode.Single"
+                                           Enabled="@State.CanChangeFilters">
+                                <Items>
+                                    @foreach(var filter in LockStatusFilters)
+                                    {
+                                        <DxButtonGroupItem Text="@($"{filter.Label} {GetLockStatusCount(filter.Key):N0}")"
+                                                           Tooltip="@filter.Label"
+                                                           CssClass="@GetLockStatusFilterCssClass(filter.Key)"
+                                                           Selected="@(filter.Key == State.SelectedLockStatusKey)"
+                                                           Click="@(() => LockStatusSelected.InvokeAsync(filter.Key))" />
+                                    }
+                                </Items>
+                            </DxButtonGroup>
+                            <DxButtonGroup CssClass="deduction-summary-total-amount-button-group"
+                                           RenderStyle="ButtonRenderStyle.Primary"
+                                           RenderStyleMode="ButtonRenderStyleMode.Outline">
+                                <Items>
+                                    <DxButtonGroupItem Text="@($"Tổng: {FormatMoney(State.VisibleDeductionTotal)}")"
+                                                       CssClass="deduction-summary-total-amount-button" />
+                                </Items>
+                            </DxButtonGroup>
+                        </div>
+                        <div class="deduction-summary-grid-search">
+                            <DxSearchBox CssClass="deduction-summary-grid-searchbox"
+                                         NullText="Tìm kiếm nhân viên, phòng ban, chức vụ hoặc ghi chú"
+                                         BindValueMode="BindValueMode.OnDelayedInput"
+                                         InputDelay="400"
+                                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                         Text="@State.SearchText"
+                                         TextChanged="SearchTextChanged"
+                                         Enabled="@State.CanChangeFilters" />
+                        </div>
+                    </div>
+                    <DxGrid @ref="grid"
+                            Data="@State.Records"
+                            KeyFieldName="Id"
+                            CssClass="deduction-summary-grid"
+                            ShowSearchBox="false"
+                            PagerVisible="false"
+                            ShowAllRows="true"
+                            SkeletonRowsEnabled="true"
+                            ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                            FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                            TextWrapEnabled="false"
+                            FocusedRowEnabled="true"
+                            HighlightRowOnHover="true"
+                            AllowSelectRowByClick="true"
+                            SelectionMode="GridSelectionMode.Multiple"
+                            SelectedDataItems="@State.SelectedDataItems"
+                            SelectedDataItemsChanged="SelectedDataItemsChanged"
+                            FilterCriteriaChanged="FilterCriteriaChanged">
+                        <Columns>
+                            <DxGridSelectionColumn Width="3rem" />
+                            <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                <CellDisplayTemplate>
+                                    @(State.CurrentPageIndex * State.PageSize + context.VisibleIndex + 1)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn Caption="Tác vụ"
+                                              Width="6rem"
+                                              MinWidth="96"
+                                              AllowSort="false"
+                                              TextAlignment="GridTextAlignment.Center"
+                                              ShowInColumnChooser="false">
+                                <CellDisplayTemplate>
+                                    @{ var row = (PayrollDeductionSummaryRecord)context.DataItem; }
+                                    <div class="deduction-summary-row-menu-host"
+                                         @onclick:stopPropagation="true"
+                                         @onmousedown:stopPropagation="true">
+                                        <DxDropDownButton CssClass="deduction-summary-row-menu-btn"
+                                                          IconCssClass="icon more-icon medium-icon"
+                                                          RenderStyle="ButtonRenderStyle.Link"
+                                                          DropDownToggleVisible="false"
+                                                          Enabled="@State.CanOperateOnCurrentDataset"
+                                                          Tooltip="Tác vụ dòng tổng kết khấu trừ">
+                                            <Items>
+                                                <DxDropDownButtonItem Text="Điều chỉnh"
+                                                                      IconUrl="@VntaDevExpressIcons.Edit"
+                                                                      Click="@(() => EditRequested.InvokeAsync(row))"
+                                                                      Enabled="@CanEditRow(row)" />
+                                                <DxDropDownButtonItem Text="Làm mới"
+                                                                      IconUrl="@VntaDevExpressIcons.Refresh"
+                                                                      Click="@(() => RefreshRequested.InvokeAsync(row))"
+                                                                      Enabled="@CanRefreshRow(row)" />
+                                                <DxDropDownButtonItem Text="@row.LockActionText"
+                                                                      IconUrl="@(row.IsLocked ? VntaDevExpressIcons.Unlock : VntaDevExpressIcons.Lock)"
+                                                                      Click="@(() => ToggleLockRequested.InvokeAsync(row))"
+                                                                      Enabled="@State.CanOperateOnCurrentDataset"
+                                                                      BeginGroup="true" />
+                                                <DxDropDownButtonItem Text="Bảng công tháng"
+                                                                      IconUrl="@VntaDevExpressIcons.TaskList"
+                                                                      Click="@(() => MonthlyWorkRequested.InvokeAsync(row))"
+                                                                      Enabled="@CanViewMonthlyWork(row)" />
+                                            </Items>
+                                        </DxDropDownButton>
+                                    </div>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="EmployeeDisplay" Caption="Nhân viên" MinWidth="240">
+                                <CellDisplayTemplate>
+                                    @HighlightSearchText(((PayrollDeductionSummaryRecord)context.DataItem).EmployeeDisplay)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Phòng ban" MinWidth="280">
+                                <CellDisplayTemplate>
+                                    @{ var row = (PayrollDeductionSummaryRecord)context.DataItem; }
+                                    <span class="deduction-summary-department-path" title="@row.DepartmentDisplay">@HighlightSearchText(row.DepartmentDisplay)</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" MinWidth="160">
+                                <CellDisplayTemplate>
+                                    @HighlightSearchText(((PayrollDeductionSummaryRecord)context.DataItem).PositionDisplay)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" Width="110" MinWidth="110" />
+                            <DxGridDataColumn FieldName="PersonalIncomeTaxDeductionAmount" Caption="Thuế TNCN" MinWidth="130"><CellDisplayTemplate><span class="hrm-grid-amount">@FormatMoney(((PayrollDeductionSummaryRecord)context.DataItem).PersonalIncomeTaxDeductionAmount)</span></CellDisplayTemplate></DxGridDataColumn>
+                            <DxGridDataColumn FieldName="SocialInsuranceDeductionAmount" Caption="BHXH" MinWidth="120"><CellDisplayTemplate><span class="hrm-grid-amount">@FormatMoney(((PayrollDeductionSummaryRecord)context.DataItem).SocialInsuranceDeductionAmount)</span></CellDisplayTemplate></DxGridDataColumn>
+                            <DxGridDataColumn FieldName="UnionFeeDeductionAmount" Caption="Công đoàn" MinWidth="130"><CellDisplayTemplate><span class="hrm-grid-amount">@FormatMoney(((PayrollDeductionSummaryRecord)context.DataItem).UnionFeeDeductionAmount)</span></CellDisplayTemplate></DxGridDataColumn>
+                            <DxGridDataColumn FieldName="AdvanceDeductionAmount" Caption="Tạm ứng" MinWidth="120"><CellDisplayTemplate><span class="hrm-grid-amount">@FormatMoney(((PayrollDeductionSummaryRecord)context.DataItem).AdvanceDeductionAmount)</span></CellDisplayTemplate></DxGridDataColumn>
+                            <DxGridDataColumn FieldName="OtherDeductionAmount" Caption="Khấu trừ khác" MinWidth="130"><CellDisplayTemplate><span class="hrm-grid-amount">@FormatMoney(((PayrollDeductionSummaryRecord)context.DataItem).OtherDeductionAmount)</span></CellDisplayTemplate></DxGridDataColumn>
+                            <DxGridDataColumn FieldName="TotalDeductionAmount" Caption="Tổng khấu trừ" MinWidth="145"><CellDisplayTemplate><span class="hrm-grid-amount hrm-grid-amount--total">@FormatMoney(((PayrollDeductionSummaryRecord)context.DataItem).TotalDeductionAmount)</span></CellDisplayTemplate></DxGridDataColumn>
+                            <DxGridDataColumn FieldName="IsLocked" Caption="Trạng thái" Width="140" MinWidth="140"><CellDisplayTemplate>@{ var row = (PayrollDeductionSummaryRecord)context.DataItem; }<span class="@GetLockBadgeCssClass(row.IsLocked)">@row.LockStatusText</span></CellDisplayTemplate></DxGridDataColumn>
+                            <DxGridDataColumn FieldName="Note" Caption="Ghi chú" MinWidth="240"><CellDisplayTemplate>@{ var row = (PayrollDeductionSummaryRecord)context.DataItem; }<span title="@row.Note">@HighlightSearchText(GetNotePreview(row.Note))</span></CellDisplayTemplate></DxGridDataColumn>
+                        </Columns>
+                        <TotalSummary>
+                            <DxGridSummaryItem Name="DeductionAmountTotal"
+                                               FieldName="@nameof(PayrollDeductionSummaryRecord.TotalDeductionAmount)"
+                                               SummaryType="GridSummaryItemType.Sum"
+                                               Visible="false" />
+                        </TotalSummary>
+                        <EmptyDataAreaTemplate>
+                            <div class="empty-state">
+                                <div class="state-title">@State.EmptyStateTitle</div>
+                                <div class="state-message">@State.EmptyStateMessage</div>
+                                <DxButton Text="@State.EmptyStateActionText"
+                                          Click="EmptyStateActionRequested"
+                                          RenderStyle="ButtonRenderStyle.Primary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                            </div>
+                        </EmptyDataAreaTemplate>
+                    </DxGrid>
+                    <div class="deduction-summary-pager" aria-label="Điều hướng trang tổng kết khấu trừ">
+                        <div class="deduction-summary-pager-summary">@State.PagerSummaryText</div>
+                        @if(State.CanBrowsePages)
+                        {
+                            <DxPager PageCount="@State.TotalPageCount"
+                                     ActivePageIndex="@State.CurrentPageIndex"
+                                     ActivePageIndexChanged="ActivePageIndexChanged"
+                                     NavigationMode="PagerNavigationMode.NumericButtons"
+                                     VisibleNumericButtonCount="7" />
+                        }
+                        <div class="deduction-summary-page-size">
+                            <span>Hiển thị</span>
+                            <DxComboBox TData="int"
+                                        TValue="int"
+                                        Data="@State.PageSizeOptions"
+                                        Value="@State.PageSize"
+                                        ValueChanged="PageSizeChanged"
+                                        ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                        Enabled="@State.CanChangeFilters" />
+                            <span>dòng/trang</span>
+                        </div>
+                    </div>
+                </div>
+            </HrmLoadingPanel>
+        </div>
+    }
+</div>

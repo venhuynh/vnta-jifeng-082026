@@ -1,0 +1,250 @@
+@page "/attendance/devices"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models
+
+@attribute [Authorize(Policy = InternalAccountPolicies.DeviceAdministration)]
+
+<PageTitle>VNTA - Máy chấm công</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Máy chấm công" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Mới"
+                           Click="OnAddDeviceClick"
+                           Enabled="@CanCreate"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tạo máy chấm công mới"
+                           IconUrl="@VntaDevExpressIcons.Add" />
+            <DxToolbarItem Text="Điều chỉnh"
+                           Click="OnEditDeviceClick"
+                           Enabled="@CanEditSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Điều chỉnh máy chấm công đã chọn"
+                           IconUrl="@VntaDevExpressIcons.Edit" />
+            <DxToolbarItem Text="Xóa"
+                           Click="OnDeleteDevicesClick"
+                           Enabled="@CanDeleteSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xóa máy chấm công đã chọn"
+                           IconUrl="@VntaDevExpressIcons.Delete" />
+            <DxToolbarItem Tooltip="Làm mới danh sách máy chấm công"
+                           Enabled="@CanInteract"
+                           Click="ReloadAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Tạo lệnh"
+                           Enabled="@CanCreateCommand"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tạo lệnh cho máy chấm công"
+                           IconUrl="@VntaDevExpressIcons.Command">
+                <Items>
+                    <DxToolbarItem Text="Truy vấn thông tin"
+                                   Enabled="@CanCreateCommand"
+                                   Click="OnQueryDeviceInfoClick"
+                                   Tooltip="Truy vấn thông tin máy chấm công"
+                                   IconUrl="@VntaDevExpressIcons.Info" />
+                    <DxToolbarItem Text="Khởi động lại"
+                                   Enabled="@CanCreateCommand"
+                                   Click="OnRebootDeviceClick"
+                                   Tooltip="Khởi động lại máy chấm công"
+                                   IconUrl="@VntaDevExpressIcons.Refresh" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Xuất dữ liệu"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất dữ liệu máy chấm công"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem
+                        Text="Xuất Excel"
+                        Click="ExportAllDataToExcel"
+                        Tooltip="Xuất toàn bộ danh sách máy chấm công ra Excel"
+                        Enabled="@CanExport"
+                        IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem
+                        Text="Xuất PDF"
+                        Click="ExportAllDataToPdf"
+                        Tooltip="Xuất toàn bộ danh sách máy chấm công ra PDF"
+                        Enabled="@CanExport"
+                        IconUrl="@VntaDevExpressIcons.Pdf" />
+                    <DxToolbarItem
+                        Text="Xuất dòng đã chọn ra Excel"
+                        Click="ExportSelectedRowsToExcel"
+                        Tooltip="Xuất các máy chấm công đã chọn ra Excel"
+                        Enabled="@CanExportSelected"
+                        IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem
+                        Text="Xuất dòng đã chọn ra PDF"
+                        Click="ExportSelectedRowsToPdf"
+                        Tooltip="Xuất các máy chấm công đã chọn ra PDF"
+                        Enabled="@CanExportSelected"
+                        IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh sách máy chấm công"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanInteract"
+                           Click="OnColumnChooserItemClick"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="search-textbox-item"
+                           Tooltip="Tìm kiếm máy chấm công">
+                <Template>
+                    <div class="custom-item">
+                        <DxSearchBox CssClass="search-textbox"
+                                     NullText="Tìm kiếm"
+                                     BindValueMode="BindValueMode.OnInput"
+                                     ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                     @bind-Text="SearchText" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+        </DxToolbar>
+    </div>
+
+    <div class="attendance-devices-root">
+        @if(HasLoadError) {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải danh sách máy chấm công</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="ReloadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        } else {
+            <HrmLoadingPanel Visible="@IsLoading"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             CssClass="attendance-devices-loading-panel">
+                <DxGrid @ref="Grid"
+                        Data="@Devices"
+                        KeyFieldName="Id"
+                        CssClass="attendance-devices-grid"
+                        SearchText="@SearchText"
+                        EditMode="GridEditMode.PopupEditForm"
+                        EditFormButtonsVisible="false"
+                        PopupEditFormCssClass="attendance-devices-popup"
+                        PopupEditFormHeaderText="Thông tin máy chấm công"
+                        PageSize="20"
+                        PagerPosition="GridPagerPosition.TopAndBottom"
+                        PageSizeSelectorVisible="true"
+                        PageSizeSelectorItems="@(new int[] { 10, 20, 50 })"
+                        SkeletonRowsEnabled="true"
+                        ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                        FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                        TextWrapEnabled="false"
+                        FocusedRowEnabled="true"
+                        HighlightRowOnHover="true"
+                        AllowSelectRowByClick="true"
+                        SelectionMode="GridSelectionMode.Multiple"
+                        SelectedDataItems="@SelectedDataItems"
+                        SelectedDataItemsChanged="@OnSelectedDataItemsChanged"
+                        CustomizeEditModel="OnCustomizeEditModel"
+                        EditModelSaving="OnEditModelSaving">
+                    <Columns>
+                        <DxGridSelectionColumn Width="3rem" />
+                        <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                            <CellDisplayTemplate>
+                                @(context.VisibleIndex + 1)
+                            </CellDisplayTemplate>
+                        </DxGridDataColumn>
+                        <DxGridDataColumn FieldName="Name" Caption="Tên máy" MinWidth="180">
+                            <CellDisplayTemplate>
+                                @{
+                                    var device = (AttendanceDeviceRecord)context.DataItem;
+                                }
+                                <div class="attendance-device-name-cell">
+                                    <span class="attendance-device-name-text" title="@device.Name">@device.Name</span>
+                                    <span class="attendance-device-detail-action"
+                                          title="Chi tiết"
+                                          @onclick:stopPropagation="true">
+                                        <DxButton Click="@(_ => OpenDeviceDetailAsync(device))"
+                                                  CssClass="attendance-device-detail-button"
+                                                  IconUrl="@VntaDevExpressIcons.View"
+                                                  RenderStyle="ButtonRenderStyle.None"
+                                                  RenderStyleMode="ButtonRenderStyleMode.Text" />
+                                    </span>
+                                </div>
+                            </CellDisplayTemplate>
+                        </DxGridDataColumn>
+                        <DxGridDataColumn FieldName="SerialNumber" Caption="Số serial" MinWidth="140" />
+                        <DxGridDataColumn FieldName="IpAddress" Caption="IP" MinWidth="120" />
+                        <DxGridDataColumn FieldName="MacAddress" Caption="MAC Address" MinWidth="150" />
+                        <DxGridDataColumn FieldName="Location" Caption="Vị trí" MinWidth="180" />
+                        <DxGridDataColumn FieldName="Status" Caption="Trạng thái nguồn" Width="130" MinWidth="130" />
+                        <DxGridDataColumn FieldName="DeviceModel" Caption="Model" MinWidth="110" />
+                        <DxGridDataColumn FieldName="IsInUse" Caption="Đang sử dụng" Width="120" MinWidth="120">
+                            <CellDisplayTemplate>
+                                @{
+                                    var device = (AttendanceDeviceRecord)context.DataItem;
+                                }
+                                <span class="@GetUsageBadgeCssClass(device.IsInUse)">@GetUsageBadgeText(device.IsInUse)</span>
+                            </CellDisplayTemplate>
+                        </DxGridDataColumn>
+                        <DxGridDataColumn FieldName="LastRequestTime" Caption="Lần liên hệ cuối" MinWidth="150">
+                            <CellDisplayTemplate>
+                                @{
+                                    var device = (AttendanceDeviceRecord)context.DataItem;
+                                }
+                                @FormatDateTime(device.LastRequestTime)
+                            </CellDisplayTemplate>
+                        </DxGridDataColumn>
+                        <DxGridCommandColumn Visible="false"
+                                             NewButtonVisible="false"
+                                             EditButtonVisible="false"
+                                             DeleteButtonVisible="false"
+                                             SaveButtonVisible="false"
+                                             CancelButtonVisible="false" />
+                    </Columns>
+                    <EmptyDataAreaTemplate>
+                        <div class="empty-state">
+                            <div class="state-title">Chưa có máy chấm công</div>
+                            <div class="state-message">Bắt đầu bằng cách tạo máy chấm công đầu tiên cho HRM.</div>
+                            <DxButton Text="Tạo máy chấm công"
+                                      Click="OnAddDeviceClick"
+                                      RenderStyle="ButtonRenderStyle.Primary"
+                                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                        </div>
+                    </EmptyDataAreaTemplate>
+                    <EditFormTemplate Context="editFormContext">
+                        @{
+                            var editModel = (AttendanceDeviceRecord)editFormContext.EditModel;
+                        }
+                        <MayChamCongEditForm Model="@editModel"
+                                                   EditFormContext="@editFormContext"
+                                                   ErrorMessage="@EditErrorMessage"
+                                                   IsCreatingNewDevice="@IsCreatingNewDevice" />
+                        <div class="attendance-devices-form-actions">
+                            <DxButton Text="Lưu"
+                                      IconUrl="@VntaDevExpressIcons.Save"
+                                      CssClass="attendance-devices-form-action"
+                                      SubmitFormOnClick="true"
+                                      RenderStyle="ButtonRenderStyle.Primary"
+                                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                            <DxButton Text="Hủy"
+                                      IconUrl="@VntaDevExpressIcons.Cancel"
+                                      CssClass="attendance-devices-form-action"
+                                      Click="OnCancelDeviceEditClick"
+                                      RenderStyle="ButtonRenderStyle.Secondary"
+                                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                        </div>
+                    </EditFormTemplate>
+                </DxGrid>
+            </HrmLoadingPanel>
+        }
+    </div>
+</div>
+
+<AttendanceDeviceInfoPopup @bind-Visible="IsDetailPopupVisible"
+                           Device="@DetailDevice"
+                           Rows="@DetailRows"
+                           ResponseTime="@DetailResponseTime"
+                           IsLoading="@IsDetailLoading"
+                           ErrorMessage="@DetailErrorMessage"
+                           EmptyMessage="@DetailEmptyMessage"
+                           RetryRequested="RetryDeviceDetailAsync" />

@@ -1,0 +1,31 @@
+@using Vnta.Hrm.Application.PhuCap.PhuCapTrachNhiem
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemGanNhanVien.Export
+
+<div class="employee-grade-list-export-source" aria-hidden="true">
+    <DxGrid @ref="grid" Data="@Records" KeyFieldName="@nameof(PayrollResponsibilityAllowanceEmployeeAssignmentExportItemDto.EmployeeCode)" ShowAllRows="true" PagerVisible="false">
+        <Columns>
+            <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceEmployeeAssignmentExportItemDto.EmployeeCode)" Caption="Mã nhân viên" />
+            <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceEmployeeAssignmentExportItemDto.EmployeeName)" Caption="Họ tên" />
+            <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceEmployeeAssignmentExportItemDto.PositionName)" Caption="Chức vụ" />
+            <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceEmployeeAssignmentExportItemDto.GradeCode)" Caption="Mã cấp bậc" />
+            <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceEmployeeAssignmentExportItemDto.GradeName)" Caption="Cấp bậc" />
+            <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceEmployeeAssignmentExportItemDto.StandardResponsibilityAllowanceAmount)" Caption="Tiền chuẩn" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceEmployeeAssignmentExportItemDto.AssignmentSource)" Caption="Nguồn gán" />
+        </Columns>
+    </DxGrid>
+</div>
+
+@code {
+    private IGrid? grid;
+    private TaskCompletionSource<bool>? renderCompletionSource;
+    [Parameter] public IReadOnlyList<PayrollResponsibilityAllowanceEmployeeAssignmentExportItemDto> Records { get; set; } = [];
+    public void PrepareForRender() => renderCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public Task WaitForRenderAsync(CancellationToken cancellationToken) => (renderCompletionSource?.Task ?? Task.CompletedTask).WaitAsync(cancellationToken);
+    public Task ExportToXlsxAsync(string fileName) => grid!.ExportToXlsxAsync(fileName);
+    public Task ExportToPdfAsync(string fileName) => grid!.ExportToPdfAsync(fileName);
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        renderCompletionSource?.TrySetResult(true);
+        return Task.CompletedTask;
+    }
+}

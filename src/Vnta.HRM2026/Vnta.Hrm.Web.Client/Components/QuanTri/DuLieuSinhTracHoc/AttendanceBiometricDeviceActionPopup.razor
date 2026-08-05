@@ -1,0 +1,140 @@
+@using Vnta.Hrm.Web.Client.Models
+@using Vnta.Hrm.Web.Client.Models.Attendance
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChanged"
+         HeaderText="@HeaderText"
+         Width="min(76rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         CloseOnOutsideClick="false"
+         CssClass="attendance-biometric-device-action-popup">
+    <BodyContentTemplate Context="popupBody">
+        <div class="attendance-biometric-device-action-content">
+            <div class="attendance-biometric-device-action-subtitle">@PopupSubtitle</div>
+            <DxFormLayout CssClass="attendance-biometric-device-action-form"
+                          CaptionPosition="CaptionPosition.Vertical">
+                <DxFormLayoutGroup Caption="Danh sách máy chấm công đang sử dụng" ColSpanMd="12">
+                    <DxFormLayoutItem ColSpanMd="12">
+                        <div class="device-selection-host">
+                            <div class="device-selection-toolbar">
+                                <DxSearchBox CssClass="device-selection-search"
+                                             NullText="Tìm máy chấm công"
+                                             BindValueMode="BindValueMode.OnInput"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             @bind-Text="SearchText" />
+                            </div>
+
+                            <HrmLoadingPanel Visible="@IsLoading"
+                                             IsContentBlocked="true"
+                                             IsContentVisible="true"
+                                             IndicatorVisible="true"
+                                             IndicatorAreaVisible="true"
+                                             CssClass="attendance-biometric-device-action-loading-panel">
+                                @if (HasLoadError)
+                                {
+                                    <div class="device-selection-state">
+                                        <div class="device-selection-state-title">Không thể tải danh sách máy chấm công</div>
+                                        <div class="device-selection-state-message">@LoadErrorMessage</div>
+                                        <DxButton Text="Thử lại"
+                                                  Click="RetryAsync"
+                                                  Enabled="@(!IsLoading)"
+                                                  RenderStyle="ButtonRenderStyle.Primary"
+                                                  RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                    </div>
+                                }
+                                else if (!IsLoading && Devices.Count == 0)
+                                {
+                                    <div class="device-selection-state">
+                                        <div class="device-selection-state-title">Chưa có máy chấm công đang sử dụng</div>
+                                        <div class="device-selection-state-message">
+                                            Danh sách máy dùng để tạo lệnh sẽ hiển thị tại đây khi hệ thống đã cấu hình máy chấm công đang sử dụng.
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <DxGrid @ref="DeviceGrid"
+                                            Data="@Devices"
+                                            KeyFieldName="Id"
+                                            CssClass="attendance-biometric-device-action-grid"
+                                            SearchText="@SearchText"
+                                            ShowAllRows="true"
+                                            ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                            FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                            TextWrapEnabled="false"
+                                            HighlightRowOnHover="true"
+                                            FocusedRowEnabled="true"
+                                            AllowSelectRowByClick="true"
+                                            SelectionMode="GridSelectionMode.Multiple"
+                                            SelectedDataItems="@SelectedDataItems"
+                                            SelectedDataItemsChanged="@OnSelectedDataItemsChanged">
+                                        <Columns>
+                                            <DxGridSelectionColumn Width="3rem" />
+                                            <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                                <CellDisplayTemplate Context="cellContext">
+                                                    @(cellContext.VisibleIndex + 1)
+                                                </CellDisplayTemplate>
+                                            </DxGridDataColumn>
+                                            <DxGridDataColumn FieldName="Name" Caption="Tên máy" MinWidth="180" />
+                                            <DxGridDataColumn FieldName="SerialNumber" Caption="Số serial" MinWidth="140" />
+                                            <DxGridDataColumn FieldName="IpAddress" Caption="IP" MinWidth="120" />
+                                            <DxGridDataColumn FieldName="MacAddress" Caption="MAC Address" MinWidth="150" />
+                                            <DxGridDataColumn FieldName="Location" Caption="Vị trí" MinWidth="180" />
+                                            <DxGridDataColumn FieldName="Status" Caption="Trạng thái nguồn" Width="130" MinWidth="130" />
+                                            <DxGridDataColumn FieldName="DeviceModel" Caption="Model" MinWidth="110" />
+                                            <DxGridDataColumn FieldName="IsInUse" Caption="Đang sử dụng" Width="120" MinWidth="120">
+                                                <CellDisplayTemplate Context="cellContext">
+                                                    @{
+                                                        var device = (AttendanceDeviceRecord)cellContext.DataItem;
+                                                    }
+                                                    <span class="@GetUsageBadgeCssClass(device.IsInUse)">@GetUsageBadgeText(device.IsInUse)</span>
+                                                </CellDisplayTemplate>
+                                            </DxGridDataColumn>
+                                            <DxGridDataColumn FieldName="LastRequestTime" Caption="Lần liên hệ cuối" MinWidth="150">
+                                                <CellDisplayTemplate Context="cellContext">
+                                                    @{
+                                                        var device = (AttendanceDeviceRecord)cellContext.DataItem;
+                                                    }
+                                                    @FormatDateTime(device.LastRequestTime)
+                                                </CellDisplayTemplate>
+                                            </DxGridDataColumn>
+                                        </Columns>
+                                        <EmptyDataAreaTemplate Context="emptyContext">
+                                            Không tìm thấy máy chấm công phù hợp.
+                                        </EmptyDataAreaTemplate>
+                                    </DxGrid>
+                                }
+                            </HrmLoadingPanel>
+                        </div>
+                    </DxFormLayoutItem>
+                </DxFormLayoutGroup>
+            </DxFormLayout>
+            <div class="attendance-biometric-device-action-footer">
+                <DxButton CssClass="attendance-biometric-device-action-submit-button"
+                          Click="SubmitAsync"
+                          Enabled="@CanSubmit"
+                          RenderStyle="@SubmitButtonRenderStyle"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained">
+                    <div class="attendance-biometric-device-action-button-content">
+                        <DxWaitIndicator Visible="@IsSubmitting"
+                                         AnimationType="WaitIndicatorAnimationType.Spin" />
+                        @if (!IsSubmitting)
+                        {
+                            <img class="attendance-biometric-device-action-button-icon"
+                                 src="@SubmitButtonIconUrl"
+                                 alt=""
+                                 aria-hidden="true" />
+                        }
+                        <span>@SubmitButtonDisplayText</span>
+                    </div>
+                </DxButton>
+                <DxButton Text="Hủy"
+                          IconUrl="@VntaDevExpressIcons.Cancel"
+                          Click="CloseAsync"
+                          Enabled="@(!IsSubmitting)"
+                          RenderStyle="ButtonRenderStyle.Secondary"
+                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            </div>
+        </div>
+    </BodyContentTemplate>
+</DxPopup>

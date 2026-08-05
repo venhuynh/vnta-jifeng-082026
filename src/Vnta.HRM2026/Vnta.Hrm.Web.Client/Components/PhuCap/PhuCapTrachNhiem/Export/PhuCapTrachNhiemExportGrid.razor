@@ -1,0 +1,23 @@
+@using Vnta.Hrm.Application.PhuCap.PhuCapTrachNhiem
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiem
+
+<div class="responsibility-export-source" aria-hidden="true">
+    <DxGrid @ref="grid" Data="@Records" KeyFieldName="EmployeeCode" ShowAllRows="true" PagerVisible="false" TextWrapEnabled="true">
+        <Columns>
+            <DxGridDataColumn FieldName="EmployeeCode" Caption="Mã nhân viên" />
+            <DxGridDataColumn FieldName="EmployeeName" Caption="Nhân viên" />
+            <DxGridDataColumn FieldName="PositionName" Caption="Chức vụ" />
+            <DxGridDataColumn FieldName="GradeCode" Caption="Mã bậc trách nhiệm" />
+            <DxGridDataColumn FieldName="GradeName" Caption="Bậc trách nhiệm" />
+            <DxGridDataColumn FieldName="ActualWorkDays" Caption="Công hợp lệ" DisplayFormat="n4" />
+            <DxGridDataColumn FieldName="StandardWorkDays" Caption="Công chuẩn" DisplayFormat="n2" />
+            <DxGridDataColumn FieldName="AbcRating" Caption="ABC" />
+            <DxGridDataColumn FieldName="MonthlyPerformanceBonusAmount" Caption="THS (%)" DisplayFormat="p2" />
+            <DxGridDataColumn FieldName="IsPerformanceBonusExcluded" Caption="Không áp dụng THS" />
+            <DxGridDataColumn FieldName="StandardResponsibilityAllowanceAmount" Caption="Tiền chuẩn" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="ActualResponsibilityAllowanceAmount" Caption="Tiền thực tế" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="IsLocked" Caption="Đã khóa" />
+            <DxGridDataColumn FieldName="CalculatedAtUtc" Caption="Tính lúc (UTC)" DisplayFormat="dd/MM/yyyy HH:mm" />
+        </Columns>
+    </DxGrid>
+</div>

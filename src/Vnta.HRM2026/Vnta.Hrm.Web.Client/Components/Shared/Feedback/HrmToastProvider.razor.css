@@ -1,0 +1,20 @@
+.hrm-toast-host {
+    position: relative;
+    z-index: 0;
+}
+
+.hrm-toast-host ::deep .hrm-toast {
+    --dxbl-toast-border-radius: 1rem;
+    --dxbl-toast-box-shadow: 0 1.25rem 2.5rem color-mix(in srgb, var(--dxds-color-content-neutral-default-rest) 16%, transparent);
+    --dxbl-toast-body-padding: 0.875rem;
+}
+
+.hrm-toast-host ::deep .hrm-toast .dxbl-toast-header {
+    letter-spacing: var(--dxds-letter-spacing-base-md);
+    font-weight: var(--dxds-font-weight-base-strong);
+}
+
+.hrm-toast-host ::deep .hrm-toast .dxbl-toast-template {
+    align-items: center;
+    flex-wrap: wrap;
+}

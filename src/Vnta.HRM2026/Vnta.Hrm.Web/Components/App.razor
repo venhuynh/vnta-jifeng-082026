@@ -1,0 +1,100 @@
+@using Vnta.Hrm.Web.Client.Components
+@using Vnta.Hrm.Web.Client.Services
+@using Vnta.Hrm.Web.Client.Services.Ui
+@using Vnta.Hrm.Web.Client.Utils
+@inject ThemeManager ThemeManager
+@inject SizeModeManager SizeModeManager
+@inject NavigationManager NavigationManager
+
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <base href="@(new Uri(NavigationManager.BaseUri).LocalPath)"/>
+    @DxResourceManager.RegisterTheme(ThemeManager.CurrentTheme)
+    <link rel="stylesheet" href="app.css"/>
+    <link rel="icon" type="image/svg+xml" href="VNS-HRM-021.svg"/>
+    <link rel="stylesheet" href="Vnta.Hrm.Web.styles.css"/>
+    @DxResourceManager.RegisterScripts()
+    <HeadOutlet @rendermode="RenderModeForPage"/>
+</head>
+
+<body class="@SizeModeManager.GetClassName(SizeMode)">
+    @if(RenderModeForPage != null) {
+        <div class="loading-panel" style="height: 100%; width: 100%">
+            <div class="loader">
+                <span class="spinner"></span>
+                <span class="label">@HrmUiDefaults.LoadingText</span>
+            </div>
+        </div>
+        <script>
+            (() => {
+                const removeLoadingPanel = () => {
+                    const loadingPanel = document.querySelector(".loading-panel");
+                    if(!loadingPanel)
+                        return true;
+
+                    if(!document.querySelector(".page"))
+                        return false;
+
+                    loadingPanel.remove();
+                    return true;
+                };
+
+                if(removeLoadingPanel())
+                    return;
+
+                const observer = new MutationObserver(() => {
+                    if(removeLoadingPanel())
+                        observer.disconnect();
+                });
+
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+
+                window.setTimeout(() => {
+                    observer.disconnect();
+                    document.querySelector(".loading-panel")?.remove();
+                }, 15000);
+            })();
+        </script>
+    }
+    <Vnta.Hrm.Web.Client.Components.Shared.Feedback.HrmRouteErrorBoundary>
+        <Routes @rendermode="RenderModeForPage"/>
+    </Vnta.Hrm.Web.Client.Components.Shared.Feedback.HrmRouteErrorBoundary>
+    <div id="components-reconnect-modal" role="status" aria-live="assertive" aria-atomic="true">
+        <div class="components-reconnect-show">
+            <span class="components-reconnect-spinner" aria-hidden="true"></span>
+            <span>Đang khôi phục kết nối với hệ thống...</span>
+        </div>
+        <div class="components-reconnect-failed">
+            <p>Không thể khôi phục kết nối. Các thay đổi chưa hoàn tất có thể chưa được lưu.</p>
+            <a href="@NavigationManager.Uri">Tải lại trang</a>
+        </div>
+        <div class="components-reconnect-rejected">
+            <p>Phiên làm việc không còn khả dụng. Vui lòng tải lại trang.</p>
+            <a href="@NavigationManager.Uri">Tải lại trang</a>
+        </div>
+    </div>
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
+
+@code {
+    [CascadingParameter]
+    HttpContext HttpContext { get; set; } = default!;
+    [CascadingParameter(Name = "ParentSizeMode")]
+    SizeMode SizeMode { get; set; }
+    IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account") ? null : new InteractiveServerRenderMode(prerender: false);
+
+    protected override Task OnInitializedAsync() {
+        ThemeManager.ObtainTheme(HttpContext?.Request.Cookies.Select(x => new KeyValuePairSerializer<string, string>(x.Key, x.Value)).ToList());
+        return base.OnInitializedAsync();
+    }
+}
+

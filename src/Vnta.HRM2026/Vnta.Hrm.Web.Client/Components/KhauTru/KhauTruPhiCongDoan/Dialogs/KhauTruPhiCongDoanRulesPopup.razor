@@ -1,0 +1,41 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Quy tắc khấu trừ phí công đoàn"
+         Width="min(52rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         CloseOnOutsideClick="false"
+         CssClass="union-fee-rules-popup">
+    <BodyContentTemplate Context="popupBody">
+        <div class="union-fee-rules-content">
+            <section class="union-fee-rules-section">
+                <div class="union-fee-rules-title">Quy tắc áp dụng kỳ @PeriodLabel</div>
+                <ul class="union-fee-rules-list">
+                    <li>Màn hình hiện vẫn đang chạy trên baseline kỹ thuật <strong>AttendanceAllowance*</strong> trong giai đoạn chuyển tiếp.</li>
+                    <li>Dữ liệu được tải theo <strong>tháng / năm kỳ lương</strong> và có thể đồng bộ từ tháng trước sang kỳ đang xem.</li>
+                    <li>Các dòng đã khóa tiếp tục được giữ nguyên khi thực hiện thao tác đồng bộ hoặc tính lại.</li>
+                </ul>
+            </section>
+
+            <section class="union-fee-rules-section">
+                <div class="union-fee-rules-title">Định hướng bảng dữ liệu mục tiêu</div>
+                <ul class="union-fee-rules-list">
+                    <li>Detail table dự kiến tách riêng theo proposal <span class="union-fee-inline-code">payroll_decuction_union_fee_records</span>.</li>
+                    <li>Số tiền khấu trừ cuối kỳ sẽ đồng bộ về summary table <span class="union-fee-inline-code">payroll_decuction_summary_records</span> sau khi boundary deduction được tách riêng.</li>
+                </ul>
+            </section>
+
+            <section class="union-fee-rules-section union-fee-rules-section-warning">
+                <div class="union-fee-rules-title">Các quyết định nghiệp vụ còn mở</div>
+                <ul class="union-fee-rules-list">
+                    <li>Chưa chốt phí công đoàn sẽ tính theo <strong>số tiền cố định</strong> hay <strong>tỷ lệ phần trăm</strong>.</li>
+                    <li>Nếu tính theo tỷ lệ, base amount vẫn đang chờ xác nhận là <strong>lương căn bản</strong>, <strong>lương đóng bảo hiểm</strong> hay một base payroll khác.</li>
+                    <li>Chưa chốt phạm vi áp dụng là toàn bộ nhân viên hay chỉ đoàn viên công đoàn, và có cho phép chỉnh tay ghi chú / số tiền theo từng người hay không.</li>
+                </ul>
+            </section>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <DxButton Text="Đóng" Click="@CloseAsync" />
+    </FooterContentTemplate>
+</DxPopup>
+@namespace Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruPhiCongDoan

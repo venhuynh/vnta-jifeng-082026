@@ -1,0 +1,45 @@
+.employee-grade-lookup {
+    box-sizing: border-box;
+    width: min(44rem, calc(100vw - 3rem));
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+}
+
+::deep .employee-grade-lookup-search,
+::deep .employee-grade-lookup-editor {
+    width: 100%;
+}
+
+::deep .employee-grade-lookup-grid {
+    max-height: 24rem;
+}
+
+::deep .employee-grade-lookup-grid .dxbl-grid-table,
+::deep .employee-grade-lookup-grid table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+::deep .employee-grade-lookup-grid .dxbl-grid-cell,
+::deep .employee-grade-lookup-grid td {
+    height: auto;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.35;
+    vertical-align: top;
+}
+
+::deep .employee-grade-list-popup {
+    max-width: calc(100vw - 2rem);
+}
+
+.popup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}

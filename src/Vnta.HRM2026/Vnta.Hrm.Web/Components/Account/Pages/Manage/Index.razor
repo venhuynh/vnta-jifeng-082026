@@ -1,0 +1,74 @@
+﻿@page "/Account/Manage"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Vnta.Hrm.Infrastructure.Identity
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+<PageTitle>VNTA HRM 2026 - Hồ sơ cá nhân</PageTitle>
+
+<div class="block-content">
+    <StatusMessage Message="@message" />
+    <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post" Context="profileform">
+        <DataAnnotationsValidator />
+        <DxFormLayout CaptionPosition=@CaptionPosition.Vertical>
+            <DxFormLayoutItem Caption="Tài khoản đăng nhập" ColSpanMd="12" BeginRow="true">
+                <InteractiveServerTextBox Name="username" Value="@username" Enabled="false" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Số điện thoại" ColSpanMd="12" BeginRow="true">
+                <InteractiveServerMaskedInput Name="Input.PhoneNumber" Value="@Input.PhoneNumber" Mask="(999)000-0000" type="tel"/>
+                <ValidationMessage class="text-danger" For="() => Input.PhoneNumber" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
+                <DxButton CssClass="w-100" SubmitFormOnClick="true" Text="Lưu thay đổi"></DxButton>
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </EditForm>
+</div>
+
+@code {
+    private ApplicationUser user = default!;
+    private string? username;
+    private string? phoneNumber;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+    string message = "";
+
+    private InputModel? input;
+
+    [SupplyParameterFromForm]
+    private InputModel Input {
+        get => input ??= new();
+        set => input = value;
+    }
+
+    protected override async Task OnInitializedAsync() {
+        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        username = await UserManager.GetUserNameAsync(user);
+        phoneNumber = await UserManager.GetPhoneNumberAsync(user);
+
+        Input.PhoneNumber ??= phoneNumber;
+    }
+
+    private async Task OnValidSubmitAsync() {
+        if(Input.PhoneNumber != phoneNumber) {
+            var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
+            if(!setPhoneResult.Succeeded) {
+                message = "Lỗi: Không thể cập nhật số điện thoại.";
+            }
+        }
+
+        message = "Hồ sơ cá nhân đã được cập nhật.";
+    }
+
+    private sealed class InputModel {
+        [Phone]
+        [Display(Name = "Số điện thoại")]
+        public string? PhoneNumber { get; set; }
+    }
+}
+
+

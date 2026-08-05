@@ -1,0 +1,112 @@
+@page "/payroll/hazard-allowance"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Components.ChamCong.MonthlyWork
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapDocHai.Export
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapDocHai.Sections
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Phụ cấp độc hại</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <PhuCapDocHaiToolbar Month="@ToolbarMonth"
+                                Year="@ToolbarYear"
+                                MinimumYear="@MinimumSupportedYear"
+                                MaximumYear="@MaximumSupportedYear"
+                                AvailableMonths="@AvailableMonthOptions"
+                                CanChangeFilters="@CanChangeFilters"
+                                CanView="@CanView"
+                                CanInteract="@CanInteract"
+                                CanOperateOnCurrentDataset="@CanOperateOnCurrentDataset"
+                                CanRecalculate="@CanRecalculate"
+                                CanOpenLockAction="@CanOpenLockAction"
+                                CanOpenUnlockAction="@CanOpenUnlockAction"
+                                CanSetSelectedEntitlement="@CanSetSelectedEntitlement"
+                                CanExport="@CanExport"
+                                CanExportSelected="@CanExportSelected"
+                                MonthChanged="OnSelectedMonthChangedAsync"
+                                YearChanged="OnSelectedYearChangedAsync"
+                                ViewRequested="OnViewRequestedAsync"
+                                RecalculateRequested="OnRecalculateClickAsync"
+                                ExcludeSelectedRequested="OnExcludeSelectedAsync"
+                                IncludeSelectedRequested="OnIncludeSelectedAsync"
+                                LockRequested="OnLockSelectedAsync"
+                                UnlockRequested="OnUnlockSelectedAsync"
+                                RulesRequested="OpenRulesPopup"
+                                ExportExcelRequested="ExportAllDataToExcel"
+                                ExportPdfRequested="ExportAllDataToPdf"
+                                BackgroundCsvRequested="QueueBackgroundCsvExportAsync"
+                                ExportSelectedExcelRequested="ExportSelectedRowsToExcel"
+                                ExportSelectedPdfRequested="ExportSelectedRowsToPdf"
+                                ColumnChooserRequested="OnColumnChooserRequested" />
+    </div>
+
+    <div class="hazard-allowance-root">
+        <div class="card hazard-allowance-grid-card">
+            <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             Text="@LoadingText"
+                             CssClass="hazard-allowance-loading-panel">
+                <div class="hazard-allowance-grid-content">
+                        <div class="hazard-allowance-grid-header">
+                            <PhuCapDocHaiSummary Badges="@SummaryBadges"
+                                                    ActiveKey="@ActiveSummaryBadgeKey"
+                                                    Enabled="@CanInteract"
+                                                    FormattedAllowanceTotal="@FormatVisibleAllowanceTotal(VisibleAllowanceTotal)"
+                                                    BadgeSelected="OnSummaryBadgeClickAsync" />
+                            <PhuCapDocHaiSearch Text="@SearchText"
+                                                   TextChanged="OnSearchTextChanged"
+                                                   Enabled="@CanInteract" />
+                        </div>
+                        <PhuCapDocHaiGrid @ref="ResultsGrid"
+                                             Rows="@PagedRecords"
+                                             SelectedItems="@SelectedGridItems"
+                                             CanOperateOnCurrentDataset="@CanOperateOnCurrentDataset"
+                                             PageIndex="@PageIndex"
+                                             PageSize="@PageSize"
+                                             EmptyStateTitle="@EmptyStateTitle"
+                                             EmptyStateMessage="@EmptyStateMessage"
+                                             EmptyStateActionText="@EmptyStateActionText"
+                                             CanEditRow="CanEditRow"
+                                             CanRefreshRow="CanRefreshRow"
+                                             CanToggleLock="CanToggleLock"
+                                             CanViewMonthlyWork="CanViewMonthlyWork"
+                                             HighlightSearchText="HighlightSearchText"
+                                             SelectedItemsChanged="OnSelectedDataItemsChangedAsync"
+                                             FilterCriteriaChanged="OnGridFilterCriteriaChangedAsync"
+                                             EmptyStateActionRequested="OnEmptyStateActionClickAsync"
+                                             EditRequested="OpenEditPopup"
+                                             RefreshRequested="RefreshRowAsync"
+                                             LockToggleRequested="ToggleLockStateAsync"
+                                             MonthlyWorkRequested="OpenMonthlyWorkPopupAsync" />
+                        <PhuCapDocHaiPager SummaryText="@PagerSummaryText"
+                                              CanBrowsePages="@CanBrowsePages"
+                                              TotalPageCount="@TotalPageCount"
+                                              CurrentPageIndex="@PageIndex"
+                                              PageSize="@PageSize"
+                                              PageSizeOptions="@AvailablePageSizeOptions"
+                                              CanChangeFilters="@CanChangeFilters"
+                                              PageChanged="OnActivePageIndexChangedAsync"
+                                              PageSizeChanged="OnPageSizeChangedAsync"
+                                              PageSizeDescription="@PageSizeDescription" />
+                </div>
+            </HrmLoadingPanel>
+        </div>
+    </div>
+
+    <PhuCapDocHaiExportGrid @ref="ExportSource"
+                             Records="@ExportRecords"
+                             Rendered="@OnExportGridRendered" />
+</div>
+
+<PhuCapDocHaiRulesPopup @bind-Visible="IsRulesPopupVisible" PayrollPeriod="@DisplayedRulesPayrollPeriod" LoadedRecordCount="@LoadedRecords.Count" VisibleRecordCount="@VisibleRecords.Count" HasRequestedData="@HasRequestedData" />
+<PhuCapDocHaiEditPopup Visible="@IsEditPopupVisible" VisibleChanged="@(_ => CloseEditPopup())" IsSaving="@IsSavingEdit" CanSave="@CanSaveEdit" Model="@EditModel" SaveRequested="SaveEditAsync" />
+<PhuCapDocHaiRecalculateConfirmPopup Visible="@IsRecalculateConfirmPopupVisible" VisibleChanged="@(_ => CloseRecalculateConfirmPopup())" IsRefreshing="@IsRecalculating" PeriodLabel="@AppliedPeriodLabel" ConfirmRequested="ConfirmRecalculateAsync" />
+<PhuCapDocHaiLockActionPopup Visible="@IsLockActionPopupVisible" VisibleChanged="@(_ => CloseLockActionPopup())" IsRefreshing="@IsLockActionProcessing" Title="@LockActionPopupTitle" PromptText="@LockActionPromptText" ContextText="@LockActionScopeContextText" SelectedScope="@SelectedLockActionScope" SelectedRowsScope="@LockScopeSelectedRows" WholePeriodScope="@LockScopeWholePeriod" SelectedRowsDescription="@SelectedRowsScopeDescription" WholePeriodDescription="@WholePeriodScopeDescription" WholePeriodLabel="@PendingLockActionPeriodLabel" CanChooseSelectedRowsScope="@CanChooseSelectedRowsScope" CanConfirm="@CanConfirmLockAction" ShouldLock="@PendingLockActionState" ScopeSelected="SelectLockActionScope" ConfirmRequested="ConfirmLockActionAsync" />
+<ChamCongMonthlyWorkPopup Visible="@IsMonthlyWorkPopupVisible" VisibleChanged="@(_ => CloseMonthlyWorkPopup())" IsLoading="@IsMonthlyWorkPopupLoading" Title="@MonthlyWorkPopupTitle" Context="@MonthlyWorkPopupContext" Rows="@MonthlyWorkRows" RefreshRequested="RefreshMonthlyWorkPopupAsync" />

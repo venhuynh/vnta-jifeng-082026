@@ -1,0 +1,37 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiem
+@using Vnta.Hrm.Application.PhuCap.PhuCapTrachNhiem
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         Width="1120px"
+         ShowFooter="false"
+         ShowCloseButton="true"
+         CloseOnEscape="true"
+         HeaderText="@Title"
+         CssClass="responsibility-popup">
+    <BodyContentTemplate>
+        <div class="responsibility-popup-body">
+            @if (Record is null)
+            {
+                <div class="responsibility-empty-banner">Chưa có dòng nào được chọn để xem chi tiết tính toán.</div>
+            }
+            else
+            {
+                <div class="responsibility-preview-grid">
+                    <div class="responsibility-preview-card"><div class="responsibility-preview-label">Chức vụ</div><div class="responsibility-preview-value">@Record.PositionName</div></div>
+                    <div class="responsibility-preview-card"><div class="responsibility-preview-label">Bậc</div><div class="responsibility-preview-value">@(string.IsNullOrWhiteSpace(Record.GradeName) ? "Không hưởng" : Record.GradeName)</div></div>
+                    <div class="responsibility-preview-card"><div class="responsibility-preview-label">ABC</div><div class="responsibility-preview-value">@Record.AbcRating</div></div>
+                    <div class="responsibility-preview-card"><div class="responsibility-preview-label">Kết quả</div><div class="responsibility-preview-value">@FormatCurrency(Record.ActualResponsibilityAllowanceAmount)</div></div>
+                </div>
+                <div class="responsibility-formula-box">
+                    <div class="responsibility-formula-title">Công thức đang áp dụng</div>
+                    <div class="responsibility-formula-text">@Description</div>
+                    <div class="responsibility-formula-result">@Formula</div>
+                </div>
+                <table class="responsibility-editor-table"><thead><tr><th>Trường</th><th>Giá trị</th><th>Vai trò</th></tr></thead><tbody>
+                    @foreach (var detail in Details) { <tr><td>@detail.Label</td><td>@detail.Value</td><td>@detail.Description</td></tr> }
+                </tbody></table>
+            }
+        </div>
+    </BodyContentTemplate>
+</DxPopup>

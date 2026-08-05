@@ -1,0 +1,69 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiem
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="VisibleChanged"
+         HeaderText="Nhập thưởng hiệu suất"
+         Width="min(46rem, calc(100vw - 2rem))"
+         CssClass="performance-bonus-popup"
+         CloseOnEscape="@(!IsSaving)"
+         CloseOnOutsideClick="@(!IsSaving)"
+         ShowCloseButton="@(!IsSaving)">
+    <BodyContentTemplate Context="performanceBonusPopupBody">
+        <div class="performance-bonus-popup-content">
+            <p class="performance-bonus-popup-description">
+                Kỳ @PeriodLabel - hệ số được ghi cho toàn bộ dòng phụ cấp trách nhiệm chưa khóa.
+                Dòng không áp dụng THS vẫn lưu hệ số để theo dõi nhưng không dùng để tính tiền.
+            </p>
+
+            <div class="performance-bonus-options" role="group" aria-label="Mức thưởng hiệu suất">
+                @foreach (var option in PerformanceBonusOptions)
+                {
+                    <DxButton Text="@option.Text"
+                              Click="@(() => SelectRate(option.Value))"
+                              Enabled="@(!IsSaving)"
+                              CssClass="@GetOptionCssClass(option.Value)"
+                              RenderStyle="@(IsPredefinedRateSelected(option.Value) ? ButtonRenderStyle.Primary : ButtonRenderStyle.Secondary)"
+                              RenderStyleMode="@(IsPredefinedRateSelected(option.Value) ? ButtonRenderStyleMode.Contained : ButtonRenderStyleMode.Outline)" />
+                }
+            </div>
+
+            <div class="performance-bonus-custom-rate">
+                <label for="performance-bonus-custom-rate">Hệ số tự nhập (%)</label>
+                <DxSpinEdit T="decimal?"
+                            Id="performance-bonus-custom-rate"
+                            Value="@CustomPercentage"
+                            ValueChanged="OnCustomPercentageChanged"
+                            MinValue="0m"
+                            Increment="0.1m"
+                            Mask="n2"
+                            NullText="Ví dụ: 92,5"
+                            Enabled="@(!IsSaving)" />
+            </div>
+
+            <div class="performance-bonus-resolved-rate">
+                Giá trị sẽ lưu: <strong>@ResolvedRateText</strong>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(LocalErrorMessage))
+            {
+                <div class="performance-bonus-error-message">@LocalErrorMessage</div>
+            }
+            else if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="performance-bonus-error-message">@ErrorMessage</div>
+            }
+
+            <div class="popup-actions">
+                <DxButton Text="Lưu"
+                          IconUrl="@VntaDevExpressIcons.Save"
+                          Click="SaveAsync"
+                          Enabled="@(!IsSaving)"
+                          RenderStyle="ButtonRenderStyle.Primary" />
+                <DxButton Text="Hủy"
+                          IconUrl="@VntaDevExpressIcons.Cancel"
+                          Click="@(() => VisibleChanged.InvokeAsync(false))"
+                          Enabled="@(!IsSaving)" />
+            </div>
+        </div>
+    </BodyContentTemplate>
+</DxPopup>

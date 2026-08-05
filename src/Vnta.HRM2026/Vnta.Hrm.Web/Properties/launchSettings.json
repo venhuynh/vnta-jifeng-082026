@@ -1,0 +1,38 @@
+{
+  "profiles": {
+    "Vnta.Hrm.Web": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "payroll/other-allowance",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:50648;http://localhost:50649"
+    },
+    "Vnta.Hrm.Web (LAN Debug)": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "payroll/other-allowance",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://0.0.0.0:50650"
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "payroll/other-allowance",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:55899/",
+      "sslPort": 44343
+    }
+  }
+}

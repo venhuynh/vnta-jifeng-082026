@@ -1,0 +1,34 @@
+.vnta-list-page {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.vnta-list-page-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow-wrap: break-word;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    background-clip: border-box;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+}
+
+.vnta-list-page-toolbar {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.vnta-list-page-content {
+    flex-grow: 1;
+    height: 90%;
+    min-height: 0;
+}
+
+.vnta-list-page-content-card {
+    height: 100%;
+    overflow: hidden;
+}

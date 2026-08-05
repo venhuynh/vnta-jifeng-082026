@@ -1,0 +1,61 @@
+﻿@page "/Account/Manage/GenerateRecoveryCodes"
+
+@using Microsoft.AspNetCore.Identity
+@using Vnta.Hrm.Infrastructure.Identity
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+@inject ILogger<GenerateRecoveryCodes> Logger
+
+<PageTitle>VNTA HRM 2026 - Tạo mã khôi phục</PageTitle>
+
+@if(recoveryCodes is not null) {
+    <ShowRecoveryCodes RecoveryCodes="recoveryCodes.ToArray()" StatusMessage="@message" />
+} else {
+    <div class="title title-secondary">
+        <div class="title-content-text-secondary">Tạo mã khôi phục xác thực hai lớp</div>
+    </div>
+    <div class="manage-content">
+        <div>Hãy lưu các mã này ở nơi an toàn.</div>
+        <div>Nếu mất thiết bị và không còn mã khôi phục, bạn có thể mất quyền truy cập tài khoản.</div>
+        <div>
+            Việc tạo mã khôi phục mới không thay đổi khóa đang dùng trong ứng dụng xác thực. Nếu cần thay đổi khóa,
+            hãy <a href="Account/Manage/ResetAuthenticator">đặt lại khóa ứng dụng xác thực</a>.
+        </div>
+        <div class="block-content">
+            <form @formname="generate-recovery-codes" @onsubmit="OnSubmitAsync" method="post">
+                <AntiforgeryToken />
+                <DxButton SubmitFormOnClick="true" Text="Tạo mã khôi phục" CssClass="w-100"></DxButton>
+            </form>
+        </div>
+    </div>
+}
+
+@code {
+    private string? message;
+    private ApplicationUser user = default!;
+    private IEnumerable<string>? recoveryCodes;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync() {
+        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+
+        var isTwoFactorEnabled = await UserManager.GetTwoFactorEnabledAsync(user);
+        if(!isTwoFactorEnabled) {
+            throw new InvalidOperationException("Cannot generate recovery codes for user because they do not have 2FA enabled.");
+        }
+    }
+
+    private async Task OnSubmitAsync() {
+        var userId = await UserManager.GetUserIdAsync(user);
+        recoveryCodes = await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+        message = "Mã khôi phục mới đã được tạo.";
+
+        Logger.LogInformation("User with ID '{UserId}' has generated new 2FA recovery codes.", userId);
+    }
+}
+
+

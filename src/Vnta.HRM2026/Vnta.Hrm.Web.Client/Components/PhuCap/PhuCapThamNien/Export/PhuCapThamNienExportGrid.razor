@@ -1,0 +1,18 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapThamNien
+
+<div class="seniority-export-source" aria-hidden="true">
+    <DxGrid @ref="ExportGrid" Data="@Records" KeyFieldName="Id" ShowAllRows="true" PagerVisible="false" TextWrapEnabled="true">
+        <Columns>
+            <DxGridDataColumn FieldName="EmployeeDisplay" Caption="Nhân viên" />
+            <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Bộ phận" />
+            <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" />
+            <DxGridDataColumn FieldName="SeniorityDisplay" Caption="Thâm niên" />
+            <DxGridDataColumn FieldName="AdministrativeWorkDays" Caption="Công HC"><CellDisplayTemplate>@FormatAdministrativeWorkDays(((PhuCapThamNienRecord)context.DataItem).AdministrativeWorkDays)</CellDisplayTemplate></DxGridDataColumn>
+            <DxGridDataColumn FieldName="LateEarlyLeaveWorkDays" Caption="ĐTVS"><CellDisplayTemplate>@FormatWorkDays(((PhuCapThamNienRecord)context.DataItem).LateEarlyLeaveWorkDays)</CellDisplayTemplate></DxGridDataColumn>
+            <DxGridDataColumn FieldName="AppliedRuleDisplay" Caption="Quy tắc" />
+            <DxGridDataColumn FieldName="AllowanceAmount" Caption="Phụ cấp thâm niên" DisplayFormat="#,#0 'đ';-#,#0 'đ';''" />
+            <DxGridDataColumn FieldName="Note" Caption="Ghi chú"><CellDisplayTemplate>@((context.DataItem as PhuCapThamNienRecord)?.Note)</CellDisplayTemplate></DxGridDataColumn>
+            <DxGridDataColumn FieldName="LockStatusText" Caption="Trạng thái khóa" />
+        </Columns>
+    </DxGrid>
+</div>

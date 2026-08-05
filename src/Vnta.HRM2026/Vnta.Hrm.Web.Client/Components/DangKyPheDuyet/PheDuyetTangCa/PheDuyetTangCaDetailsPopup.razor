@@ -1,0 +1,107 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Application.DangKyPheDuyet.DangKyTangCa
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="min(78rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsLoading)"
+         ShowFooter="false"
+         CloseOnEscape="@(!IsLoading)"
+         CloseOnOutsideClick="false"
+         CssClass="overtime-approval-details-popup">
+    <HeaderContentTemplate>
+        <div class="overtime-approval-details-header">
+            <span>@Title</span>
+            <div class="overtime-approval-details-header-actions">
+                <DxButton Text="Làm mới"
+                          Click="RefreshAsync"
+                          Enabled="@(!IsLoading)"
+                          IconUrl="@VntaDevExpressIcons.Refresh"
+                          Tooltip="Đọc lại chi tiết phiếu tăng ca"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                <DxButton Click="CloseAsync"
+                          Enabled="@(!IsLoading)"
+                          IconUrl="@VntaDevExpressIcons.Cancel"
+                          Tooltip="Đóng chi tiết phiếu tăng ca"
+                          RenderStyle="ButtonRenderStyle.Secondary"
+                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            </div>
+        </div>
+    </HeaderContentTemplate>
+    <BodyContentTemplate>
+        <HrmLoadingPanel Visible="@IsLoading"
+                         IsContentBlocked="true"
+                         IsContentVisible="true"
+                         IndicatorVisible="true"
+                         IndicatorAreaVisible="true"
+                         Text="Đang tải chi tiết phiếu tăng ca..."
+                         CssClass="overtime-approval-details-loading-panel">
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="error-state overtime-approval-popup-state">
+                    <div class="state-title">Không thể tải chi tiết phiếu tăng ca</div>
+                    <div class="state-message">@ErrorMessage</div>
+                    <DxButton Text="Thử lại"
+                              Click="RefreshAsync"
+                              Enabled="@(!IsLoading)"
+                              RenderStyle="ButtonRenderStyle.Primary"
+                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                </div>
+            }
+            else if (Request is null)
+            {
+                <div class="empty-state overtime-approval-popup-state">
+                    <div class="state-title">Phiếu không còn chờ phê duyệt</div>
+                    <div class="state-message">Phiếu có thể đã được xử lý hoặc không còn khả dụng.</div>
+                    <DxButton Text="Làm mới"
+                              Click="RefreshAsync"
+                              Enabled="@(!IsLoading)"
+                              RenderStyle="ButtonRenderStyle.Primary"
+                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                </div>
+            }
+            else
+            {
+                <div class="overtime-approval-details-body">
+                    <div class="overtime-approval-details-summary">
+                        <div><span>Ngày tăng ca</span><strong>@FormatDate(Request.WorkDate)</strong></div>
+                        <div><span>Loại ngày</span><strong>@GetDayTypeText(Request.DayType)</strong></div>
+                        <div><span>Xưởng</span><strong>@Request.WorkshopName</strong></div>
+                        <div><span>Người đăng ký</span><strong>@Request.RequestedBy</strong></div>
+                        <div><span>Nhân viên OT</span><strong>@GetRegisteredEmployeeCount(Request)/@Request.EmployeeAssignments.Count</strong></div>
+                        <div><span>Gửi lúc</span><strong>@FormatDateTime(Request.SubmittedAtUtc)</strong></div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Request.Note))
+                    {
+                        <div class="overtime-approval-details-note"><span>Ghi chú</span>@Request.Note</div>
+                    }
+                    <DxGrid Data="@Request.EmployeeAssignments"
+                            KeyFieldName="@nameof(OvertimeRegistrationEmployeeAssignmentDto.EmployeeId)"
+                            CssClass="overtime-approval-details-grid"
+                            Height="48vh"
+                            PageSize="100"
+                            PagerVisible="false"
+                            ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                            TextWrapEnabled="false"
+                            HighlightRowOnHover="true">
+                        <Columns>
+                            <DxGridDataColumn Caption="STT" Width="4.5rem" AllowSort="false">
+                                <CellDisplayTemplate Context="employeeCell">@(employeeCell.VisibleIndex + 1)</CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="@nameof(OvertimeRegistrationEmployeeAssignmentDto.EmployeeCode)" Caption="Mã NV" MinWidth="120" />
+                            <DxGridDataColumn FieldName="@nameof(OvertimeRegistrationEmployeeAssignmentDto.EmployeeName)" Caption="Nhân viên" MinWidth="200" />
+                            <DxGridDataColumn FieldName="@nameof(OvertimeRegistrationEmployeeAssignmentDto.TeamName)" Caption="Tổ" MinWidth="160" />
+                            <DxGridDataColumn FieldName="@nameof(OvertimeRegistrationEmployeeAssignmentDto.PositionName)" Caption="Chức danh" MinWidth="160" />
+                            <DxGridDataColumn Caption="Đăng ký OT" MinWidth="160">
+                                <CellDisplayTemplate Context="cell">@GetAssignmentDisplay(((OvertimeRegistrationEmployeeAssignmentDto)cell.DataItem).AssignmentType)</CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="@nameof(OvertimeRegistrationEmployeeAssignmentDto.RegistrationHint)" Caption="Ghi chú" MinWidth="200" />
+                        </Columns>
+                    </DxGrid>
+                </div>
+            }
+        </HrmLoadingPanel>
+    </BodyContentTemplate>
+</DxPopup>

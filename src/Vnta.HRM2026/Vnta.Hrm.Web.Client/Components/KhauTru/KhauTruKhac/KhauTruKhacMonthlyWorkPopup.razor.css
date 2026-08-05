@@ -1,0 +1,347 @@
+.other-deduction-monthly-work-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+}
+
+.other-deduction-monthly-work-heading {
+    min-width: 0;
+}
+
+.other-deduction-monthly-work-title-row,
+.other-deduction-monthly-work-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.other-deduction-monthly-work-title-row {
+    flex-wrap: wrap;
+}
+
+.other-deduction-monthly-work-title {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.other-deduction-monthly-work-lock {
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.other-deduction-monthly-work-lock.is-locked {
+    color: var(--dxds-color-content-warning-default-rest, #a16207);
+    background: #fff7e6;
+}
+
+.other-deduction-monthly-work-lock.is-unlocked {
+    color: var(--dxds-color-content-success-default-rest, #15803d);
+    background: #e8f8ef;
+}
+
+.other-deduction-monthly-work-context {
+    margin-top: 0.25rem;
+    overflow: hidden;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    font-style: normal;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.other-deduction-monthly-work-header-actions {
+    flex: 0 0 auto;
+}
+
+.other-deduction-monthly-work-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 0.875rem 1rem;
+}
+
+.other-deduction-monthly-work-summary {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(8.5rem, 1fr));
+    gap: 0.5rem;
+    overflow-x: auto;
+}
+
+.other-deduction-monthly-work-summary-card {
+    min-width: 0;
+    min-height: 5.5rem;
+    padding: 0.75rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.5rem;
+    background: var(--dxds-color-surface-neutral-default-rest);
+    box-shadow: var(--hrm-shadow-sm, 0 1px 2px rgba(16, 24, 40, 0.08));
+}
+
+.other-deduction-monthly-work-summary-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.other-deduction-monthly-work-summary-card-title {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.other-deduction-monthly-work-summary-card-value {
+    margin-top: 0.4rem;
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.other-deduction-monthly-work-summary-card-icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    background: var(--dxds-color-surface-brand-subtle-rest);
+}
+
+.summary-card-success .other-deduction-monthly-work-summary-card-icon {
+    background: #e8f8ef;
+}
+
+.summary-card-info .other-deduction-monthly-work-summary-card-icon {
+    background: #e8f3ff;
+}
+
+.summary-card-warning .other-deduction-monthly-work-summary-card-icon {
+    background: #fff7e6;
+}
+
+.summary-card-danger .other-deduction-monthly-work-summary-card-icon {
+    background: #fff0f0;
+}
+
+.summary-card-total .other-deduction-monthly-work-summary-card-icon {
+    background: #f4ecff;
+}
+
+.other-deduction-monthly-work-grid-summaries {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem 1rem;
+}
+
+.other-deduction-monthly-work-grid-summary-group {
+    display: flex;
+    flex: 0 1 auto;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.other-deduction-monthly-work-grid-summary-label {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+::deep .other-deduction-monthly-work-summary-button-group {
+    display: inline-flex;
+    min-width: max-content;
+}
+
+::deep .other-deduction-monthly-work-summary-button {
+    --summary-accent: var(--dxds-color-content-info-default-rest, #2563eb);
+    color: var(--summary-accent) !important;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+::deep .other-deduction-monthly-work-summary-button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--summary-accent) 9%, white) !important;
+}
+
+::deep .other-deduction-monthly-work-summary-button[aria-pressed="true"],
+::deep .other-deduction-monthly-work-summary-button.dxbl-btn-selected,
+::deep .other-deduction-monthly-work-summary-button.dxbl-btn-active {
+    border-color: var(--summary-accent) !important;
+    background: color-mix(in srgb, var(--summary-accent) 14%, white) !important;
+    box-shadow: inset 0 -0.16rem 0 var(--summary-accent);
+}
+
+::deep .other-deduction-monthly-work-summary-button.summary-special-day,
+::deep .other-deduction-monthly-work-summary-button.summary-danger {
+    --summary-accent: var(--dxds-color-content-danger-default-rest, #c53434);
+}
+
+::deep .other-deduction-monthly-work-summary-button.summary-regular-day,
+::deep .other-deduction-monthly-work-summary-button.summary-success {
+    --summary-accent: var(--dxds-color-content-success-default-rest, #15803d);
+}
+
+::deep .other-deduction-monthly-work-summary-button.summary-warning {
+    --summary-accent: var(--dxds-color-content-warning-default-rest, #d97706);
+}
+
+::deep .other-deduction-monthly-work-summary-button.summary-neutral {
+    --summary-accent: var(--dxds-color-content-neutral-subtle-rest, #667085);
+}
+
+::deep .other-deduction-monthly-work-grid {
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+}
+
+.other-deduction-monthly-work-grid-host {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 12rem;
+    overflow: hidden;
+}
+
+.other-deduction-monthly-work-grid-tools {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+::deep .other-deduction-monthly-work-search {
+    width: min(22rem, 100%);
+}
+
+::deep .other-deduction-monthly-work-grid .dxbl-grid {
+    height: 100%;
+}
+
+.other-deduction-monthly-work-content.is-compact {
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+}
+
+.other-deduction-monthly-work-content.is-compact .other-deduction-monthly-work-summary-card {
+    min-height: 4.75rem;
+    padding: 0.625rem;
+}
+
+.other-deduction-monthly-work-content.is-compact .other-deduction-monthly-work-summary-card-icon {
+    width: 2.1rem;
+    height: 2.1rem;
+}
+
+.other-deduction-monthly-work-content.is-compact .other-deduction-monthly-work-summary-card-value {
+    font-size: 1.25rem;
+}
+
+.monthly-work-date {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.monthly-work-day-type {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.18rem 0.45rem;
+    border-radius: 999px;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    background: var(--dxds-color-surface-neutral-default-rest);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.monthly-work-day-type.is-special-day {
+    color: var(--dxds-color-content-danger-default-rest, #c53434);
+    background: #fff0f0;
+    box-shadow: inset 0 0 0 1px #fecaca;
+}
+
+.monthly-work-shift {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.monthly-work-shift.is-empty {
+    color: #98a2b3;
+}
+
+.monthly-work-check-time {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.monthly-work-check-time .check-in {
+    color: #18794e;
+    font-weight: 600;
+}
+
+.monthly-work-check-time .check-out {
+    color: #c53434;
+    font-weight: 600;
+}
+
+.monthly-work-check-time .check-separator {
+    padding: 0;
+    color: #98a2b3;
+}
+
+.monthly-work-status-code {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .other-deduction-monthly-work-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .other-deduction-monthly-work-header-actions {
+        align-self: flex-end;
+    }
+
+    .other-deduction-monthly-work-grid-summaries {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .other-deduction-monthly-work-grid-summary-group {
+        overflow-x: auto;
+    }
+
+    .other-deduction-monthly-work-grid-host {
+        min-height: 10rem;
+    }
+
+    ::deep .other-deduction-monthly-work-search {
+        width: 100%;
+    }
+
+}

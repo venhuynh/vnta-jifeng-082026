@@ -1,0 +1,103 @@
+@page "/attendance/timesheet-dashboard"
+
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Application.ChamCong.DashboardBangChamCong
+
+@attribute [Authorize(Policy = InternalAccountPolicies.AttendanceAdministration)]
+@rendermode InteractiveServer
+@implements IDisposable
+
+<PageTitle>VNTA - Tổng quan bảng công</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Tổng quan bảng công" CssClass="toolbar" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right" CssClass="toolbar-filter-item">
+                <Template>
+                    <div class="custom-item toolbar-filter-editor">
+                        <span class="toolbar-filter-label">Năm</span>
+                        <DxSpinEdit T="int" Value="@ToolbarYear" ValueChanged="OnYearChangedAsync" MinValue="2000" MaxValue="2100" Enabled="@CanChangePeriod" CssClass="toolbar-filter-year" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right" CssClass="toolbar-filter-item">
+                <Template>
+                    <div class="custom-item toolbar-filter-editor">
+                        <span class="toolbar-filter-label">Tháng</span>
+                        <DxComboBox TData="MonthOption" TValue="int" Data="@MonthOptions" Value="@ToolbarMonth" ValueChanged="OnMonthChangedAsync" ValueFieldName="@nameof(MonthOption.Value)" TextFieldName="@nameof(MonthOption.Text)" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never" Enabled="@CanChangePeriod" CssClass="toolbar-filter-month" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Xem" Click="LoadDashboardAsync" Enabled="@CanChangePeriod" Alignment="ToolbarItemAlignment.Right" Tooltip="Tải tổng quan bảng công theo tháng đang chọn" IconUrl="@VntaDevExpressIcons.FolderOpenArrowImport" />
+        </DxToolbar>
+    </div>
+
+    <div class="timesheet-dashboard-root">
+        @if(!string.IsNullOrWhiteSpace(LoadErrorMessage))
+        {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải tổng quan bảng công</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại" Click="LoadDashboardAsync" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+            <div class="card timesheet-dashboard-content-card">
+                <HrmLoadingPanel Visible="@IsLoading" IsContentBlocked="true" IsContentVisible="true" IndicatorVisible="true" IndicatorAreaVisible="true" Text="Đang tải tổng quan bảng công...">
+                    @if(Dashboard is not null)
+                    {
+                        <div class="timesheet-dashboard-content">
+                            <div class="timesheet-dashboard-kpi-strip">
+                                <BangChamCongDashboardMetric Title="Nhân viên có bảng công" Value="@Dashboard.Overview.EmployeeCount.ToString("N0")" Detail="@PeriodLabel" />
+                                <BangChamCongDashboardMetric Title="Tổng bản ghi công" Value="@Dashboard.Overview.RecordCount.ToString("N0")" Detail="@PeriodLabel" />
+                                <BangChamCongDashboardMetric Title="Tổng giờ tăng ca" Value="@FormatHours(Dashboard.Overview.OvertimeMinutes)" Detail="Toàn kỳ" />
+                                <BangChamCongDashboardMetric Title="Đi trễ / về sớm" Value="@FormatMinutes(Dashboard.Overview.LateEarlyMinutes)" Detail="Toàn kỳ" />
+                            </div>
+
+                            <DxGridLayout CssClass="timesheet-dashboard-grid" RowSpacing="1.25rem" ColumnSpacing="1.5rem">
+                                <Rows>
+                                    <DxGridLayoutRow Areas="trend trend status status" Height="auto" />
+                                    <DxGridLayoutRow Areas="departments departments departments departments" Height="auto" />
+                                    <DxGridLayoutRow Areas="exceptions exceptions exceptions exceptions" Height="auto" />
+                                </Rows>
+                                <Columns><DxGridLayoutColumn /><DxGridLayoutColumn /><DxGridLayoutColumn /><DxGridLayoutColumn /></Columns>
+                                <Items>
+                                    <DxGridLayoutItem Area="trend" CssClass="dashboard-section">
+                                        <Template>
+                                            <section class="dashboard-report">
+                                                <div class="dashboard-section-header"><div><div class="dashboard-section-title">Xu hướng theo ngày</div><div class="dashboard-subtitle">Bản ghi công, tăng ca và trễ/về sớm trong @PeriodLabel</div></div></div>
+                                                @if(Dashboard.DailyTrend.Count == 0) { <div class="dashboard-report-message">Chưa có dữ liệu bảng công cho kỳ đã chọn.</div> }
+                                                else { <DxChart Data="@Dashboard.DailyTrend" CssClass="timesheet-dashboard-chart"><DxChartLineSeries T="AttendanceTimesheetDashboardDailyTrendPointDto" TArgument="string" TValue="double" ArgumentField="point => point.WorkDate.Day.ToString()" ValueField="point => (double)point.OvertimeMinutes" Name="Phút tăng ca" /><DxChartLineSeries T="AttendanceTimesheetDashboardDailyTrendPointDto" TArgument="string" TValue="double" ArgumentField="point => point.WorkDate.Day.ToString()" ValueField="point => (double)point.LateEarlyMinutes" Name="Phút trễ/về sớm" /><DxChartLegend HorizontalAlignment="HorizontalAlignment.Center" VerticalAlignment="VerticalEdge.Bottom" Position="RelativePosition.Outside" /></DxChart> }
+                                            </section>
+                                        </Template>
+                                    </DxGridLayoutItem>
+                                    <DxGridLayoutItem Area="status" CssClass="dashboard-section">
+                                        <Template>
+                                            <section class="dashboard-report">
+                                                <div class="dashboard-section-header"><div><div class="dashboard-section-title">Cơ cấu trạng thái chấm công</div><div class="dashboard-subtitle">Theo mã kết quả tính công</div></div></div>
+                                                @if(Dashboard.StatusBreakdown.Count == 0) { <div class="dashboard-report-message">Chưa có dữ liệu trạng thái cho kỳ đã chọn.</div> }
+                                                else { <DxPieChart Data="@Dashboard.StatusBreakdown" InnerDiameter="0.55" T="AttendanceTimesheetDashboardStatusBreakdownDto" CssClass="timesheet-dashboard-chart"><DxPieChartSeries T="AttendanceTimesheetDashboardStatusBreakdownDto" TArgument="string" TValue="double" ArgumentField="item => item.Status" ValueField="item => (double)item.RecordCount" /><DxChartLegend HorizontalAlignment="HorizontalAlignment.Center" VerticalAlignment="VerticalEdge.Bottom" Position="RelativePosition.Outside" /></DxPieChart> }
+                                            </section>
+                                        </Template>
+                                    </DxGridLayoutItem>
+                                    <DxGridLayoutItem Area="departments" CssClass="dashboard-section">
+                                        <Template>
+                                            <section class="dashboard-report"><div class="dashboard-section-header"><div><div class="dashboard-section-title">Tổng hợp theo phòng ban</div><div class="dashboard-subtitle">Sắp xếp theo tổng thời gian đi trễ/về sớm</div></div></div><DxGrid Data="@Dashboard.Departments" CssClass="timesheet-dashboard-table" ShowAllRows="true" PagerVisible="false" TextWrapEnabled="false" HighlightRowOnHover="true"><Columns><DxGridDataColumn FieldName="@nameof(AttendanceTimesheetDashboardDepartmentDto.DepartmentName)" Caption="Phòng ban" MinWidth="220" /><DxGridDataColumn FieldName="@nameof(AttendanceTimesheetDashboardDepartmentDto.EmployeeCount)" Caption="Nhân viên" Width="110" /><DxGridDataColumn FieldName="@nameof(AttendanceTimesheetDashboardDepartmentDto.RecordCount)" Caption="Bản ghi" Width="110" /><DxGridDataColumn FieldName="@nameof(AttendanceTimesheetDashboardDepartmentDto.OvertimeMinutes)" Caption="Phút tăng ca" Width="130" /><DxGridDataColumn FieldName="@nameof(AttendanceTimesheetDashboardDepartmentDto.LateEarlyMinutes)" Caption="Phút trễ/về sớm" Width="150" /></Columns></DxGrid></section>
+                                        </Template>
+                                    </DxGridLayoutItem>
+                                    <DxGridLayoutItem Area="exceptions" CssClass="dashboard-section">
+                                        <Template>
+                                            <section class="dashboard-report"><div class="dashboard-section-header"><div><div class="dashboard-section-title">Danh sách cần xử lý</div><div class="dashboard-subtitle">Tối đa 20 nhân viên có trễ/về sớm hoặc thiếu chấm công trong ngày làm việc</div></div></div><DxGrid Data="@Dashboard.Exceptions" CssClass="timesheet-dashboard-table" ShowAllRows="true" PagerVisible="false" TextWrapEnabled="false" HighlightRowOnHover="true"><Columns><DxGridDataColumn FieldName="@nameof(AttendanceTimesheetDashboardExceptionDto.EmployeeCode)" Caption="Mã NV" Width="110" /><DxGridDataColumn FieldName="@nameof(AttendanceTimesheetDashboardExceptionDto.EmployeeName)" Caption="Nhân viên" MinWidth="180" /><DxGridDataColumn FieldName="@nameof(AttendanceTimesheetDashboardExceptionDto.DepartmentName)" Caption="Phòng ban" MinWidth="180" /><DxGridDataColumn FieldName="@nameof(AttendanceTimesheetDashboardExceptionDto.LateEarlyMinutes)" Caption="Phút trễ/về sớm" Width="150" /><DxGridDataColumn FieldName="@nameof(AttendanceTimesheetDashboardExceptionDto.OvertimeMinutes)" Caption="Phút tăng ca" Width="130" /><DxGridDataColumn FieldName="@nameof(AttendanceTimesheetDashboardExceptionDto.IsMissingPunch)" Caption="Thiếu chấm công" Width="140"><CellDisplayTemplate Context="cell">@(((AttendanceTimesheetDashboardExceptionDto)cell.DataItem).IsMissingPunch ? "Có" : "Không")</CellDisplayTemplate></DxGridDataColumn></Columns></DxGrid></section>
+                                        </Template>
+                                    </DxGridLayoutItem>
+                                </Items>
+                            </DxGridLayout>
+                        </div>
+                    }
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>

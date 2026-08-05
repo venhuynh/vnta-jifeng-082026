@@ -1,0 +1,224 @@
+@page "/Adms"
+
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Policy = InternalAccountPolicies.DeviceAdministration)]
+
+<div class="adms-monitor-page">
+    @* Thanh công cụ luôn nằm ngoài splitter để trạng thái gateway và thao tác điều khiển
+       không bị cuộn cùng dữ liệu hoạt động bên dưới. *@
+    <DxLayoutBreakpoint DeviceSize="DeviceSize.XSmall | DeviceSize.Small | DeviceSize.Medium"
+                        IsActive="IsCompactScreen"
+                        IsActiveChanged="OnCompactScreenChanged" />
+
+    <div class="card toolbar">
+        <DxToolbar Title="Giám sát ADMS" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Tooltip="Xem trạng thái kết nối gateway ADMS">
+                <Template>
+                    <div class="adms-toolbar-status">
+                        <span class="adms-toolbar-status__label">   | Trạng thái Gateway</span>
+                        <span class="@GatewayStatusCssClass">@GatewayStatusText</span>
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="@LastGatewaySignalText"
+                           Tooltip="Xem thời điểm gateway ADMS có tín hiệu gần nhất"
+                           RenderStyleMode="ToolbarItemRenderStyleMode.Plain" />
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           Text="Xóa log"
+                           BeginGroup="true"
+                           Click="@OnClearClick"
+                           Tooltip="Xóa log giám sát ADMS đang hiển thị"
+                           IconUrl="@VntaDevExpressIcons.Delete" />
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Kết nối lại gateway ADMS"
+                           Click="@OnReconnectClick"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+        </DxToolbar>
+    </div>
+
+    @if(!string.IsNullOrWhiteSpace(ConnectionErrorMessage)) {
+        <div class="adms-alert" role="alert">
+            @ConnectionErrorMessage
+        </div>
+    }
+
+    @* Dock trái chỉ chứa thông tin vận hành tối thiểu để người dùng nhận biết nhanh
+       máy nào đang sống, tên hiển thị là gì và lần cuối gửi tín hiệu vào lúc nào. *@
+    <div class="adms-monitor-surface">
+        <HrmLoadingPanel Visible="@IsBusy"
+                         IsContentBlocked="true"
+                         IsContentVisible="true"
+                         IndicatorVisible="true"
+                         IndicatorAreaVisible="true"
+                         CssClass="adms-monitor-loading-panel">
+            <DxSplitter CssClass="adms-root-splitter"
+                        Width="100%"
+                        Height="100%"
+                        Orientation="@(IsCompactScreen ? Orientation.Vertical : Orientation.Horizontal)">
+                <Panes>
+                    <DxSplitterPane Size="@(IsCompactScreen ? "16rem" : "21rem")"
+                                    MinSize="16rem"
+                                    CssClass="adms-pane">
+                        <div class="adms-panel">
+                            <div class="adms-panel__header">
+                                <div>
+                                    <h2 class="adms-panel__title">Thiết bị</h2>
+                                    <p class="adms-panel__subtitle">@DeviceSummaryText</p>
+                                </div>
+                            </div>
+
+                            <div class="adms-panel__body">
+                                <DxGrid Data="DeviceRows"
+                                        KeyFieldName="@nameof(AdmsDeviceGridRow.RowKey)"
+                                        CssClass="adms-device-grid"
+                                        VirtualScrollingEnabled="true"
+                                        ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                        TextWrapEnabled="false"
+                                        HighlightRowOnHover="true">
+                                    <Columns>
+                                        <DxGridDataColumn Caption="STT"
+                                                          Width="4.5rem"
+                                                          MinWidth="72"
+                                                          AllowSort="false">
+                                            <CellDisplayTemplate>
+                                                @(context.VisibleIndex + 1)
+                                            </CellDisplayTemplate>
+                                        </DxGridDataColumn>
+
+                                        @* Cột đầu gom tên máy và serial vào cùng một cell để tiết kiệm chiều ngang dock trái. *@
+                                        <DxGridDataColumn FieldName="@nameof(AdmsDeviceGridRow.DeviceDisplayName)"
+                                                          Caption="Máy chấm công"
+                                                          MinWidth="180">
+                                            <CellDisplayTemplate>
+                                                @{
+                                                    var device = (AdmsDeviceGridRow)context.DataItem;
+                                                }
+                                                <div class="adms-device-cell">
+                                                    <div class="adms-device-cell__name">@device.DeviceDisplayName</div>
+                                                    <div class="adms-device-cell__meta">@device.DeviceSnLabel</div>
+                                                </div>
+                                            </CellDisplayTemplate>
+                                        </DxGridDataColumn>
+
+                                        <DxGridDataColumn FieldName="@nameof(AdmsDeviceGridRow.StatusText)"
+                                                          Caption="Tình trạng"
+                                                          MinWidth="110">
+                                            <CellDisplayTemplate>
+                                                @{
+                                                    var device = (AdmsDeviceGridRow)context.DataItem;
+                                                }
+                                                <span class="@device.StatusCssClass">@device.StatusText</span>
+                                            </CellDisplayTemplate>
+                                        </DxGridDataColumn>
+
+                                        <DxGridDataColumn FieldName="@nameof(AdmsDeviceGridRow.LastSeenAtLocal)"
+                                                          Caption="Kết nối gần nhất"
+                                                          SortIndex="0"
+                                                          SortOrder="GridColumnSortOrder.Descending"
+                                                          MinWidth="165"
+                                                          DisplayFormat="dd/MM/yyyy HH:mm:ss" />
+                                    </Columns>
+                                    <EmptyDataAreaTemplate>
+                                        <div class="adms-grid-empty-state">Chưa có thiết bị nào xuất hiện từ gateway ADMS.</div>
+                                    </EmptyDataAreaTemplate>
+                                </DxGrid>
+                            </div>
+                        </div>
+                    </DxSplitterPane>
+
+                    @* Khu vực chính tách làm hai tầng:
+                       tầng trên cho luồng semantic dễ đọc,
+                       tầng dưới cho raw giúp đối soát từng phiên giao tiếp. *@
+                    <DxSplitterPane MinSize="22rem" CssClass="adms-pane">
+                        <DxSplitter CssClass="adms-content-splitter"
+                                    Width="100%"
+                                    Height="100%"
+                                    Orientation="Orientation.Vertical">
+                            <Panes>
+                                <DxSplitterPane MinSize="18rem" CssClass="adms-pane">
+                                    <div class="adms-panel">
+                                        <div class="adms-panel__header">
+                                            <div>
+                                                <h2 class="adms-panel__title">Sự kiện tức thời</h2>
+                                                <p class="adms-panel__subtitle">@ActivitySummaryText</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="adms-panel__body">
+                                            <DxGrid Data="ActivityRows"
+                                                    KeyFieldName="@nameof(AdmsActivityGridRow.Id)"
+                                                    CssClass="adms-activity-grid"
+                                                    VirtualScrollingEnabled="true"
+                                                    ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                                    TextWrapEnabled="true"
+                                                    HighlightRowOnHover="true">
+                                                <Columns>
+                                                    <DxGridDataColumn Caption="STT"
+                                                                      Width="4.5rem"
+                                                                      MinWidth="72"
+                                                                      AllowSort="false">
+                                                        <CellDisplayTemplate>
+                                                            @(context.VisibleIndex + 1)
+                                                        </CellDisplayTemplate>
+                                                    </DxGridDataColumn>
+
+                                                    <DxGridDataColumn FieldName="@nameof(AdmsActivityGridRow.ReceivedAtLocal)"
+                                                                      Caption="Thời gian"
+                                                                      SortIndex="0"
+                                                                      SortOrder="GridColumnSortOrder.Descending"
+                                                                      Width="175"
+                                                                      MinWidth="165"
+                                                                      DisplayFormat="dd/MM/yyyy HH:mm:ss" />
+                                                    <DxGridDataColumn FieldName="@nameof(AdmsActivityGridRow.DeviceSerialDisplay)"
+                                                                      Caption="Máy chấm công"
+                                                                      MinWidth="180" />
+                                                    <DxGridDataColumn FieldName="@nameof(AdmsActivityGridRow.EventType)"
+                                                                      Caption="Loại sự kiện"
+                                                                      MinWidth="170" />
+                                                    <DxGridDataColumn FieldName="@nameof(AdmsActivityGridRow.SummaryText)"
+                                                                      Caption="Nội dung"
+                                                                      MinWidth="320" />
+                                                </Columns>
+                                                <EmptyDataAreaTemplate>
+                                                    <div class="adms-grid-empty-state">Chưa có sự kiện realtime từ gateway ADMS.</div>
+                                                </EmptyDataAreaTemplate>
+                                            </DxGrid>
+                                        </div>
+                                    </div>
+                                </DxSplitterPane>
+
+                                @* Panel raw là luồng độc lập thứ ba:
+                                   chỉ hiển thị raw exchange mới nhất từ stream riêng, không bám theo selection của khối khác. *@
+                                <DxSplitterPane Size="18rem" MinSize="12rem" CssClass="adms-pane">
+                                    <div class="adms-panel">
+                                        <div class="adms-panel__header">
+                                            <div>
+                                                <h2 class="adms-panel__title">Dữ liệu raw</h2>
+                                            </div>
+                                        </div>
+
+                                        <div class="adms-panel__body adms-panel__body--raw">
+                                            <DxMemo CssClass="adms-raw-memo"
+                                                    TextAreaCssClass="adms-raw-memo__textarea"
+                                                    ReadOnly="true"
+                                                    ResizeMode="MemoResizeMode.Disabled"
+                                                    Rows="12"
+                                                    Text="@RawPanelText" />
+
+                                            @if(string.IsNullOrWhiteSpace(RawPanelText)) {
+                                                <div class="adms-empty-state">
+                                                    @RawPanelEmptyText
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </DxSplitterPane>
+                            </Panes>
+                        </DxSplitter>
+                    </DxSplitterPane>
+                </Panes>
+            </DxSplitter>
+        </HrmLoadingPanel>
+    </div>
+</div>

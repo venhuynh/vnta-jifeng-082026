@@ -1,0 +1,163 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemKhac.Models
+
+<div class="card responsibility-grid-card">
+    <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                     IsContentBlocked="true"
+                     IsContentVisible="true"
+                     IndicatorVisible="true"
+                     IndicatorAreaVisible="true"
+                     Text="@LoadingText"
+                     CssClass="responsibility-loading-panel">
+        <div class="responsibility-grid-content">
+            <div class="responsibility-grid-header">
+                <div class="responsibility-grid-header-main">
+                    <div class="@PeriodHintCssClass">@PeriodHintText</div>
+                </div>
+                <div class="responsibility-grid-search">
+                    <DxSearchBox CssClass="responsibility-grid-searchbox"
+                                 NullText="Tìm mã NV, họ tên, bộ phận, chức vụ hoặc ghi chú"
+                                 BindValueMode="BindValueMode.OnDelayedInput"
+                                 InputDelay="400"
+                                 ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                 Text="@SearchText"
+                                 TextChanged="SearchTextChanged"
+                                 Enabled="@CanSearchScreen" />
+                </div>
+            </div>
+
+            <DxGrid @ref="grid"
+                    Data="@VisibleRecords"
+                    KeyFieldName="Id"
+                    CssClass="responsibility-grid"
+                    ShowSearchBox="false"
+                    PageSize="@PageSize"
+                    PageSizeChanged="PageSizeChanged"
+                    PagerPosition="GridPagerPosition.Bottom"
+                    PagerSummaryVisible="true"
+                    PageSizeSelectorVisible="true"
+                    PageSizeSelectorItems="@(new int[] { 50, 100, 200 })"
+                    PageSizeSelectorAllRowsItemVisible="false"
+                    SkeletonRowsEnabled="true"
+                    ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                    FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                    TextWrapEnabled="false"
+                    FocusedRowEnabled="true"
+                    HighlightRowOnHover="true"
+                    AllowSelectRowByClick="true"
+                    SelectionMode="GridSelectionMode.Multiple"
+                    SelectedDataItems="@SelectedGridItems"
+                    SelectedDataItemsChanged="@SelectedGridItemsChanged">
+                <Columns>
+                    <DxGridSelectionColumn Width="3rem" />
+                    <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                        <CellDisplayTemplate>@(context.VisibleIndex + 1)</CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn Caption="Tác vụ" MinWidth="96" Width="6rem" AllowSort="false" TextAlignment="GridTextAlignment.Center" ShowInColumnChooser="false">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherResponsibilityAllowanceRecord)context.DataItem;
+                            }
+                            <div class="responsibility-row-menu-host" @onclick:stopPropagation="true" @onmousedown:stopPropagation="true">
+                                <DxDropDownButton CssClass="responsibility-row-menu-btn" IconCssClass="icon more-icon medium-icon" RenderStyle="ButtonRenderStyle.Link" DropDownToggleVisible="false" Enabled="@CanUseAppliedPeriodActions" Tooltip="Tác vụ dòng phụ cấp trách nhiệm khác">
+                                    <Items>
+                                        <DxDropDownButtonItem Text="Tính lại" IconUrl="@VntaDevExpressIcons.Refresh" Enabled="false" Tooltip="Chức năng sẽ được triển khai ở giai đoạn tiếp theo" />
+                                        <DxDropDownButtonItem Text="@(row.IsLocked ? "Mở khóa" : "Khóa")" IconUrl="@(row.IsLocked ? VntaDevExpressIcons.Unlock : VntaDevExpressIcons.Lock)" Enabled="false" BeginGroup="true" Tooltip="Chức năng sẽ được triển khai ở giai đoạn tiếp theo" />
+                                        <DxDropDownButtonItem Text="Bảng công tháng" IconUrl="@VntaDevExpressIcons.TaskList" Enabled="false" Tooltip="Chức năng sẽ được triển khai ở giai đoạn tiếp theo" />
+                                    </Items>
+                                </DxDropDownButton>
+                            </div>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="EmployeeCode" Caption="Mã NV" MinWidth="120">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherResponsibilityAllowanceRecord)context.DataItem;
+                            }
+                            @HighlightSearchText(row.EmployeeCode)
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="EmployeeName" Caption="Nhân viên" MinWidth="180">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherResponsibilityAllowanceRecord)context.DataItem;
+                            }
+                            @HighlightSearchText(row.EmployeeName)
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Bộ phận" MinWidth="170">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherResponsibilityAllowanceRecord)context.DataItem;
+                            }
+                            <span class="responsibility-grid-text" title="@FormatOptionalText(row.DepartmentDisplay)">@HighlightSearchText(row.DepartmentDisplay)</span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" MinWidth="170">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherResponsibilityAllowanceRecord)context.DataItem;
+                            }
+                            <span class="responsibility-grid-text" title="@FormatOptionalText(row.PositionDisplay)">@HighlightSearchText(row.PositionDisplay)</span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="AllowanceWorkdayCount" Caption="Số ngày tính PC" MinWidth="125">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherResponsibilityAllowanceRecord)context.DataItem;
+                            }
+                            @FormatWorkdayCount(row.AllowanceWorkdayCount)
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="StandardResponsibilityAllowanceAmount" Caption="Tiền trách nhiệm chuẩn" MinWidth="175">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherResponsibilityAllowanceRecord)context.DataItem;
+                            }
+                            @FormatCurrency(row.StandardResponsibilityAllowanceAmount)
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="ActualResponsibilityAllowanceAmount" Caption="Tiền trách nhiệm thực tế" MinWidth="175">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherResponsibilityAllowanceRecord)context.DataItem;
+                            }
+                            <span class="responsibility-amount-actual">@FormatCurrency(row.ActualResponsibilityAllowanceAmount)</span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="Note" Caption="Ghi chú" MinWidth="220">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherResponsibilityAllowanceRecord)context.DataItem;
+                            }
+                            <span class="responsibility-grid-text" title="@FormatOptionalText(row.Note)">@HighlightSearchText(row.Note)</span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="IsLocked" Caption="Khóa" MinWidth="90">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherResponsibilityAllowanceRecord)context.DataItem;
+                            }
+                            <span class="@GetYesNoStatusCssClass(!row.IsLocked)">@GetLockStatusText(row.IsLocked)</span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="RefreshedAtUtc" Caption="Làm mới lúc" Visible="false" MinWidth="150" />
+                    <DxGridDataColumn FieldName="RefreshedBy" Caption="Làm mới bởi" Visible="false" MinWidth="150" />
+                    <DxGridDataColumn FieldName="CreatedAtUtc" Caption="Tạo lúc" Visible="false" MinWidth="150" />
+                    <DxGridDataColumn FieldName="CreatedBy" Caption="Tạo bởi" Visible="false" MinWidth="150" />
+                    <DxGridDataColumn FieldName="UpdatedAtUtc" Caption="Cập nhật lúc" Visible="false" MinWidth="150" />
+                    <DxGridDataColumn FieldName="UpdatedBy" Caption="Cập nhật bởi" Visible="false" MinWidth="150" />
+                    <DxGridDataColumn FieldName="PayrollAllowanceSummaryRecordId" Caption="Summary row Id" Visible="false" MinWidth="260" />
+                    <DxGridDataColumn FieldName="Id" Caption="Id" Visible="false" MinWidth="260" />
+                </Columns>
+                <EmptyDataAreaTemplate>
+                    <div class="empty-state">
+                        <div class="state-title">@EmptyStateTitle</div>
+                        <div class="state-message">@EmptyStateMessage</div>
+                        <DxButton Text="@EmptyStateActionText" Click="EmptyStateActionClick" Enabled="@CanEmptyStateAction" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                    </div>
+                </EmptyDataAreaTemplate>
+            </DxGrid>
+        </div>
+    </HrmLoadingPanel>
+</div>

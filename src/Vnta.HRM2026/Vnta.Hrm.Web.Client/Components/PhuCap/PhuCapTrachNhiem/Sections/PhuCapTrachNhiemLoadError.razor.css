@@ -1,0 +1,45 @@
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    background-clip: border-box;
+}
+
+.error-state {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    height: 100%;
+    min-height: 18rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.state-title {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.state-message {
+    max-width: 38rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    line-height: 1.5;
+}
+
+.error-state ::deep .dxbl-btn {
+    min-width: 0;
+    min-height: 2rem;
+    padding: 0.375rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+}

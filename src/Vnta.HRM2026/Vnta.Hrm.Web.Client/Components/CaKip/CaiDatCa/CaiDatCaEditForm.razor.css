@@ -1,0 +1,67 @@
+.attendance-shift-form-scroll {
+    max-height: min(74vh, 42rem);
+    overflow-y: auto;
+    padding-right: 0.25rem;
+}
+
+.validation-summary {
+    margin-top: 1rem;
+    color: var(--dxbl-validation-summary-text-color, #b42318);
+}
+
+.edit-error-message {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    background-color: #fff2f0;
+    color: #b42318;
+}
+
+.shift-color-editor {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.shift-color-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.shift-native-color-picker {
+    width: 2.75rem;
+    min-width: 2.75rem;
+    height: 2.5rem;
+    padding: 0.125rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.375rem;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    cursor: pointer;
+}
+
+.shift-color-swatch {
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 2rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    background-color: var(--shift-color-swatch, #9ca3af);
+}
+
+
+.shift-working-days {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+}
+
+::deep .attendance-shift-form {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+::deep .shift-checkbox-item .dxbl-fl-cpt {
+    min-height: 1.25rem;
+}

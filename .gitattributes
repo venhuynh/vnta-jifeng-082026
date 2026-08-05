@@ -1,0 +1,5 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Release scripts execute directly on Ubuntu; never package them with CRLF.
+*.sh text eol=lf

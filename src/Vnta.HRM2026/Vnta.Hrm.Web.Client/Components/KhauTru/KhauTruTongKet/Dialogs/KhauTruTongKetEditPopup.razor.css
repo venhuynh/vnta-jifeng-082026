@@ -1,0 +1,9 @@
+.deduction-summary-edit-form {
+    padding: 0.25rem;
+}
+
+.deduction-summary-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}

@@ -1,0 +1,26 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapDashboard.Models
+
+<div class="card toolbar">
+    <DxToolbar Title="Dashboard phụ cấp" CssClass="toolbar" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right" CssClass="toolbar-filter-item">
+            <Template><div class="custom-item toolbar-filter-editor"><span class="toolbar-filter-label">Năm</span><DxSpinEdit T="int" Value="@Year" ValueChanged="YearChanged" MinValue="@MinimumYear" MaxValue="@MaximumYear" Increment="1" ShowSpinButtons="true" Enabled="@Enabled" CssClass="toolbar-filter-year" /></div></Template>
+        </DxToolbarItem>
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right" CssClass="toolbar-filter-item">
+            <Template><div class="custom-item toolbar-filter-editor"><span class="toolbar-filter-label">Tháng</span><DxComboBox TData="PayrollAllowanceDashboardMonthOption" TValue="int" @key="Year" Data="@Months" Value="@Month" ValueChanged="MonthChanged" ValueFieldName="@nameof(PayrollAllowanceDashboardMonthOption.Value)" TextFieldName="@nameof(PayrollAllowanceDashboardMonthOption.Text)" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never" Enabled="@Enabled" CssClass="toolbar-filter-month" /></div></Template>
+        </DxToolbarItem>
+        <DxToolbarItem Text="Xem" Click="ViewClicked" Enabled="@Enabled" Alignment="ToolbarItemAlignment.Right" Tooltip="Xem dữ liệu dashboard phụ cấp theo kỳ lương đang chọn" IconUrl="@VntaDevExpressIcons.FolderOpenArrowImport" />
+    </DxToolbar>
+</div>
+
+@code {
+    [Parameter] public int Month { get; set; }
+    [Parameter] public int Year { get; set; }
+    [Parameter] public IReadOnlyList<PayrollAllowanceDashboardMonthOption> Months { get; set; } = [];
+    [Parameter] public int MinimumYear { get; set; }
+    [Parameter] public int MaximumYear { get; set; }
+    [Parameter] public bool Enabled { get; set; }
+    [Parameter] public EventCallback<int> YearChanged { get; set; }
+    [Parameter] public EventCallback<int> MonthChanged { get; set; }
+    [Parameter] public EventCallback ViewClicked { get; set; }
+}

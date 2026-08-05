@@ -1,0 +1,66 @@
+@namespace Vnta.Hrm.Web.Client.Components.Shared.Progress
+@implements IDisposable
+@inject Vnta.Hrm.Web.Client.Services.Ui.HrmBusyStateService BusyStateService
+
+<DxLoadingPanel Visible="@Visible"
+                IsContentBlocked="@IsContentBlocked"
+                IsContentVisible="@IsContentVisible"
+                IndicatorVisible="@IndicatorVisible"
+                IndicatorAreaVisible="@IndicatorAreaVisible"
+                ZIndex="@ZIndex"
+                Text="@ResolvedText"
+                CssClass="@CssClass">
+    @ChildContent
+</DxLoadingPanel>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; }
+
+    [Parameter]
+    public bool IsContentBlocked { get; set; } = true;
+
+    [Parameter]
+    public bool IsContentVisible { get; set; } = false;
+
+    [Parameter]
+    public bool IndicatorVisible { get; set; } = true;
+
+    [Parameter]
+    public bool IndicatorAreaVisible { get; set; } = true;
+
+    [Parameter]
+    public int? ZIndex { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    [Parameter]
+    public string? Text { get; set; }
+
+    private IDisposable? busyScope;
+
+    string ResolvedText => string.IsNullOrWhiteSpace(Text) ? HrmUiDefaults.LoadingText : Text;
+
+    protected override void OnParametersSet()
+    {
+        if (Visible && busyScope is null)
+        {
+            busyScope = BusyStateService.Enter();
+        }
+        else if (!Visible && busyScope is not null)
+        {
+            busyScope.Dispose();
+            busyScope = null;
+        }
+    }
+
+    public void Dispose()
+    {
+        busyScope?.Dispose();
+        busyScope = null;
+    }
+}

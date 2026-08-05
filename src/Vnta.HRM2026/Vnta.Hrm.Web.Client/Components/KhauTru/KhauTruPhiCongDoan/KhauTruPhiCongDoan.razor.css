@@ -1,0 +1,275 @@
+.content-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    background-clip: border-box;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+}
+
+.toolbar {
+    flex: 0 0 auto;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+::deep .toolbar .dxbl-toolbar {
+    min-width: max-content;
+}
+
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+.toolbar-filter-editor {
+    gap: 0.5rem;
+}
+
+.toolbar-filter-label {
+    white-space: nowrap;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .toolbar-filter-item {
+    min-width: 0;
+}
+
+::deep .toolbar-filter-year {
+    width: 7rem;
+}
+
+::deep .toolbar-filter-month {
+    width: 8rem;
+}
+
+.union-fee-deduction-export-source {
+    position: fixed;
+    left: -10000px;
+    top: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.union-fee-deduction-root {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.union-fee-deduction-grid-card {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+::deep .union-fee-deduction-loading-panel {
+    height: 100%;
+}
+
+.union-fee-deduction-grid-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.union-fee-deduction-grid-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem 0.625rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 94%, white);
+    border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 82%, transparent);
+}
+
+::deep .union-fee-deduction-total-button-group {
+    display: inline-flex;
+    min-width: max-content;
+    pointer-events: none;
+}
+
+::deep .union-fee-deduction-total-button,
+::deep .union-fee-deduction-count-button {
+    font-size: 0.82rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+::deep .union-fee-deduction-total-button {
+    color: var(--dxds-color-content-success-default-rest, #15803d) !important;
+}
+
+::deep .union-fee-deduction-count-button {
+    color: var(--dxds-color-content-info-default-rest, #2563eb) !important;
+}
+
+.union-fee-deduction-grid-search {
+    flex: 0 0 auto;
+    min-width: 15rem;
+    max-width: min(100%, 20rem);
+}
+
+::deep .union-fee-deduction-grid-searchbox {
+    width: 100%;
+}
+
+::deep .union-fee-deduction-grid-searchbox .dxbl-text-editor {
+    min-height: 2.3rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 72%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 92%, white);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 80%, transparent);
+}
+
+::deep .union-fee-deduction-grid-searchbox .dxbl-text-editor-input {
+    min-width: 11rem;
+}
+
+::deep .union-fee-deduction-grid-searchbox .dxbl-btn-clear {
+    opacity: 0.68;
+}
+
+.union-fee-deduction-employee-text {
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.empty-state,
+.error-state {
+    height: 100%;
+    min-height: 18rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.state-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.state-message {
+    max-width: 38rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+.yes-no-status {
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.yes-no-status::before {
+    content: " ";
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    margin-right: 0.3rem;
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+.yes-no-status-yes {
+    color: var(--dxds-color-content-success-default-rest);
+}
+
+.yes-no-status-no {
+    color: var(--dxds-color-content-danger-default-rest);
+}
+
+tr.dxbl-grid-focused-row .yes-no-status {
+    color: inherit !important;
+}
+
+.union-fee-deduction-row-menu-host {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+::deep .union-fee-deduction-row-menu-btn.dxbl-btn {
+    min-width: 2rem;
+    min-height: 2rem;
+    padding: 0.25rem;
+    border-radius: 8px;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+::deep .union-fee-deduction-row-menu-btn.dxbl-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--dxds-color-primary-default-rest) 9%, transparent);
+}
+
+::deep .union-fee-deduction-grid {
+    flex: 1 1 auto;
+    max-height: 100%;
+    border-radius: 0.25rem;
+}
+
+::deep .union-fee-deduction-grid .dxbl-grid-table {
+    border-top: none;
+}
+
+.union-fee-deduction-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex: 0 0 auto;
+    padding: 0.625rem 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 94%, white);
+}
+
+.union-fee-deduction-pager-summary {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.union-fee-deduction-pager-actions {
+    display: inline-flex;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .union-fee-deduction-grid-header,
+    .union-fee-deduction-pager {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.75rem;
+    }
+
+    .union-fee-deduction-grid-search {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+    }
+
+    .union-fee-deduction-pager-summary {
+        white-space: normal;
+    }
+
+    .union-fee-deduction-pager-actions {
+        justify-content: flex-end;
+    }
+}

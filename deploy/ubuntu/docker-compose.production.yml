@@ -1,0 +1,66 @@
+services:
+  hrm-web:
+    image: ${HRM_IMAGE:?set HRM_IMAGE}
+    restart: unless-stopped
+    ports:
+      - "${HRM_HTTPS_PORT:-8443}:${HRM_HTTPS_CONTAINER_PORT:-8443}"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: https://+:${HRM_HTTPS_CONTAINER_PORT:-8443}
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /certificates/hrm/hrm-server.pfx
+      ASPNETCORE_Kestrel__Certificates__Default__Password: ${HRM_TLS_CERT_PASSWORD:?set HRM_TLS_CERT_PASSWORD}
+      TZ: ${TZ:-Asia/Ho_Chi_Minh}
+      AllowedHosts: "*"
+      ConnectionStrings__Postgres: ${HRM_DB_CONNECTION:?set HRM_DB_CONNECTION}
+      ConnectionStrings__DefaultConnection: ${HRM_DB_CONNECTION:?set HRM_DB_CONNECTION}
+      Serilog__LogPath: /var/log/vnta/hrm
+      DatabaseStartup__AutoMigrateOnStartup: "false"
+      IntegrationSecurity__GatewayInbound__RequireMutualTls: "false"
+      IntegrationSecurity__GatewayInbound__Keys__${GATEWAY_HMAC_KEY_ID:?set GATEWAY_HMAC_KEY_ID}: ${GATEWAY_HMAC_SECRET:?set GATEWAY_HMAC_SECRET}
+      IntegrationSecurity__GatewayInbound__TrustedClientCertificateSha256Thumbprints__0: ${GATEWAY_CLIENT_CERT_SHA256_THUMBPRINT:?set GATEWAY_CLIENT_CERT_SHA256_THUMBPRINT}
+    volumes:
+      - ${HRM_LOG_DIR:?set HRM_LOG_DIR}:/var/log/vnta/hrm
+      - ${HRM_CERT_DIR:?set HRM_CERT_DIR}:/certificates/hrm:ro
+    networks:
+      - vnta_internal
+
+  adms-gateway:
+    image: ${ADMS_IMAGE:?set ADMS_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      - hrm-web
+    ports:
+      - "${ADMS_LISTENER_PORT:-8080}:${ADMS_LISTENER_PORT:-8080}"
+    expose:
+      - "${ADMS_CONTROL_PLANE_PORT:-5005}"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:${ADMS_CONTROL_PLANE_PORT:-5005}
+      TZ: ${TZ:-Asia/Ho_Chi_Minh}
+      ConnectionStrings__Postgres: ${ADMS_DB_CONNECTION:?set ADMS_DB_CONNECTION}
+      ConnectionStrings__DefaultConnection: ${ADMS_DB_CONNECTION:?set ADMS_DB_CONNECTION}
+      Serilog__LogPath: /var/log/vnta/adms
+      AttendanceGateway__ListenerPort: "${ADMS_LISTENER_PORT:-8080}"
+      AttendanceGateway__ControlPlanePort: "${ADMS_CONTROL_PLANE_PORT:-5005}"
+      AttendanceGateway__AutoStartTcpListener: "true"
+      AttendanceGateway__RawCommunicationLogEnabled: "true"
+      AttendanceGateway__RawCommunicationLogPath: /var/log/vnta/adms-raw
+      CoreApi__Enabled: "${ADMS_CORE_API_ENABLED:-true}"
+      CoreApi__BaseUrl: ${ADMS_CORE_API_BASE_URL:-https://hrm-web:8443}
+      CoreApi__GatewayKeyId: ${GATEWAY_HMAC_KEY_ID:?set GATEWAY_HMAC_KEY_ID}
+      CoreApi__GatewayHmacSecret: ${GATEWAY_HMAC_SECRET:?set GATEWAY_HMAC_SECRET}
+      CoreApi__ClientCertificatePath: /certificates/gateway/gateway-client.pfx
+      CoreApi__ClientCertificatePassword: ${GATEWAY_CLIENT_CERT_PASSWORD:?set GATEWAY_CLIENT_CERT_PASSWORD}
+      CoreApi__TrustedServerCertificateSha256Thumbprint: ${HRM_SERVER_CERT_SHA256_THUMBPRINT:?set HRM_SERVER_CERT_SHA256_THUMBPRINT}
+      FrontendCors__AllowPrivateNetworkOrigins: "true"
+      FrontendCors__AllowedOrigins__0: ${HRM_PUBLIC_ORIGIN:?set HRM_PUBLIC_ORIGIN}
+    volumes:
+      - ${ADMS_LOG_DIR:?set ADMS_LOG_DIR}:/var/log/vnta/adms
+      - ${ADMS_RAW_LOG_DIR:?set ADMS_RAW_LOG_DIR}:/var/log/vnta/adms-raw
+      - ${GATEWAY_CERT_DIR:?set GATEWAY_CERT_DIR}:/certificates/gateway:ro
+    networks:
+      - vnta_internal
+
+networks:
+  vnta_internal:
+    name: ${COMPOSE_PROJECT_NAME:-vnta}-internal

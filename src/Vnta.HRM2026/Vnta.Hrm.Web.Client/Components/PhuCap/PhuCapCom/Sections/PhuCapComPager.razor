@@ -1,0 +1,27 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapCom
+
+<div class="meal-allowance-pager" aria-label="Điều hướng trang phụ cấp cơm">
+    <div class="meal-allowance-pager-summary">@SummaryText</div>
+    @if (CanBrowsePages)
+    {
+        <DxPager PageCount="@TotalPageCount"
+                 ActivePageIndex="@CurrentPageIndex"
+                 ActivePageIndexChanged="PageChanged"
+                 NavigationMode="PagerNavigationMode.NumericButtons"
+                 VisibleNumericButtonCount="7" />
+    }
+    <div class="meal-allowance-page-size">
+        <span>Hiển thị</span>
+        <DxComboBox TData="PageSizeOption"
+                    TValue="int"
+                    Data="@PageSizeOptions"
+                    Value="@PageSize"
+                    ValueChanged="PageSizeChanged"
+                    ValueFieldName="@nameof(PageSizeOption.Value)"
+                    TextFieldName="@nameof(PageSizeOption.Text)"
+                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                    Enabled="@CanChangeFilters"
+                    CssClass="meal-allowance-page-size-editor" />
+        <span>@PageSizeDescription</span>
+    </div>
+</div>

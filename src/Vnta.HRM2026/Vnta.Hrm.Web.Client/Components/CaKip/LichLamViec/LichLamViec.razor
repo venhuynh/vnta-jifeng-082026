@@ -1,0 +1,215 @@
+@page "/attendance/work-calendar"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Application.CaKip.LichLamViec
+@using Vnta.Hrm.Web.Client.Models
+
+@attribute [Authorize(Policy = InternalAccountPolicies.ShiftManagement)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Lịch làm việc</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <div class="work-calendar-toolbar-scroll">
+            <DxToolbar Title="Lịch làm việc" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+                <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                               CssClass="work-calendar-year-toolbar-item"
+                               Tooltip="Chọn năm lịch làm việc">
+                    <Template>
+                        <div class="custom-item work-calendar-year-editor">
+                            <span class="work-calendar-year-label">Năm</span>
+                            <DxSpinEdit T="int"
+                                        Value="@SelectedYear"
+                                        ValueChanged="@((int year) => OnSelectedYearChangedAsync(year))"
+                                        MinValue="@MinimumSupportedYear"
+                                        MaxValue="@MaximumSupportedYear"
+                                        Increment="1"
+                                        ShowSpinButtons="true"
+                                        Enabled="@CanChangeYear"
+                                        CssClass="work-calendar-year-spin" />
+                        </div>
+                    </Template>
+                </DxToolbarItem>
+                <DxToolbarItem Text="Mới"
+                               Tooltip="Thêm ngày nghỉ hoặc ngày lễ"
+                               Enabled="@CanCreateSpecialDay"
+                               Click="OpenCreateDayAsync"
+                               Alignment="ToolbarItemAlignment.Right"
+                               IconUrl="@VntaDevExpressIcons.Add" />
+                <DxToolbarItem Text="Điều chỉnh"
+                               Tooltip="Điều chỉnh ngày nghỉ hoặc ngày lễ đang chọn"
+                               Enabled="@CanEditSelectedDay"
+                               Click="OpenEditSelectedDayAsync"
+                               Alignment="ToolbarItemAlignment.Right"
+                               IconUrl="@VntaDevExpressIcons.Edit" />
+                <DxToolbarItem Text="Đưa về ngày thường"
+                               Tooltip="Xóa cấu hình ngày nghỉ hoặc ngày lễ đang chọn"
+                               Enabled="@CanDeleteSelectedDay"
+                               Click="DeleteSelectedDayAsync"
+                               Alignment="ToolbarItemAlignment.Right"
+                               IconUrl="@VntaDevExpressIcons.Delete" />
+                <DxToolbarItem Text="Làm mới"
+                               Tooltip="Đồng bộ toàn bộ Chủ nhật trong năm thành Ngày nghỉ"
+                               Enabled="@CanInteract"
+                               Click="ReloadAsync"
+                               Alignment="ToolbarItemAlignment.Right"
+                               IconUrl="@VntaDevExpressIcons.Refresh" />
+            </DxToolbar>
+        </div>
+    </div>
+
+    <div class="work-calendar-root">
+        @if(HasLoadError)
+        {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải lịch làm việc</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="ReloadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+            <HrmLoadingPanel Visible="@IsLoading"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             Text="Đang tải lịch làm việc..."
+                             CssClass="work-calendar-loading-panel">
+                <div class="work-calendar-summary">
+                    <div class="work-calendar-selected-day">
+                        <div class="work-calendar-selected-title">@SelectedDayTitle</div>
+                        <div class="@SelectedDayBadgeCssClass">@SelectedDayTypeText</div>
+                        @if(SelectedSpecialDay is not null)
+                        {
+                            <div class="work-calendar-selected-note">@SelectedSpecialDay.DisplayName</div>
+                        }
+                    </div>
+                    <div class="work-calendar-legend" aria-label="Chú giải loại ngày">
+                        <span class="legend-item">
+                            <span class="legend-swatch legend-regular"></span>
+                            Ngày thường
+                        </span>
+                        <span class="legend-item">
+                            <span class="legend-swatch legend-day-off"></span>
+                            Ngày nghỉ
+                        </span>
+                        <span class="legend-item">
+                            <span class="legend-swatch legend-holiday"></span>
+                            Ngày lễ
+                        </span>
+                    </div>
+                </div>
+
+                <div class="work-calendar-year-grid">
+                    @foreach(var month in Months)
+                    {
+                        <section class="work-calendar-month" aria-label="@month.Title">
+                            <div class="work-calendar-month-header">
+                                <div class="work-calendar-month-title">@month.Title</div>
+                                <div class="work-calendar-month-count">@GetMonthSpecialDayCountText(month.Month)</div>
+                            </div>
+
+                            <DxCalendar T="DateTime"
+                                        VisibleDate="@month.FirstDate"
+                                        VisibleDateChanged="@((DateTime visibleDate) => OnMonthVisibleDateChangedAsync(month.Month, visibleDate))"
+                                        SelectedDate="@SelectedCalendarDate"
+                                        SelectedDateChanged="@((DateTime selectedDate) => OnCalendarDateSelectedAsync(selectedDate))"
+                                        MinDate="@month.FirstDate"
+                                        MaxDate="@month.LastDate"
+                                        FirstDayOfWeek="DayOfWeek.Monday"
+                                        HeaderCssClass="work-calendar-month-calendar-navigation"
+                                        ShowClearButton="false"
+                                        CssClass="work-calendar-month-calendar">
+                                <DayCellTemplate Context="calendarDate">
+                                    @{
+                                        var dayRecord = GetDayRecord(calendarDate);
+                                        var dayType = ResolveDayType(calendarDate, dayRecord);
+                                        var title = BuildDayCellTitle(calendarDate, dayRecord);
+                                    }
+                                    <div class="@GetDayCellCssClass(calendarDate, month.Month)"
+                                         title="@title"
+                                         @onclick="@(() => SelectDayAsync(calendarDate, month.Month))">
+                                        <span class="work-calendar-day-number">@calendarDate.Day</span>
+                                        @if(dayType != AttendanceWorkCalendarDayType.Regular)
+                                        {
+                                            <span class="work-calendar-day-type">@GetShortDayType(dayType)</span>
+                                        }
+                                    </div>
+                                </DayCellTemplate>
+                            </DxCalendar>
+
+                            <div class="work-calendar-month-days">
+                                @{
+                                    var specialDays = GetMonthSpecialDays(month.Month);
+                                }
+                                @if(specialDays.Count == 0)
+                                {
+                                    <div class="work-calendar-month-empty">Không có ngày đặc biệt</div>
+                                }
+                                else
+                                {
+                                    @foreach(var day in specialDays)
+                                    {
+                                        <button type="button"
+                                                class="@GetMonthDayButtonCssClass(day)"
+                                                title="@BuildConfiguredDayTitle(day)"
+                                                 @onclick="@(() => SelectConfiguredDayAsync(day))">
+                                            <span>@FormatDate(day.WorkDateOnly)</span>
+                                            <span>@day.DisplayName</span>
+                                        </button>
+                                    }
+                                }
+                            </div>
+                        </section>
+                    }
+                </div>
+            </HrmLoadingPanel>
+        }
+    </div>
+</div>
+
+<DxPopup Visible="@IsEditPopupVisible"
+         VisibleChanged="OnEditPopupVisibleChangedAsync"
+         HeaderText="@EditPopupTitle"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         CloseOnOutsideClick="false"
+         CssClass="work-calendar-popup">
+    <BodyContentTemplate Context="popupBody">
+        @if(EditModel is not null && EditContext is not null)
+        {
+            <EditForm EditContext="@EditContext"
+                      OnValidSubmit="SaveEditAsync"
+                      OnInvalidSubmit="OnInvalidSubmitAsync">
+                <DataAnnotationsValidator />
+                <LichLamViecEditForm Model="@EditModel"
+                                     EditContext="@EditContext"
+                                     DayTypeOptions="@DayTypeOptions"
+                                     MinDate="@SelectedYearFirstDate"
+                                     MaxDate="@SelectedYearLastDate"
+                                     ErrorMessage="@EditErrorMessage" />
+
+                <div class="work-calendar-popup-actions">
+                    <DxButton Text="Hủy"
+                              Click="CloseEditPopupAsync"
+                              RenderStyle="ButtonRenderStyle.Secondary"
+                              RenderStyleMode="ButtonRenderStyleMode.Outline"
+                              IconUrl="@VntaDevExpressIcons.Cancel"
+                              Enabled="@(!IsSaving)" />
+                    <DxButton Text="Lưu"
+                              SubmitFormOnClick="true"
+                              RenderStyle="ButtonRenderStyle.Primary"
+                              RenderStyleMode="ButtonRenderStyleMode.Contained"
+                              Enabled="@(!IsSaving)"
+                              IconUrl="@VntaDevExpressIcons.Save" />
+                </div>
+            </EditForm>
+        }
+    </BodyContentTemplate>
+</DxPopup>

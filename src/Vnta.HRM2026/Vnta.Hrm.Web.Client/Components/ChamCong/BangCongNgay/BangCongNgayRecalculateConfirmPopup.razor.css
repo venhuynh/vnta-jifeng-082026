@@ -1,0 +1,24 @@
+.bang-cong-ngay-confirm-popup-footer,
+.bang-cong-ngay-confirm-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.bang-cong-ngay-confirm-actions {
+    gap: 0.5rem;
+}
+
+.bang-cong-ngay-confirm-action {
+    min-width: 7rem;
+}
+
+.bang-cong-ngay-confirm-content {
+    display: flex;
+    padding: 0.5rem 0 0.25rem;
+}
+
+.bang-cong-ngay-confirm-message {
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.5;
+}

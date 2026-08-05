@@ -1,0 +1,159 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiem
+
+<DxPopup Visible="@IsConfigPopupVisible"
+         VisibleChanged="OnVisibleChangedAsync"
+         Width="1080px"
+         ShowFooter="false"
+         ShowCloseButton="true"
+         CloseOnEscape="true"
+         HeaderText="@($"Cấu hình trách nhiệm - {ConfigPopupPeriodLabel}")"
+         CssClass="responsibility-popup">
+    <BodyContentTemplate>
+        <div class="responsibility-popup-body">
+            <div class="responsibility-popup-shell-toolbar">
+                <button type="button" class="responsibility-secondary-button" @onclick="OpenAssignmentsFromConfigAsync">Gán nhân viên</button>
+            </div>
+            <DxTabs ActiveTabIndex="@ConfigPopupActiveTabIndex"
+                   ActiveTabIndexChanged="OnActiveTabIndexChangedAsync">
+                <DxTabPage Text="Cấp bậc">
+                    <div class="responsibility-popup-section">
+                        <div class="responsibility-popup-toolbar">
+                            <div class="responsibility-popup-title">Cấp bậc trách nhiệm</div>
+                            <div class="responsibility-popup-toolbar-actions">
+                                <button type="button" class="responsibility-secondary-button" @onclick="CopyGradesFromPreviousMonthAsync">Lấy từ tháng trước</button>
+                                <button type="button" class="responsibility-secondary-button" @onclick="ResetGradeForm">Tạo mới</button>
+                            </div>
+                        </div>
+                        @if(!string.IsNullOrWhiteSpace(ConfigPopupErrorMessage)) {
+                            <div class="responsibility-error-banner">@ConfigPopupErrorMessage</div>
+                        }
+                        <div class="responsibility-editor-grid">
+                            <div class="responsibility-editor-card">
+                                <label class="responsibility-field-label">Mã bậc</label>
+                                <input class="responsibility-input" @bind="GradeForm.Code" />
+                                <label class="responsibility-field-label">Tên bậc</label>
+                                <input class="responsibility-input" @bind="GradeForm.Name" />
+                                <label class="responsibility-field-label">Số tiền chuẩn</label>
+                                <DxSpinEdit T="decimal" Value="@GradeForm.StandardResponsibilityAllowanceAmount" ValueChanged="@OnGradeAmountChanged" MinValue="0m" Increment="100000m" />
+                                <label class="responsibility-field-label">Thứ tự</label>
+                                <DxSpinEdit T="int" Value="@GradeForm.DisplayOrder" ValueChanged="@OnGradeDisplayOrderChanged" MinValue="0" Increment="1" />
+                                <label class="responsibility-checkbox-row">
+                                    <input type="checkbox" @bind="GradeForm.IsActive" />
+                                    <span>Đang dùng</span>
+                                </label>
+                                <label class="responsibility-field-label">Ghi chú</label>
+                                <textarea class="responsibility-input responsibility-textarea" @bind="GradeForm.Note"></textarea>
+                                <button type="button" class="responsibility-primary-button" @onclick="SaveGradeAsync">
+                                    @(EditingGradeId.HasValue ? "Lưu cấp bậc" : "Thêm cấp bậc")
+                                </button>
+                            </div>
+                            <div class="responsibility-table-card">
+                                <table class="responsibility-editor-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Thứ tự</th>
+                                            <th>Mã</th>
+                                            <th>Tên bậc</th>
+                                            <th>Tiền chuẩn</th>
+                                            <th>Trạng thái</th>
+                                            <th>Ghi chú</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach(var grade in GradeRows.OrderBy(x => x.DisplayOrder).ThenBy(x => x.Code)) {
+                                            <tr>
+                                                <td>@grade.DisplayOrder</td>
+                                                <td>@grade.Code</td>
+                                                <td>@grade.Name</td>
+                                                <td>@FormatCurrency(grade.StandardResponsibilityAllowanceAmount)</td>
+                                                <td>
+                                                    <span class="@GetActiveTextCssClass(grade.IsActive)">@GetActiveText(grade.IsActive)</span>
+                                                </td>
+                                                <td>@grade.Note</td>
+                                                <td>
+                                                    <button type="button" class="responsibility-link-button" @onclick="() => StartEditGrade(grade)">Sửa</button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </DxTabPage>
+                <DxTabPage Text="Gán chức vụ">
+                    <div class="responsibility-popup-section">
+                        <div class="responsibility-popup-toolbar">
+                            <div class="responsibility-popup-title">Gán chức vụ vào cấp bậc</div>
+                            <div class="responsibility-popup-toolbar-actions">
+                                <button type="button" class="responsibility-secondary-button" @onclick="CopyMappingsFromPreviousMonthAsync">Lấy từ tháng trước</button>
+                                <button type="button" class="responsibility-secondary-button" @onclick="ResetMappingForm">Tạo mới</button>
+                            </div>
+                        </div>
+                        <div class="responsibility-editor-grid">
+                            <div class="responsibility-editor-card">
+                                <label class="responsibility-field-label">Chức vụ</label>
+                                <select class="responsibility-input" @bind="MappingForm.PositionIdText">
+                                    <option value="">Chọn chức vụ</option>
+                                    @foreach(var position in PositionRows.OrderBy(x => x.Name)) {
+                                        <option value="@position.Id">@position.Name</option>
+                                    }
+                                </select>
+                                <label class="responsibility-field-label">Cấp bậc</label>
+                                <select class="responsibility-input" @bind="MappingForm.GradeIdText">
+                                    <option value="">Chọn cấp bậc</option>
+                                    @foreach(var grade in GradeRows.OrderBy(x => x.DisplayOrder).ThenBy(x => x.Code)) {
+                                        <option value="@grade.Id">@grade.Code - @grade.Name</option>
+                                    }
+                                </select>
+                                <label class="responsibility-checkbox-row">
+                                    <input type="checkbox" @bind="MappingForm.IsActive" />
+                                    <span>Đang dùng</span>
+                                </label>
+                                <label class="responsibility-field-label">Ghi chú</label>
+                                <textarea class="responsibility-input responsibility-textarea" @bind="MappingForm.Note"></textarea>
+                                <button type="button" class="responsibility-primary-button" @onclick="SaveMappingAsync">
+                                    @(EditingMappingId.HasValue ? "Lưu mapping" : "Gán chức vụ")
+                                </button>
+                            </div>
+                            <div class="responsibility-table-card">
+                                <table class="responsibility-editor-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Chức vụ</th>
+                                            <th>Cấp bậc</th>
+                                            <th>Trạng thái</th>
+                                            <th>Ghi chú</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach(var mapping in MappingRows.OrderBy(x => x.PositionName)) {
+                                            <tr>
+                                                <td>@mapping.PositionName</td>
+                                                <td>@GetGradeLabel(mapping.GradeId)</td>
+                                                <td>
+                                                    <span class="@GetActiveTextCssClass(mapping.IsActive)">@GetActiveText(mapping.IsActive)</span>
+                                                </td>
+                                                <td>@mapping.Note</td>
+                                                <td>
+                                                    <div class="responsibility-row-actions">
+                                                        <button type="button" class="responsibility-link-button" @onclick="() => StartEditMapping(mapping)">Sửa</button>
+                                                        @if(mapping.IsActive) {
+                                                            <button type="button" class="responsibility-link-button danger-text" @onclick="() => DeactivateMappingAsync(mapping)">Ngừng</button>
+                                                        }
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </DxTabPage>
+            </DxTabs>
+        </div>
+    </BodyContentTemplate>
+</DxPopup>

@@ -1,0 +1,95 @@
+.attendance-logs-detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 0;
+}
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.detail-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.detail-subtitle {
+    margin-top: 0.25rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+.match-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.75rem;
+    padding: 0.125rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.match-badge-success {
+    background-color: #e7f6ec;
+    color: #18794e;
+}
+
+.match-badge-warning {
+    background-color: #fff4e5;
+    color: #b26a00;
+}
+
+.attendance-log-detail-grid-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 0;
+}
+
+.attendance-log-detail-grid-title {
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.attendance-log-detail-state {
+    min-height: 14rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.attendance-log-detail-state-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.attendance-log-detail-state-message {
+    max-width: 32rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .attendance-log-detail-loading-panel {
+    min-height: 16rem;
+}
+
+::deep .attendance-log-detail-grid {
+    max-height: 22rem;
+}
+
+@media (max-width: 768px) {
+    .detail-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

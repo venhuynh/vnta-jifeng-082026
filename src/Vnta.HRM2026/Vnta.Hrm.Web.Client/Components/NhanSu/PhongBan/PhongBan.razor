@@ -1,0 +1,183 @@
+@page "/attendance/departments"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models
+
+@attribute [Authorize(Policy = InternalAccountPolicies.HumanResourcesAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Phòng ban</PageTitle>
+
+<div class="content-root phong-ban-screen">
+    <div class="card toolbar phong-ban-toolbar">
+        <div class="phong-ban-toolbar-scroll">
+            <DxToolbar Title="Phòng ban" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+                <DxToolbarItem Text="Mới"
+                               Click="OnAddDepartmentClick"
+                               Enabled="@CanCreate"
+                               Alignment="ToolbarItemAlignment.Right"
+                               Tooltip="Tạo phòng ban mới"
+                               IconUrl="@VntaDevExpressIcons.Add" />
+                <DxToolbarItem Text="Điều chỉnh"
+                               Click="OnEditDepartmentClick"
+                               Enabled="@CanEditSelected"
+                               Alignment="ToolbarItemAlignment.Right"
+                               Tooltip="Điều chỉnh phòng ban đã chọn"
+                               IconUrl="@VntaDevExpressIcons.Edit" />
+                <DxToolbarItem Text="Xóa"
+                               Click="OnDeleteDepartmentsClick"
+                               Enabled="@CanDeleteSelected"
+                               Alignment="ToolbarItemAlignment.Right"
+                               Tooltip="Xóa phòng ban đã chọn"
+                               IconUrl="@VntaDevExpressIcons.Delete" />
+                <DxToolbarItem Tooltip="Làm mới danh sách phòng ban"
+                               Enabled="@CanInteract"
+                               Click="ReloadAsync"
+                               Alignment="ToolbarItemAlignment.Right"
+                               IconUrl="@VntaDevExpressIcons.Refresh" />
+                <DxToolbarItem Text="Xuất dữ liệu"
+                               Enabled="@CanExport"
+                               Alignment="ToolbarItemAlignment.Right"
+                               Tooltip="Xuất dữ liệu phòng ban"
+                               IconUrl="@VntaDevExpressIcons.Export">
+                    <Items>
+                        <DxToolbarItem Text="Xuất Excel" Click="ExportAllDataToExcel" Enabled="@CanExport" Tooltip="Xuất toàn bộ danh sách phòng ban ra Excel" IconUrl="@VntaDevExpressIcons.Excel" />
+                        <DxToolbarItem Text="Xuất PDF" Click="ExportAllDataToPdf" Enabled="@CanExport" Tooltip="Xuất toàn bộ danh sách phòng ban ra PDF" IconUrl="@VntaDevExpressIcons.Pdf" />
+                        <DxToolbarItem Text="Xuất dòng đã chọn ra Excel" Click="ExportSelectedRowsToExcel" Enabled="@CanExportSelected" Tooltip="Xuất các phòng ban đã chọn ra Excel" IconUrl="@VntaDevExpressIcons.Excel" />
+                        <DxToolbarItem Text="Xuất dòng đã chọn ra PDF" Click="ExportSelectedRowsToPdf" Enabled="@CanExportSelected" Tooltip="Xuất các phòng ban đã chọn ra PDF" IconUrl="@VntaDevExpressIcons.Pdf" />
+                    </Items>
+                </DxToolbarItem>
+                <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh sách phòng ban"
+                               Alignment="ToolbarItemAlignment.Right"
+                               Enabled="@CanInteract"
+                               Click="OnColumnChooserItemClick"
+                               IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+            </DxToolbar>
+        </div>
+    </div>
+
+    <div class="phong-ban-root">
+        @if(HasLoadError) {
+            <div class="card error-state phong-ban-state-surface">
+                <div class="state-title">Không thể tải danh sách phòng ban</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="ReloadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        } else {
+            <div class="card phong-ban-data-surface">
+                <HrmLoadingPanel Visible="@IsLoading"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 CssClass="phong-ban-loading-panel">
+                    <div class="phong-ban-surface-content">
+                        <div class="phong-ban-surface-header">
+                            <div class="phong-ban-summary-strip">
+                                @foreach (var badge in SummaryBadges) {
+                                    <button type="button"
+                                            class="summary-badge summary-badge-@badge.Key @(badge.Key == ActiveSummaryBadgeKey ? "is-active" : null)"
+                                            @onclick="() => OnSummaryBadgeClick(badge.Key)"
+                                            disabled="@(!CanInteract && badge.Key != ActiveSummaryBadgeKey)">
+                                        <span class="summary-badge-dot"></span>
+                                        <span class="summary-badge-label">@badge.Label</span>
+                                        <span class="summary-badge-value">@badge.Count.ToString("N0")</span>
+                                    </button>
+                                }
+                            </div>
+                            <div class="phong-ban-search">
+                                <DxSearchBox CssClass="phong-ban-searchbox"
+                                             NullText="Tìm kiếm phòng ban"
+                                             BindValueMode="BindValueMode.OnDelayedInput"
+                                             InputDelay="400"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             Text="@SearchText"
+                                             TextChanged="OnSearchTextChanged"
+                                             Enabled="@CanInteract" />
+                            </div>
+                        </div>
+                        <DxTreeList @ref="TreeList"
+                                    Data="@VisibleDepartmentTreeNodes"
+                                    KeyFieldName="Id"
+                                    ParentKeyFieldName="ParentId"
+                                    CssClass="phong-ban-tree"
+                                    SearchText="@SearchText"
+                                    AutoExpandAllNodes="true"
+                                    EditMode="TreeListEditMode.PopupEditForm"
+                                    EditFormButtonsVisible="false"
+                                    ValidationEnabled="true"
+                                    PopupEditFormCssClass="phong-ban-popup"
+                                    PopupEditFormHeaderText="Thông tin phòng ban"
+                                    PageSize="50"
+                                    PagerPosition="TreeListPagerPosition.Bottom"
+                                    PageSizeSelectorVisible="true"
+                                    PageSizeSelectorItems="@(new int[] { 20, 50, 100 })"
+                                    SkeletonRowsEnabled="true"
+                                    ColumnResizeMode="TreeListColumnResizeMode.NextColumn"
+                                    FilterMenuButtonDisplayMode="TreeListFilterMenuButtonDisplayMode.Always"
+                                    TextWrapEnabled="false"
+                                    FocusedRowEnabled="true"
+                                    HighlightRowOnHover="true"
+                                    AllowSelectRowByClick="true"
+                                    SelectionMode="TreeListSelectionMode.Multiple"
+                                    SelectedDataItems="@SelectedDataItems"
+                                    SelectedDataItemsChanged="@OnSelectedDataItemsChanged"
+                                    CustomizeEditModel="OnCustomizeEditModel"
+                                    EditModelSaving="OnEditModelSaving">
+                            <Columns>
+                                <DxTreeListSelectionColumn Width="3rem" />
+                                <DxTreeListDataColumn FieldName="BlockName" Caption="Khối" MinWidth="180" />
+                                <DxTreeListDataColumn FieldName="DepartmentName" Caption="Phòng ban" MinWidth="200" />
+                                <DxTreeListDataColumn FieldName="TeamName" Caption="Tổ" MinWidth="160" />
+                                <DxTreeListDataColumn FieldName="GroupName" Caption="Nhóm" MinWidth="160" />
+                                <DxTreeListDataColumn FieldName="EmployeeCount" Caption="Số lượng nhân viên" Width="150" MinWidth="150" />
+                                <DxTreeListCommandColumn Visible="false"
+                                                         NewButtonVisible="false"
+                                                         EditButtonVisible="false"
+                                                         DeleteButtonVisible="false"
+                                                         SaveButtonVisible="false"
+                                                         CancelButtonVisible="false" />
+                            </Columns>
+                            <EmptyDataAreaTemplate>
+                                <div class="empty-state">
+                                    <div class="state-title">@EmptyStateTitle</div>
+                                    <div class="state-message">@EmptyStateMessage</div>
+                                    <DxButton Text="@EmptyStateActionText"
+                                              Click="OnEmptyStateActionClick"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                </div>
+                            </EmptyDataAreaTemplate>
+                            <EditFormTemplate Context="editFormContext">
+                                @{
+                                    var editModel = (AttendanceDepartmentTreeNode)editFormContext.EditModel;
+                                }
+                                <PhongBanEditForm Model="@editModel"
+                                                 EditFormContext="@editFormContext"
+                                                 IsCreatingNewDepartment="@IsCreatingNewDepartment"
+                                                 BlockOptions="@BlockOptions" />
+                                <div class="phong-ban-form-actions">
+                                    <DxButton Text="Lưu"
+                                              IconUrl="@VntaDevExpressIcons.Save"
+                                              CssClass="phong-ban-form-action"
+                                              SubmitFormOnClick="true"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                    <DxButton Text="Hủy"
+                                              IconUrl="@VntaDevExpressIcons.Cancel"
+                                              CssClass="phong-ban-form-action"
+                                              Click="OnCancelDepartmentEditClick"
+                                              RenderStyle="ButtonRenderStyle.Secondary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                                </div>
+                            </EditFormTemplate>
+                        </DxTreeList>
+                    </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>

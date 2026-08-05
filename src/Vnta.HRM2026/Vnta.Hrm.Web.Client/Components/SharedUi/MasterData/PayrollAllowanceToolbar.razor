@@ -1,0 +1,116 @@
+@using DevExpress.Blazor
+
+<HrmListScreenToolbar Title="@Title"
+                      CreateText="@CreateText"
+                      EditText="@EditText"
+                      DeleteText="@DeleteText"
+                      RefreshText="@RefreshText"
+                      ExportText="@ExportText"
+                      ExportExcelText="@ExportExcelText"
+                      ExportPdfText="@ExportPdfText"
+                      ExportSelectedExcelText="@ExportSelectedExcelText"
+                      ExportSelectedPdfText="@ExportSelectedPdfText"
+                      ShowCreateAction="@ShowCreateAction"
+                      ShowEditAction="@ShowEditAction"
+                      ShowDeleteAction="@ShowDeleteAction"
+                      ShowRefreshAction="@ShowRefreshAction"
+                      ShowExportAction="@ShowExportAction"
+                      ShowColumnChooserAction="@ShowColumnChooserAction"
+                      ShowSearchBox="@ShowSearchBox"
+                      CreateEnabled="@CreateEnabled"
+                      EditEnabled="@EditEnabled"
+                      DeleteEnabled="@DeleteEnabled"
+                      RefreshEnabled="@RefreshEnabled"
+                      ExportEnabled="@ExportEnabled"
+                      ExportSelectedEnabled="@ExportSelectedEnabled"
+                      ColumnChooserEnabled="@ColumnChooserEnabled"
+                      SearchEnabled="@SearchEnabled"
+                      SearchText="@SearchText"
+                      SearchTextChanged="@SearchTextChanged"
+                      SearchPlaceholder="@SearchPlaceholder"
+                      CreateTooltip="@CreateTooltip"
+                      EditTooltip="@EditTooltip"
+                      DeleteTooltip="@DeleteTooltip"
+                      RefreshTooltip="@RefreshTooltip"
+                      ExportTooltip="@ExportTooltip"
+                      ExportExcelTooltip="@ExportExcelTooltip"
+                      ExportPdfTooltip="@ExportPdfTooltip"
+                      ExportSelectedExcelTooltip="@ExportSelectedExcelTooltip"
+                      ExportSelectedPdfTooltip="@ExportSelectedPdfTooltip"
+                      ColumnChooserTooltip="@ColumnChooserTooltip"
+                      SearchTooltip="@SearchTooltip"
+                      CreateRequested="@CreateRequested"
+                      EditRequested="@EditRequested"
+                      DeleteRequested="@DeleteRequested"
+                      RefreshRequested="@RefreshRequested"
+                      ExportAllExcelRequested="@ExportAllExcelRequested"
+                      ExportAllPdfRequested="@ExportAllPdfRequested"
+                      ExportSelectedExcelRequested="@ExportSelectedExcelRequested"
+                      ExportSelectedPdfRequested="@ExportSelectedPdfRequested"
+                      ColumnChooserRequested="@ColumnChooserRequested">
+    <FilterTemplate>
+        @if(PeriodTemplate is not null)
+        {
+            @PeriodTemplate
+        }
+        else
+        {
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-month-item"
+                           Tooltip="@MonthTooltip">
+                <Template>
+                    <div class="custom-item toolbar-inline-field toolbar-month">
+                        <span class="toolbar-inline-label">Tháng</span>
+                        <DxSpinEdit T="int"
+                                    Value="@Month"
+                                    ValueChanged="@(async (int value) => await HandleMonthChanged(value))"
+                                    MinValue="1"
+                                    MaxValue="12"
+                                    Enabled="@CanChangePeriod"
+                                    CssClass="period-spin-edit period-spin-edit-month" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-year-item"
+                           Tooltip="@YearTooltip">
+                <Template>
+                    <div class="custom-item toolbar-inline-field toolbar-year">
+                        <span class="toolbar-inline-label">Năm</span>
+                        <DxSpinEdit T="int"
+                                    Value="@Year"
+                                    ValueChanged="@(async (int value) => await HandleYearChanged(value))"
+                                    MinValue="@MinimumYear"
+                                    MaxValue="@MaximumYear"
+                                    Enabled="@CanChangePeriod"
+                                    CssClass="period-spin-edit period-spin-edit-year" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+        }
+    </FilterTemplate>
+    <BusinessActionsTemplate>
+        @if(ShowViewAction)
+        {
+            <DxToolbarItem Text="@ViewText"
+                           Click="@ViewRequested"
+                           Enabled="@ViewEnabled"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="@ViewTooltip"
+                           IconUrl="@VntaDevExpressIcons.View" />
+        }
+        @if(ShowSyncPreviousMonthAction)
+        {
+            <DxToolbarItem Text="@SyncPreviousMonthText"
+                           Click="@SyncPreviousMonthRequested"
+                           Enabled="@SyncPreviousMonthEnabled"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="@SyncPreviousMonthTooltip"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+        }
+        @if(AdditionalBusinessActionsTemplate is not null)
+        {
+            @AdditionalBusinessActionsTemplate
+        }
+    </BusinessActionsTemplate>
+</HrmListScreenToolbar>

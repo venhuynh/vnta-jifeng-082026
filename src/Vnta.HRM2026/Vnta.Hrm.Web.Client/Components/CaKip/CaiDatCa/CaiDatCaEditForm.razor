@@ -1,0 +1,116 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+@if (Model is not null && EditFormContext is not null)
+{
+    <CascadingValue Value="EditFormContext.EditContext">
+        <div class="attendance-shift-form-scroll">
+            <DataAnnotationsValidator />
+
+            <DxFormLayout CssClass="attendance-shift-form" CaptionPosition="CaptionPosition.Vertical">
+                <DxFormLayoutGroup Caption="@FormGroupCaption" ColSpanMd="12">
+                    <DxFormLayoutItem Caption="Tên ca" ColSpanMd="12">
+                        <DxTextBox @bind-Text="Model.Name"
+                                   CssClass="w-100"
+                                   NullText="Nhập tên ca"
+                                   ShowValidationIcon="true"
+                                   ShowValidationSuccessState="true" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Tên ngắn" ColSpanMd="12">
+                        <DxTextBox @bind-Text="Model.ShortName"
+                                   CssClass="w-100"
+                                   NullText="VD: HC"
+                                   ShowValidationIcon="true"
+                                   ShowValidationSuccessState="true" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Trạng thái" ColSpanMd="12">
+                        <DxComboBox Data="@StatusOptions"
+                                    TextFieldName="Text"
+                                    ValueFieldName="Value"
+                                    @bind-Value="Model.Status"
+                                    CssClass="w-100" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Màu hiển thị" ColSpanMd="12">
+                        <div class="shift-color-editor">
+                            <span class="shift-color-swatch" style="@BuildColorSwatchCssVariable(Model.ColorHex)"></span>
+                            <input type="color"
+                                   class="shift-native-color-picker"
+                                   value="@GetColorInputValue(Model.ColorHex)"
+                                   @oninput="OnColorInputChanged" />
+                            <DxTextBox @bind-Text="Model.ColorHex"
+                                       CssClass="w-100"
+                                       NullText="#2563EB"
+                                       ShowValidationIcon="true"
+                                       ShowValidationSuccessState="true" />
+                        </div>
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Mô tả" ColSpanMd="12">
+                        <DxMemo @bind-Text="Model.Description"
+                                CssClass="w-100"
+                                NullText="Nhập mô tả nếu có"
+                                Rows="3"
+                                ShowValidationIcon="true" />
+                    </DxFormLayoutItem>
+                </DxFormLayoutGroup>
+
+                <DxFormLayoutGroup Caption="Khung giờ" ColSpanMd="12">
+                    <DxFormLayoutItem Caption="Bắt đầu" ColSpanMd="12">
+                        <DxMaskedInput @bind-Value="Model.StartTime"
+                                       Mask="00:00"
+                                       CssClass="w-100"
+                                       NullText="HH:mm"
+                                       ShowValidationIcon="true"
+                                       ShowValidationSuccessState="true" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Kết thúc" ColSpanMd="12">
+                        <DxMaskedInput @bind-Value="Model.EndTime"
+                                       Mask="00:00"
+                                       CssClass="w-100"
+                                       NullText="HH:mm"
+                                       ShowValidationIcon="true"
+                                       ShowValidationSuccessState="true" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Ca qua ngày" ColSpanMd="12" CssClass="shift-checkbox-item">
+                        <DxCheckBox @bind-Checked="Model.IsOvernight">Qua ngày</DxCheckBox>
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Bắt đầu nghỉ" ColSpanMd="12">
+                        <DxMaskedInput @bind-Value="Model.BreakStartTime"
+                                       Mask="00:00"
+                                       CssClass="w-100"
+                                       NullText="HH:mm"
+                                       ShowValidationIcon="true"
+                                       ShowValidationSuccessState="true" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Kết thúc nghỉ" ColSpanMd="12">
+                        <DxMaskedInput @bind-Value="Model.BreakEndTime"
+                                       Mask="00:00"
+                                       CssClass="w-100"
+                                       NullText="HH:mm"
+                                       ShowValidationIcon="true"
+                                       ShowValidationSuccessState="true" />
+                    </DxFormLayoutItem>
+                </DxFormLayoutGroup>
+
+                <DxFormLayoutGroup Caption="Ngày làm mặc định" ColSpanMd="12">
+                    <DxFormLayoutItem Caption="Chọn ngày trong tuần" ColSpanMd="12">
+                        <div class="shift-working-days">
+                            <DxCheckBox @bind-Checked="Model.WorksMonday">Thứ 2</DxCheckBox>
+                            <DxCheckBox @bind-Checked="Model.WorksTuesday">Thứ 3</DxCheckBox>
+                            <DxCheckBox @bind-Checked="Model.WorksWednesday">Thứ 4</DxCheckBox>
+                            <DxCheckBox @bind-Checked="Model.WorksThursday">Thứ 5</DxCheckBox>
+                            <DxCheckBox @bind-Checked="Model.WorksFriday">Thứ 6</DxCheckBox>
+                            <DxCheckBox @bind-Checked="Model.WorksSaturday">Thứ 7</DxCheckBox>
+                            <DxCheckBox @bind-Checked="Model.WorksSunday">Chủ nhật</DxCheckBox>
+                        </div>
+                    </DxFormLayoutItem>
+                </DxFormLayoutGroup>
+            </DxFormLayout>
+
+            <ValidationSummary class="validation-summary" />
+
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="edit-error-message">@ErrorMessage</div>
+            }
+        </div>
+    </CascadingValue>
+}

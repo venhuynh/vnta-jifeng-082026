@@ -1,0 +1,142 @@
+@using Vnta.Hrm.Application.PhuCap.PhuCapKhac.Queries
+
+<DxGrid Data="@Rows"
+                    KeyFieldName="Id"
+                    CssClass="other-allowance-grid"
+                    ShowSearchBox="false"
+                    PagerVisible="false"
+                    PageSize="@State.PageSize"
+                    SkeletonRowsEnabled="true"
+                    ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                    FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                    TextWrapEnabled="false"
+                    FocusedRowEnabled="true"
+                    HighlightRowOnHover="true"
+                    AllowSelectRowByClick="@CanOperate"
+                    SelectionMode="GridSelectionMode.Multiple"
+                    SelectedDataItems="@SelectedItems"
+                    SelectedDataItemsChanged="SelectedItemsChanged">
+                <Columns>
+                    <DxGridSelectionColumn Width="3rem" />
+                    <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                        <CellDisplayTemplate>@(context.VisibleIndex + 1)</CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn Caption="Tác vụ"
+                                      MinWidth="96"
+                                      Width="6rem"
+                                      AllowSort="false"
+                                      TextAlignment="GridTextAlignment.Center"
+                                      ShowInColumnChooser="false">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherAllowanceListItemDto)context.DataItem;
+                            }
+                            <div class="other-allowance-row-menu-host"
+                                 @onclick:stopPropagation="true"
+                                 @onmousedown:stopPropagation="true">
+                                <DxDropDownButton CssClass="other-allowance-row-menu-btn"
+                                                  IconCssClass="icon more-icon medium-icon"
+                                                  RenderStyle="ButtonRenderStyle.Link"
+                                                  DropDownToggleVisible="false"
+                                                  Enabled="@(!IsLoading && !IsChangingLockState)"
+                                                  Tooltip="Tác vụ dòng phụ cấp khác">
+                                    <Items>
+                                        <DxDropDownButtonItem Text="Điều chỉnh"
+                                                              IconUrl="@VntaDevExpressIcons.Edit"
+                                                              Click="@(() => EditRequested.InvokeAsync(row))"
+                                                              Enabled="@CanEdit(row)"
+                                                              Tooltip="Điều chỉnh dòng phụ cấp khác" />
+                                        <DxDropDownButtonItem Text="@(row.IsLocked ? "Mở khóa" : "Khóa")"
+                                                              IconUrl="@(row.IsLocked ? VntaDevExpressIcons.Unlock : VntaDevExpressIcons.Lock)"
+                                                              Click="@(() => LockStateRequested.InvokeAsync(row))"
+                                                              Enabled="@CanToggleLock(row)"
+                                                              BeginGroup="true"
+                                                              Tooltip="@(row.IsLocked ? "Mở khóa dòng phụ cấp khác" : "Khóa dòng phụ cấp khác")" />
+                                        <AuthorizeView Policy="@InternalAccountPolicies.AttendanceAdministration"
+                                                       Context="attendanceAuthorization">
+                                            <DxDropDownButtonItem Text="Bảng công tháng"
+                                                                  IconUrl="@VntaDevExpressIcons.TaskList"
+                                                                  Click="@(() => MonthlyWorkRequested.InvokeAsync(row))"
+                                                                  Enabled="@CanViewMonthlyWork(row)"
+                                                                  Tooltip="Xem bảng công tháng của nhân viên ở chế độ chỉ đọc." />
+                                        </AuthorizeView>
+                                    </Items>
+                                </DxDropDownButton>
+                            </div>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="EmployeeName" Caption="Nhân viên" MinWidth="240">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherAllowanceListItemDto)context.DataItem;
+                                var employeeDisplay = GetEmployeeDisplay(row);
+                            }
+                            <span class="other-allowance-cell-ellipsis other-allowance-employee-text" title="@employeeDisplay">@employeeDisplay</span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="DepartmentName" Caption="Bộ phận" MinWidth="180">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherAllowanceListItemDto)context.DataItem;
+                            }
+                            <span class="other-allowance-cell-ellipsis" title="@row.DepartmentName">@row.DepartmentName</span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="PositionName" Caption="Chức vụ" MinWidth="160">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherAllowanceListItemDto)context.DataItem;
+                            }
+                            <span class="other-allowance-cell-ellipsis" title="@row.PositionName">@row.PositionName</span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="AllowanceName" Caption="Tên phụ cấp" MinWidth="220">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherAllowanceListItemDto)context.DataItem;
+                            }
+                            <span class="other-allowance-cell-ellipsis" title="@row.AllowanceName">@row.AllowanceName</span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="IsFixedAmount" Caption="Loại áp dụng" Width="130" MinWidth="130">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherAllowanceListItemDto)context.DataItem;
+                            }
+                            <span class="@GetAmountTypeCssClass(row.IsFixedAmount)">@(row.IsFixedAmount ? "Cố định" : "Không cố định")</span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="AllowanceAmount" Caption="Số tiền" Width="150" MinWidth="150" TextAlignment="GridTextAlignment.Right">
+                        <CellDisplayTemplate>
+                            <span class="hrm-grid-amount hrm-grid-amount--total">@FormatVnd(((OtherAllowanceListItemDto)context.DataItem).AllowanceAmount)</span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="Note" Caption="Ghi chú" MinWidth="200">
+                        <CellDisplayTemplate>
+                            @{
+                                var row = (OtherAllowanceListItemDto)context.DataItem;
+                            }
+                            <span class="other-allowance-cell-ellipsis" title="@row.Note">@row.Note</span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="IsLocked" Caption="Trạng thái" Width="125" MinWidth="125">
+                        <CellDisplayTemplate>
+                            <span class="@GetLockStatusCssClass(((OtherAllowanceListItemDto)context.DataItem).IsLocked)">
+                                @(((OtherAllowanceListItemDto)context.DataItem).IsLocked ? "Đã khóa" : "Đang mở")
+                            </span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                </Columns>
+                <EmptyDataAreaTemplate>
+                    <div class="other-allowance-grid-empty-state">
+                        <div class="other-allowance-grid-state-title">@EmptyStateTitle</div>
+                        <div class="other-allowance-grid-state-message">@EmptyStateMessage</div>
+                        <DxButton Text="@EmptyStateActionText"
+                                  Click="EmptyActionRequested"
+                                  IconUrl="@VntaDevExpressIcons.Refresh"
+                                  Enabled="@(!IsLoading)"
+                                  RenderStyle="ButtonRenderStyle.Primary"
+                                  RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                    </div>
+                </EmptyDataAreaTemplate>
+</DxGrid>

@@ -1,0 +1,77 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiem
+
+<DxPopup Visible="@IsAssignmentsPopupVisible"
+         VisibleChanged="OnVisibleChangedAsync"
+         Width="1220px"
+         ShowFooter="false"
+         ShowCloseButton="true"
+         CloseOnEscape="true"
+         HeaderText="@($"Gán trách nhiệm theo nhân viên - {AssignmentsPopupPeriodLabel}")"
+         CssClass="responsibility-popup">
+    <BodyContentTemplate>
+        <div class="responsibility-popup-body">
+            <div class="responsibility-popup-toolbar">
+                <div class="responsibility-popup-title">Gán trách nhiệm theo nhân viên</div>
+                <div class="responsibility-popup-toolbar-actions">
+                    <input class="responsibility-input"
+                           value="@AssignmentSearchText"
+                           @oninput="OnSearchInput"
+                           placeholder="Tìm mã NV, họ tên, bộ phận, chức vụ" />
+                    <button type="button" class="responsibility-secondary-button" @onclick="ApplyPositionDefaultsAsync">Áp dụng mặc định chức vụ</button>
+                </div>
+            </div>
+            @if(!string.IsNullOrWhiteSpace(AssignmentsPopupErrorMessage)) {
+                <div class="responsibility-error-banner">@AssignmentsPopupErrorMessage</div>
+            }
+            <div class="responsibility-table-card">
+                <table class="responsibility-editor-table">
+                    <thead>
+                        <tr>
+                            <th>Nhân viên</th>
+                            <th>Chức vụ</th>
+                            <th>Bậc</th>
+                            <th>Tiền chuẩn</th>
+                            <th>Ghi chú</th>
+                            <th>Nguồn</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var row in Rows) {
+                            <tr>
+                                <td>
+                                    <div class="responsibility-employee-cell">
+                                        <span class="responsibility-employee-code">@row.Employee.EmployeeCode</span>
+                                        <span>@row.Employee.LastName @row.Employee.FirstName</span>
+                                    </div>
+                                </td>
+                                <td>@row.Employee.PositionName</td>
+                                <td>
+                                    <select class="responsibility-input" @bind="row.Editor.GradeIdText" disabled="@row.IsLocked">
+                                        <option value="">Chọn cấp bậc</option>
+                                        @foreach(var grade in GradeRows.Where(x => x.IsActive).OrderBy(x => x.DisplayOrder).ThenBy(x => x.Code)) {
+                                            <option value="@grade.Id">@grade.Name</option>
+                                        }
+                                    </select>
+                                </td>
+                                <td>@FormatCurrency(GetStandardAmount(row.Editor))</td>
+                                <td>
+                                    <input class="responsibility-input" @bind="row.Editor.Note" disabled="@row.IsLocked" />
+                                </td>
+                                <td>@(row.IsLocked ? $"{row.Editor.AssignmentSource} / khóa" : row.Editor.AssignmentSource)</td>
+                                <td>
+                                    <button type="button"
+                                            class="responsibility-primary-button responsibility-primary-button-small"
+                                            @onclick="() => SaveEmployeeAssignmentAsync(row)"
+                                            disabled="@row.IsLocked">
+                                        Lưu
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </BodyContentTemplate>
+</DxPopup>

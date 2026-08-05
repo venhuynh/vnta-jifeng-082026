@@ -1,0 +1,16 @@
+@page "/Account/RegisterConfirmation"
+
+<PageTitle>VNTA HRM 2026 - Yêu cầu mở tài khoản nội bộ</PageTitle>
+
+<div class="main-content">
+    <InternalAccountSupportNotice
+        Title="Yêu cầu mở tài khoản nội bộ"
+        PrimaryText="Hệ thống VNTA HRM không hoàn tất đăng ký tài khoản qua liên kết xác nhận công khai."
+        SecondaryText="Vui lòng liên hệ Phòng Nhân sự hoặc Quản trị hệ thống nếu cần mở hoặc kích hoạt tài khoản nhân viên."
+        ReturnUrl="@ReturnUrl" />
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+}

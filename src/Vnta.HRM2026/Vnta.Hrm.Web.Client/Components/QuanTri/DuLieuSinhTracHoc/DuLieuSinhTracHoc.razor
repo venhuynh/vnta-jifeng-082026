@@ -1,0 +1,279 @@
+@page "/attendance/biometric-data"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models.Attendance
+
+@attribute [Authorize(Policy = InternalAccountPolicies.DeviceAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>Dữ liệu sinh trắc học</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Dữ liệu sinh trắc học"
+                   ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Làm mới"
+                           Tooltip="Tổng hợp lại biometric_data từ các bảng nguồn hiện tại"
+                           Enabled="@CanRefresh"
+                           Click="RefreshBiometricDataAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Tải lại"
+                           Tooltip="Làm mới danh sách dữ liệu sinh trắc học"
+                           Enabled="@CanInteract"
+                           Click="ReloadAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.View" />
+            <DxToolbarItem Text="Thao tác máy"
+                           Enabled="@CanInteract"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tạo lệnh đồng bộ, cập nhật hoặc xóa dữ liệu sinh trắc học trên máy chấm công"
+                           IconUrl="@VntaDevExpressIcons.Command">
+                <Items>
+                    <DxToolbarItem Text="Tải từ máy chấm công"
+                                   Click="@(() => OpenDeviceActionPopupAsync(AttendanceBiometricDeviceActionType.Pull))"
+                                   Enabled="@CanInteract"
+                                   Tooltip="Tạo lệnh đồng bộ dữ liệu sinh trắc học từ máy chấm công về hệ thống"
+                                   IconUrl="@VntaDevExpressIcons.Download" />
+                    <DxToolbarItem Text="Cập nhật lên máy chấm công"
+                                   Click="@(() => OpenDeviceActionPopupAsync(AttendanceBiometricDeviceActionType.Push))"
+                                   Enabled="@CanInteract"
+                                   Tooltip="Tạo lệnh cập nhật dữ liệu sinh trắc học từ hệ thống lên máy chấm công"
+                                   IconUrl="@VntaDevExpressIcons.Upload" />
+                    <DxToolbarItem Text="Xóa trên máy chấm công"
+                                   Click="@(() => OpenDeviceActionPopupAsync(AttendanceBiometricDeviceActionType.DeleteOnDevice))"
+                                   Enabled="@CanInteract"
+                                   Tooltip="Tạo lệnh xóa dữ liệu sinh trắc học trên máy chấm công"
+                                   IconUrl="@VntaDevExpressIcons.Delete" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Xuất dữ liệu"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất dữ liệu sinh trắc học"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel"
+                                   Click="ExportAllDataToExcel"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ danh sách dữ liệu sinh trắc học ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF"
+                                   Click="ExportAllDataToPdf"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ danh sách dữ liệu sinh trắc học ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra Excel"
+                                   Click="ExportSelectedRowsToExcel"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các dòng dữ liệu sinh trắc học đã chọn ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra PDF"
+                                   Click="ExportSelectedRowsToPdf"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các dòng dữ liệu sinh trắc học đã chọn ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh sách dữ liệu sinh trắc học"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanInteract"
+                           Click="OnColumnChooserItemClick"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="search-textbox-item"
+                           Tooltip="Tìm kiếm dữ liệu sinh trắc học">
+                <Template>
+                    <div class="custom-item">
+                        <DxSearchBox CssClass="search-textbox"
+                                     NullText="Tìm kiếm dữ liệu sinh trắc học"
+                                     BindValueMode="BindValueMode.OnInput"
+                                     ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                     @bind-Text="SearchText" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+        </DxToolbar>
+    </div>
+
+    <div class="biometric-data-root">
+        @if (HasLoadError)
+        {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải dữ liệu sinh trắc học</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="ReloadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+            <div class="biometric-summary-strip">
+                @foreach (var badge in SummaryBadges)
+                {
+                    <button type="button"
+                            class="summary-badge summary-badge-@badge.Key @(badge.Key == ActiveSummaryBadgeKey ? "is-active" : null)"
+                            @onclick="() => OnSummaryBadgeClick(badge.Key)"
+                            disabled="@(!CanInteract && badge.Key != ActiveSummaryBadgeKey)">
+                        <span class="summary-badge-dot"></span>
+                        <span class="summary-badge-label">@badge.Label</span>
+                        <span class="summary-badge-value">@badge.Count.ToString("N0")</span>
+                    </button>
+                }
+            </div>
+
+            <div class="card biometric-data-grid-card">
+                <HrmLoadingPanel Visible="@ShowGridLoadingPanel"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="@LoadingText"
+                                 CssClass="biometric-data-loading-panel">
+                    <DxGrid @ref="Grid"
+                            Data="@VisibleRows"
+                            KeyFieldName="Id"
+                            CssClass="biometric-data-grid"
+                            SearchText="@SearchText"
+                            PageSize="50"
+                            PagerPosition="GridPagerPosition.Bottom"
+                            PagerSummaryVisible="true"
+                            PageSizeSelectorVisible="true"
+                            PageSizeSelectorItems="@(new[] { 50, 100, 200 })"
+                            PageSizeSelectorAllRowsItemVisible="false"
+                            SkeletonRowsEnabled="true"
+                            ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                            FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                            TextWrapEnabled="false"
+                            FocusedRowEnabled="true"
+                            HighlightRowOnHover="true"
+                            AllowSelectRowByClick="true"
+                            SelectionMode="GridSelectionMode.Multiple"
+                            SelectedDataItems="@SelectedDataItems"
+                            SelectedDataItemsChanged="@OnSelectedDataItemsChanged">
+                        <Columns>
+                            <DxGridSelectionColumn Width="3rem" />
+                            <DxGridDataColumn Caption="STT" Width="5rem" MinWidth="80" AllowSort="false">
+                                <CellDisplayTemplate>
+                                    @(context.VisibleIndex + 1)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn Caption="Ảnh" Width="6rem" MinWidth="88" AllowSort="false" TextAlignment="GridTextAlignment.Center">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceBiometricDataRecord)context.DataItem;
+                                        var avatarFallback = string.IsNullOrWhiteSpace(row.EmployeeName)
+                                            ? string.IsNullOrWhiteSpace(row.EmployeeCode)
+                                                ? "--"
+                                                : row.EmployeeCode[..Math.Min(2, row.EmployeeCode.Length)].ToUpperInvariant()
+                                            : string.Concat(
+                                                row.EmployeeName
+                                                    .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                                    .Take(2)
+                                                    .Select(static part => char.ToUpperInvariant(part[0])));
+                                    }
+                                    <div class="employee-avatar-cell" title="@row.EmployeeDisplay">
+                                        @if (!string.IsNullOrWhiteSpace(row.AvatarImageSrc))
+                                        {
+                                            <img class="employee-avatar-image"
+                                                 src="@row.AvatarImageSrc"
+                                                 alt="@row.EmployeeDisplay" />
+                                        }
+                                        else
+                                        {
+                                            <div class="employee-avatar-fallback">@avatarFallback</div>
+                                        }
+                                    </div>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="EmployeeDisplay" Caption="Nhân viên" MinWidth="240" />
+                            <DxGridDataColumn FieldName="FpQty" Caption="Số vân tay" MinWidth="110" />
+                            <DxGridDataColumn FieldName="HasFaceData" Caption="Khuôn mặt" MinWidth="120">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceBiometricDataRecord)context.DataItem;
+                                    }
+                                    <div class="checkbox-cell">
+                                        <input type="checkbox"
+                                               checked="@row.HasFaceData"
+                                               disabled
+                                               aria-label="Có dữ liệu khuôn mặt" />
+                                    </div>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="CardNumber" Caption="Thẻ" MinWidth="140" />
+                            <DxGridDataColumn FieldName="HasPassword" Caption="Mật khẩu" MinWidth="120">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceBiometricDataRecord)context.DataItem;
+                                    }
+                                    <div class="checkbox-cell">
+                                        <input type="checkbox"
+                                               checked="@row.HasPassword"
+                                               disabled
+                                               aria-label="Có mật khẩu" />
+                                    </div>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="IsAdmin" Caption="Admin" MinWidth="100">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceBiometricDataRecord)context.DataItem;
+                                    }
+                                    <div class="checkbox-cell">
+                                        <input type="checkbox"
+                                               checked="@row.IsAdmin"
+                                               disabled
+                                               aria-label="Là tài khoản admin" />
+                                    </div>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn Caption="" Width="4.75rem" MinWidth="76" AllowSort="false">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var row = (AttendanceBiometricDataRecord)context.DataItem;
+                                    }
+                                    <div class="biometric-row-actions">
+                                        <DxButton Click="@(_ => OpenEmployeeDetail(row))"
+                                                  CssClass="biometric-row-action-button biometric-row-action-detail"
+                                                  IconUrl="@VntaDevExpressIcons.Info"
+                                                  RenderStyle="ButtonRenderStyle.None"
+                                                  RenderStyleMode="ButtonRenderStyleMode.Text"
+                                                  title="Chi tiết"
+                                                  @onclick:stopPropagation="true" />
+                                        <DxButton Click="@(_ => DeleteRowAsync(row))"
+                                                  CssClass="biometric-row-action-button biometric-row-action-delete"
+                                                  IconUrl="@VntaDevExpressIcons.Delete"
+                                                  RenderStyle="ButtonRenderStyle.None"
+                                                  RenderStyleMode="ButtonRenderStyleMode.Text"
+                                                  title="Xóa"
+                                                  @onclick:stopPropagation="true" />
+                                    </div>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                        </Columns>
+                        <EmptyDataAreaTemplate>
+                            <div class="empty-state">
+                                <div class="state-title">@EmptyStateTitle</div>
+                                <div class="state-message">@EmptyStateMessage</div>
+                                <DxButton Text="@EmptyStateActionText"
+                                          Click="OnEmptyStateActionClick"
+                                          RenderStyle="ButtonRenderStyle.Primary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                            </div>
+                        </EmptyDataAreaTemplate>
+                    </DxGrid>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>
+
+<AttendanceBiometricDeviceActionPopup Visible="@IsDeviceActionPopupVisible"
+                                      VisibleChanged="OnDeviceActionPopupVisibleChanged"
+                                      SelectedEmployees="@DeviceActionEmployees"
+                                      ActionType="@CurrentDeviceActionType"
+                                      IsSubmitting="@IsDeviceActionSubmitting"
+                                      SubmitRequested="OnDeviceActionSubmitAsync" />

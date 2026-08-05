@@ -1,0 +1,35 @@
+@if (Model is not null)
+{
+    <DxFormLayout CssClass="w-100" CaptionPosition="@CaptionPosition.Horizontal">
+        <DxFormLayoutItem Caption="Số serial thiết bị" ColSpanMd="12" BeginRow="true">
+            <DxTextBox @bind-Text="Model.DeviceSn"
+                       NullText="Nhập số serial thiết bị"
+                       ShowValidationIcon="true"
+                       ShowValidationSuccessState="true" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Thời điểm thực hiện" ColSpanMd="12" BeginRow="true">
+            <DxDateEdit @bind-Date="Model.CommitTime"
+                        NullText="Chọn thời điểm thực hiện" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Nội dung lệnh" ColSpanMd="12" BeginRow="true">
+            <DxMemo @bind-Text="Model.Content"
+                    Rows="5"
+                    NullText="Nhập nội dung lệnh" />
+        </DxFormLayoutItem>
+
+        <DxFormLayoutItem Caption="Mô tả" ColSpanMd="12" BeginRow="true">
+            <DxMemo @bind-Text="Model.Description"
+                    Rows="3"
+                    NullText="Nhập mô tả hoặc ghi chú" />
+        </DxFormLayoutItem>
+
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <DxFormLayoutItem ColSpanMd="12" CaptionVisible="false">
+                <p class="device-command-edit-error">@ErrorMessage</p>
+            </DxFormLayoutItem>
+        }
+    </DxFormLayout>
+}

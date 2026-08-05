@@ -1,0 +1,92 @@
+.personal-income-tax-popup-footer,
+.personal-income-tax-confirm-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.personal-income-tax-confirm-actions {
+    gap: 0.5rem;
+}
+
+.personal-income-tax-popup-action {
+    min-width: 7rem;
+}
+
+.personal-income-tax-confirm-message {
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.5;
+}
+
+.personal-income-tax-lock-action-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem 0 0.25rem;
+}
+
+.personal-income-tax-lock-action-context,
+.personal-income-tax-lock-action-description {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    line-height: 1.45;
+}
+
+.personal-income-tax-lock-action-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.personal-income-tax-lock-action-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 82%, transparent);
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 95%, white);
+    color: inherit;
+    text-align: left;
+    transition: border-color 120ms ease, background-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.personal-income-tax-lock-action-option:not(:disabled) {
+    cursor: pointer;
+}
+
+.personal-income-tax-lock-action-option:not(:disabled):hover {
+    border-color: var(--dxds-color-border-primary-default-rest, #2563eb);
+    background: color-mix(in srgb, var(--dxds-color-surface-primary-subtle-rest, #eff6ff) 72%, white);
+    transform: translateY(-1px);
+}
+
+.personal-income-tax-lock-action-option:focus-visible {
+    outline: 2px solid var(--dxds-color-border-primary-default-rest, #2563eb);
+    outline-offset: 2px;
+}
+
+.personal-income-tax-lock-action-option.is-active {
+    border-color: var(--dxds-color-border-primary-default-rest, #2563eb);
+    background: color-mix(in srgb, var(--dxds-color-surface-primary-subtle-rest, #eff6ff) 88%, white);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--dxds-color-surface-primary-default-rest, #2563eb) 14%, transparent);
+}
+
+.personal-income-tax-lock-action-option.is-disabled,
+.personal-income-tax-lock-action-option:disabled {
+    opacity: 0.68;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.personal-income-tax-lock-action-title {
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+@media (max-width: 40rem) {
+    .personal-income-tax-lock-action-options {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

@@ -1,0 +1,26 @@
+.union-fee-edit-form {
+    width: 100%;
+    padding: 0.25rem 0;
+}
+
+.union-fee-edit-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+::deep .union-fee-edit-popup {
+    max-width: calc(100vw - 2rem);
+}
+
+::deep .union-fee-edit-popup .dxbl-text-edit {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .union-fee-edit-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+}

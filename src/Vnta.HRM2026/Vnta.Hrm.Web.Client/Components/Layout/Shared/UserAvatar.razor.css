@@ -1,0 +1,24 @@
+.avatar-container {
+    display: flex;
+    flex: 0 0 var(--CRM-avatar-size, 2rem);
+    width: var(--CRM-avatar-size, 2rem);
+    height: var(--CRM-avatar-size, 2rem);
+    border: 0.0625rem solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 50%;
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+    background-image: var(--user-avatar-image);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+    .avatar-container:hover {
+        cursor: pointer;
+        border-color: var(--dxds-color-surface-primary-default-rest);
+    }
+
+.no-hover {
+    pointer-events: none;
+}

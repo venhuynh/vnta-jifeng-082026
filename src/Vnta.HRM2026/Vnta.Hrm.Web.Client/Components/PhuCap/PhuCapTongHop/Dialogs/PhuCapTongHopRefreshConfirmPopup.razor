@@ -1,0 +1,51 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTongHop
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Xác nhận làm mới phụ cấp"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsRefreshing)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="allowance-summary-refresh-confirm-popup-footer"
+         CssClass="allowance-summary-refresh-confirm-popup">
+    <HeaderContentTemplate>
+        <div class="allowance-summary-popup-header">
+            <DxButton IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                      Attributes="@HeaderIconAttributes"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Text"
+                      CssClass="allowance-summary-popup-header-icon" />
+            <span class="allowance-summary-popup-header-title">Xác nhận làm mới phụ cấp</span>
+        </div>
+    </HeaderContentTemplate>
+    <BodyContentTemplate>
+        <div class="allowance-summary-refresh-confirm-content">
+            <div class="allowance-summary-refresh-confirm-message">
+                Sẽ làm mới tất cả giá trị phụ cấp của kỳ @PeriodLabel từ các bảng chi tiết: Trách nhiệm, Thâm niên, Chuyên cần, Cơm, Độc hại, Khác và Phép/Lễ.
+            </div>
+            <div class="allowance-summary-refresh-confirm-context">
+                Ghi chú được giữ nguyên. Các dòng đã khóa sẽ không bị thay đổi.
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="allowance-summary-refresh-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="allowance-summary-refresh-confirm-button"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Làm mới"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                      CssClass="allowance-summary-refresh-confirm-button"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

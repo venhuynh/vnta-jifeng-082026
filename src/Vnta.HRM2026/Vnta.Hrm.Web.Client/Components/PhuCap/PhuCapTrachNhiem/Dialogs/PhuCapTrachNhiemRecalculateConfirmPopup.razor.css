@@ -1,0 +1,45 @@
+.responsibility-recalculate-popup-footer,
+.responsibility-recalculate-confirm-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.responsibility-recalculate-confirm-actions {
+    gap: 0.5rem;
+}
+
+.responsibility-recalculate-popup-action {
+    min-width: 7rem;
+}
+
+.responsibility-recalculate-confirm-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.5rem 0 0.25rem;
+}
+
+.responsibility-recalculate-confirm-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+}
+
+.responsibility-recalculate-confirm-message {
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+    .responsibility-recalculate-confirm-content {
+        flex-direction: column;
+    }
+
+    .responsibility-recalculate-confirm-actions {
+        justify-content: stretch;
+    }
+
+    .responsibility-recalculate-popup-action {
+        flex: 1 1 0;
+    }
+}

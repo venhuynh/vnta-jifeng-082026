@@ -1,0 +1,50 @@
+.content-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.toolbar {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toolbar-inline-field {
+    min-width: 11rem;
+}
+
+.toolbar-inline-label {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.875rem;
+}
+
+.account-approval-root {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.account-approval-grid-card {
+    height: 100%;
+    min-height: 28rem;
+}
+
+::deep .account-approval-grid {
+    height: 100%;
+}
+
+::deep .search-textbox-item {
+    max-width: 18rem;
+}
+
+@media (max-width: 768px) {
+    .toolbar-inline-field {
+        min-width: 9rem;
+    }
+}

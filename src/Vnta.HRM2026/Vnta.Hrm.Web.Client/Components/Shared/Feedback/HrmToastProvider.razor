@@ -1,0 +1,59 @@
+@namespace Vnta.Hrm.Web.Client.Components.Shared.Feedback
+@using Vnta.Hrm.Web.Client.Services.Ui
+
+<div class="hrm-toast-host">
+    <DxToastProvider Name="@Name"
+                     MaxToastCount="@MaxToastCount"
+                     AnimationType="@AnimationType"
+                     HorizontalAlignment="@HorizontalAlignment"
+                     VerticalAlignment="@VerticalAlignment"
+                     DisplayTime="@DisplayTime"
+                     Width="@Width"
+                     FreezeOnClick="@FreezeOnClick"
+                     ShowCloseButton="@ShowCloseButton"
+                     ShowIcon="@ShowIcon"
+                     RenderStyle="@RenderStyle"
+                     ThemeMode="@ThemeMode"
+                     StickToViewport="@StickToViewport" />
+</div>
+
+@code {
+    [Parameter]
+    public string Name { get; set; } = HrmToastDefaults.ProviderName;
+
+    [Parameter]
+    public int MaxToastCount { get; set; } = HrmToastDefaults.MaxToastCount;
+
+    [Parameter]
+    public ToastAnimationType AnimationType { get; set; } = HrmToastDefaults.AnimationType;
+
+    [Parameter]
+    public HorizontalAlignment HorizontalAlignment { get; set; } = HrmToastDefaults.HorizontalAlignment;
+
+    [Parameter]
+    public VerticalEdge VerticalAlignment { get; set; } = HrmToastDefaults.VerticalAlignment;
+
+    [Parameter]
+    public TimeSpan DisplayTime { get; set; } = HrmToastDefaults.DisplayTime;
+
+    [Parameter]
+    public string Width { get; set; } = HrmToastDefaults.Width;
+
+    [Parameter]
+    public bool FreezeOnClick { get; set; } = HrmToastDefaults.FreezeOnClick;
+
+    [Parameter]
+    public bool ShowCloseButton { get; set; } = HrmToastDefaults.ShowCloseButton;
+
+    [Parameter]
+    public bool ShowIcon { get; set; } = HrmToastDefaults.ShowIcon;
+
+    [Parameter]
+    public ToastRenderStyle RenderStyle { get; set; } = HrmToastDefaults.RenderStyle;
+
+    [Parameter]
+    public ToastThemeMode ThemeMode { get; set; } = HrmToastDefaults.ThemeMode;
+
+    [Parameter]
+    public bool StickToViewport { get; set; } = HrmToastDefaults.StickToViewport;
+}

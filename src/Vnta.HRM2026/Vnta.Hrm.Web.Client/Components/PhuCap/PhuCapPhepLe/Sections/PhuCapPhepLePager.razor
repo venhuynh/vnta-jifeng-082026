@@ -1,0 +1,15 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe
+@using DevExpress.Blazor
+
+<div class="leave-holiday-allowance-pager" aria-label="Điều hướng trang phụ cấp Phép - Lễ">
+    <div class="leave-holiday-allowance-pager-summary">@SummaryText</div>
+    @if (CanBrowsePages)
+    {
+        <DxPager PageCount="@PageCount" ActivePageIndex="@ActivePageIndex" ActivePageIndexChanged="ActivePageIndexChanged" NavigationMode="PagerNavigationMode.NumericButtons" VisibleNumericButtonCount="7" />
+    }
+    <div class="leave-holiday-allowance-page-size">
+        <span>Hiển thị</span>
+        <DxComboBox TData="int" TValue="int" Data="@PageSizeOptions" Value="@PageSize" ValueChanged="PageSizeChanged" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never" Enabled="@CanChangeFilters" CssClass="leave-holiday-allowance-page-size-editor" />
+        <span>dòng/trang</span>
+    </div>
+</div>

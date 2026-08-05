@@ -1,0 +1,85 @@
+.union-fee-deduction-popup-footer,
+.union-fee-deduction-confirm-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.union-fee-deduction-confirm-actions {
+    gap: 0.5rem;
+}
+
+.union-fee-deduction-popup-action {
+    min-width: 7rem;
+}
+
+.union-fee-deduction-confirm-message {
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.5;
+}
+
+.union-fee-deduction-lock-action-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem 0 0.25rem;
+}
+
+.union-fee-deduction-lock-action-context,
+.union-fee-deduction-lock-action-description {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    line-height: 1.45;
+}
+
+.union-fee-deduction-lock-action-options {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.union-fee-deduction-lock-action-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 82%, transparent);
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 95%, white);
+    color: inherit;
+    text-align: left;
+    transition: border-color 120ms ease, background-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.union-fee-deduction-lock-action-option:not(:disabled) {
+    cursor: pointer;
+}
+
+.union-fee-deduction-lock-action-option:not(:disabled):hover {
+    border-color: var(--dxds-color-border-primary-default-rest, #2563eb);
+    background: color-mix(in srgb, var(--dxds-color-surface-primary-subtle-rest, #eff6ff) 72%, white);
+    transform: translateY(-1px);
+}
+
+.union-fee-deduction-lock-action-option:focus-visible {
+    outline: 2px solid var(--dxds-color-border-primary-default-rest, #2563eb);
+    outline-offset: 2px;
+}
+
+.union-fee-deduction-lock-action-option.is-active {
+    border-color: var(--dxds-color-border-primary-default-rest, #2563eb);
+    background: color-mix(in srgb, var(--dxds-color-surface-primary-subtle-rest, #eff6ff) 88%, white);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--dxds-color-surface-primary-default-rest, #2563eb) 14%, transparent);
+}
+
+.union-fee-deduction-lock-action-option.is-disabled,
+.union-fee-deduction-lock-action-option:disabled {
+    opacity: 0.68;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.union-fee-deduction-lock-action-title {
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}

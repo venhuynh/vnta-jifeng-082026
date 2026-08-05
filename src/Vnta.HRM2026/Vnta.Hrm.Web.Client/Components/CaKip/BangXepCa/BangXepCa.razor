@@ -1,0 +1,229 @@
+@page "/attendance/shift-roster"
+
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Policy = InternalAccountPolicies.ShiftManagement)]
+@rendermode InteractiveServer
+
+<PageTitle>Bảng xếp ca</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Bảng xếp ca"
+                   CssClass="toolbar"
+                   ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-date-item"
+                           Tooltip="Chọn ngày bắt đầu khoảng xếp ca">
+                <Template>
+                    <div class="custom-item toolbar-filter">
+                        <span class="toolbar-field-caption">Từ ngày</span>
+                        <DxDateEdit @bind-Date="FromDate"
+                                    NullText="Chọn ngày"
+                                    DisplayFormat="dd/MM/yyyy"
+                                    Enabled="@CanChangeFilters"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-date-item"
+                           Tooltip="Chọn ngày kết thúc khoảng xếp ca">
+                <Template>
+                    <div class="custom-item toolbar-filter">
+                        <span class="toolbar-field-caption">Đến ngày</span>
+                        <DxDateEdit @bind-Date="ToDate"
+                                    NullText="Chọn ngày"
+                                    DisplayFormat="dd/MM/yyyy"
+                                    Enabled="@CanChangeFilters"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Xem"
+                           Tooltip="Tải lại dữ liệu bảng xếp ca theo khoảng ngày đã chọn"
+                           Enabled="@CanView"
+                           Click="LoadRosterAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.View" />
+            <DxToolbarItem Text="Đồng bộ ca"
+                           Tooltip="Đồng bộ dữ liệu xếp ca theo khoảng ngày đang xem"
+                           Enabled="@CanSync"
+                           Click="OnSyncShiftAssignmentsClick"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Xuất file"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất dữ liệu bảng xếp ca"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel"
+                                   Click="ExportAllDataToExcel"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ bảng xếp ca ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất CSV"
+                                   Click="ExportAllDataToCsv"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ bảng xếp ca ra CSV"
+                                   IconUrl="@VntaDevExpressIcons.Export" />
+                    <DxToolbarItem Text="Xuất PDF"
+                                   Click="ExportAllDataToPdf"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ bảng xếp ca ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Chọn cột hiển thị trong bảng xếp ca"
+                           Enabled="@CanOperateOnCurrentDataset"
+                           Click="OnColumnChooserRequested"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+        </DxToolbar>
+    </div>
+
+    <div class="shift-roster-root">
+        @if (HasLoadError) {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải khung bảng xếp ca</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="LoadRosterAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        } else {
+            <div class="card shift-roster-grid-card">
+                <HrmLoadingPanel Visible="@IsBusy"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="@LoadingText"
+                                 CssClass="shift-roster-loading-panel">
+                    <div class="shift-roster-grid-content">
+                        <div class="shift-roster-grid-header">
+                            <div class="shift-roster-grid-header-main">
+                                <div class="shift-roster-summary">
+                                    <div class="shift-roster-summary-title">Khoảng ngày đang xem</div>
+                                    <div class="shift-roster-summary-range">@CurrentRangeText</div>
+                                    <div class="shift-roster-summary-data">@DataSummaryText</div>
+                                </div>
+                                <div class="shift-roster-grid-search">
+                                    <DxSearchBox CssClass="shift-roster-grid-searchbox"
+                                                 NullText="Tìm nhân viên, phòng ban, ca làm"
+                                                 BindValueMode="BindValueMode.OnDelayedInput"
+                                                 InputDelay="400"
+                                                 ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                                 Text="@SearchText"
+                                                 TextChanged="OnSearchTextChanged"
+                                                 Enabled="@CanChangeFilters" />
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(InfoMessage)) {
+                                <div class="shift-roster-info-message" role="status">@InfoMessage</div>
+                            }
+                        </div>
+
+                        <DxGrid @ref="Grid"
+                                Data="@VisibleRows"
+                                KeyFieldName="EmployeeId"
+                                CssClass="shift-roster-grid"
+                                PageSize="50"
+                                PagerPosition="GridPagerPosition.Bottom"
+                                PagerSummaryVisible="true"
+                                PageSizeSelectorVisible="true"
+                                PageSizeSelectorItems="@(new int[] { 25, 50, 100 })"
+                                SkeletonRowsEnabled="true"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                TextWrapEnabled="false"
+                                FocusedRowEnabled="true"
+                                HighlightRowOnHover="true">
+                            <Columns>
+                                <DxGridDataColumn Caption="STT"
+                                                  Width="4.5rem"
+                                                  MinWidth="72"
+                                                  AllowSort="false"
+                                                  FixedPosition="GridColumnFixedPosition.Left">
+                                    <CellDisplayTemplate>
+                                        @(context.VisibleIndex + 1)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(ShiftRosterMatrixRow.EmployeeDisplay)"
+                                                  Caption="Nhân viên"
+                                                  MinWidth="260"
+                                                  Width="280"
+                                                  FixedPosition="GridColumnFixedPosition.Left" />
+                                <DxGridDataColumn FieldName="@nameof(ShiftRosterMatrixRow.DepartmentPath)"
+                                                  Caption="Phòng ban"
+                                                  MinWidth="240"
+                                                  Width="280"
+                                                  FixedPosition="GridColumnFixedPosition.Left" />
+                                @foreach (var dateColumn in DateColumns) {
+                                    <DxGridDataColumn Name="@GetColumnName(dateColumn)"
+                                                      MinWidth="110"
+                                                      Width="110"
+                                                      AllowSort="false">
+                                        <HeaderCaptionTemplate>
+                                            <div class="@GetHeaderCssClass(dateColumn)">
+                                                <span class="shift-roster-column-header-date">@dateColumn.HeaderText</span>
+                                                <span class="shift-roster-column-header-weekday">@dateColumn.WeekdayText</span>
+                                            </div>
+                                        </HeaderCaptionTemplate>
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var row = (ShiftRosterMatrixRow)context.DataItem;
+                                                var cell = GetCell(row, dateColumn.WorkDate);
+                                            }
+                                            <button type="button"
+                                                    class="@GetCellCssClass(dateColumn, cell)"
+                                                    style="@BuildCellCssVariable(cell)"
+                                                    title="@BuildCellTitle(row, dateColumn, cell)"
+                                                    disabled="@IsCellEditDisabled(cell)"
+                                                    @onclick:stopPropagation="true"
+                                                    @onclick:preventDefault="true"
+                                                    @onclick="() => OpenShiftEditPopupAsync(row, dateColumn, cell)">
+                                                @GetCellDisplayText(cell)
+                                            </button>
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+                                }
+                            </Columns>
+                            <EmptyDataAreaTemplate>
+                                <div class="empty-state">
+                                    <div class="state-title">@EmptyStateTitle</div>
+                                    <div class="state-message">@EmptyStateMessage</div>
+                                    @if (!HasRequestedLoad) {
+                                        <DxButton Text="Xem bảng xếp ca"
+                                                  Click="LoadRosterAsync"
+                                                  RenderStyle="ButtonRenderStyle.Primary"
+                                                  RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                    }
+                                </div>
+                            </EmptyDataAreaTemplate>
+                        </DxGrid>
+                    </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>
+
+<BangXepCaShiftEditPopup Visible="@IsShiftEditPopupVisible"
+                         VisibleChanged="OnShiftEditPopupVisibleChanged"
+                         IsBusy="@IsShiftEditBusy"
+                         CanSave="@CanSaveShiftEdit"
+                         LoadingText="@ShiftEditLoadingText"
+                         ErrorMessage="@ShiftEditErrorMessage"
+                         Model="@ShiftEditModel"
+                         Options="@ShiftEditOptions"
+                         SelectedShiftId="@ShiftEditSelectedShiftId"
+                         SelectedShiftIdChanged="OnShiftEditSelectedShiftChanged"
+                         FromDate="@ShiftEditFromDate"
+                         FromDateChanged="OnShiftEditFromDateChanged"
+                         ToDate="@ShiftEditToDate"
+                         ToDateChanged="OnShiftEditToDateChanged"
+                         SaveClick="SaveShiftEditAsync"
+                         CancelClick="CloseShiftEditPopup" />

@@ -1,0 +1,33 @@
+@namespace Vnta.Hrm.Web.Client.Components.SharedUi.Progress
+
+@if (Visible)
+{
+    <div class="@RootCssClass"
+         role="status"
+         aria-live="polite"
+         aria-busy="true">
+        <DxProgressBar CssClass="vnta-circular-progress-callout__bar"
+                       Type="ProgressBarType.Circular"
+                       Size="@Size"
+                       Value="@ResolvedValue"
+                       ShowLabel="@ShowLabel"
+                       aria-label="@AriaLabel" />
+
+        <div class="vnta-circular-progress-callout__content">
+            @if (!string.IsNullOrWhiteSpace(Title))
+            {
+                <div class="vnta-circular-progress-callout__title">@Title</div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Message))
+            {
+                <div class="vnta-circular-progress-callout__message">@Message</div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Detail))
+            {
+                <div class="vnta-circular-progress-callout__detail">@Detail</div>
+            }
+        </div>
+    </div>
+}

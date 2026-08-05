@@ -1,0 +1,26 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe.Models
+
+<DxPopup Visible="@Visible" VisibleChanged="OnVisibleChangedAsync" HeaderText="@Title" Width="520px"
+         ShowCloseButton="@(!IsSaving)" ShowFooter="true" CloseOnEscape="true" CloseOnOutsideClick="false"
+         FooterCssClass="leave-holiday-edit-popup-footer" CssClass="leave-holiday-edit-popup">
+    <BodyContentTemplate Context="popupContext">
+        @if (Model is not null && EditContext is not null)
+        {
+            <EditForm EditContext="@EditContext" Context="editContext">
+                <DataAnnotationsValidator />
+                <PhuCapPhepLeEditForm Model="@Model" EditContext="@EditContext" ErrorMessage="@ErrorMessage" IsSaving="@IsSaving" />
+            </EditForm>
+        }
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="footerContext">
+        <div class="leave-holiday-allowance-edit-actions">
+            <DxButton Text="Hủy" Click="CancelRequested" IconUrl="@VntaDevExpressIcons.Cancel" CssClass="leave-holiday-edit-popup-action"
+                      Enabled="@(!IsSaving)" RenderStyle="ButtonRenderStyle.Secondary" RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="@SaveButtonText" Click="SaveRequested" IconUrl="@VntaDevExpressIcons.Save" CssClass="leave-holiday-edit-popup-action"
+                      Enabled="@CanSave" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

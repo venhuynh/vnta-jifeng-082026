@@ -1,0 +1,196 @@
+@page "/attendance/logs"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models
+
+@attribute [Authorize(Policy = InternalAccountPolicies.AttendanceAdministration)]
+
+<PageTitle>VNTA - Dữ liệu thô</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Dữ liệu thô" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-date-item"
+                           Tooltip="Chọn ngày tổng hợp dữ liệu chấm công">
+                <Template>
+                    <div class="custom-item toolbar-date">
+                        <DxDateEdit @bind-Date="ToolbarDate"
+                                    NullText="Ngày tháng"
+                                    Enabled="@CanInteract"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Xem"
+                           Tooltip="Xem dữ liệu tổng kết theo ngày công đã chọn"
+                           Enabled="@CanInteract"
+                           Click="ViewAttendanceSummariesAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.View" />
+            <DxToolbarItem Text="Tải chấm công"
+                           Tooltip="Tạo lệnh tải dữ liệu chấm công trên máy chấm công"
+                           Enabled="@CanCreateAttendanceLogQueryCommand"
+                           Click="CreateAttendanceLogQueryCommandsAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Download" />
+            <DxToolbarItem Text="Làm mới"
+                           Tooltip="Tổng kết dữ liệu chấm công từ attendance_logs sang attendance_daily_summaries"
+                           Enabled="@CanInteract"
+                           Click="RebuildDailySummaryAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Xuất dữ liệu"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất dữ liệu chấm công thô"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel"
+                                   Click="ExportAllDataToExcel"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ dữ liệu chấm công thô ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF"
+                                   Click="ExportAllDataToPdf"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ dữ liệu chấm công thô ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra Excel"
+                                   Click="ExportSelectedRowsToExcel"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các dòng dữ liệu chấm công thô đã chọn ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra PDF"
+                                   Click="ExportSelectedRowsToPdf"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các dòng dữ liệu chấm công thô đã chọn ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong dữ liệu chấm công thô"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanInteract"
+                           Click="OnColumnChooserItemClick"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="search-textbox-item"
+                           Tooltip="Tìm kiếm dữ liệu chấm công thô">
+                <Template>
+                    <div class="custom-item">
+                        <DxSearchBox CssClass="search-textbox"
+                                     NullText="Tìm kiếm"
+                                     BindValueMode="BindValueMode.OnInput"
+                                     ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                     @bind-Text="SearchText" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+        </DxToolbar>
+    </div>
+
+    <div class="attendance-logs-root">
+        @if(HasLoadError) {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải dữ liệu tổng kết</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="ReloadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        } else {
+            <div class="card attendance-logs-grid-card">
+                <HrmLoadingPanel Visible="@IsLoading"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 CssClass="attendance-logs-loading-panel"
+                                 Text="@LoadingPanelText">
+                    <DxGrid @ref="Grid"
+                            Data="@Summaries"
+                            KeyFieldName="Id"
+                            CssClass="attendance-logs-grid"
+                            SearchText="@SearchText"
+                            PageSize="50"
+                            PagerPosition="GridPagerPosition.Bottom"
+                            PagerSummaryVisible="true"
+                            PageSizeSelectorVisible="true"
+                            PageSizeSelectorItems="@(new int[] { 50, 100, 200 })"
+                            PageSizeSelectorAllRowsItemVisible="false"
+                            SkeletonRowsEnabled="true"
+                            ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                            FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                            TextWrapEnabled="false"
+                            FocusedRowEnabled="true"
+                            HighlightRowOnHover="true"
+                            AllowSelectRowByClick="true"
+                            SelectionMode="GridSelectionMode.Single"
+                            SelectedDataItems="@SelectedDataItems"
+                            SelectedDataItemsChanged="@OnSelectedDataItemsChanged">
+                        <Columns>
+                            
+                            <DxGridDataColumn Caption="STT" Width="5rem" MinWidth="80" AllowSort="false">
+                                <CellDisplayTemplate>
+                                    @(context.VisibleIndex + 1)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="EmployeeDisplay" Name="EmployeeDisplayColumn" Caption="Nhân viên" MinWidth="240" />
+                            <DxGridDataColumn FieldName="DepartmentName" Caption="Phòng ban" MinWidth="180" />
+                            <DxGridDataColumn FieldName="PositionName" Caption="Chức vụ" MinWidth="160" />
+                            <DxGridDataColumn FieldName="WorkDate" Caption="Ngày công" MinWidth="120">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var summary = (AttendanceDailySummaryRecord)context.DataItem;
+                                    }
+                                    @FormatDate(summary.WorkDate)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="PunchMomentsText" Caption="Các lần chấm công" MinWidth="260">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var summary = (AttendanceDailySummaryRecord)context.DataItem;
+                                    }
+                                    @FormatPunchMoments(summary)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn Caption="" Width="3.25rem" MinWidth="52" AllowSort="false">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var summary = (AttendanceDailySummaryRecord)context.DataItem;
+                                    }
+                                    <span class="attendance-log-detail-action"
+                                          title="Chi tiết"
+                                          @onclick:stopPropagation="true">
+                                        <DxButton Click="@(_ => OpenDetailPopupAsync(summary))"
+                                                  CssClass="attendance-log-detail-button"
+                                                  IconUrl="@VntaDevExpressIcons.Info"
+                                                  RenderStyle="ButtonRenderStyle.None"
+                                                  RenderStyleMode="ButtonRenderStyleMode.Text" />
+                                    </span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                        </Columns>
+                        
+                        <EmptyDataAreaTemplate>
+                            <div class="empty-state">
+                                <div class="state-title">@EmptyStateTitle</div>
+                                <div class="state-message">@EmptyStateMessage</div>
+                                @if(CanResetFilters) {
+                                    <DxButton Text="Xóa bộ lọc"
+                                              Click="ResetFiltersAsync"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                }
+                            </div>
+                        </EmptyDataAreaTemplate>
+                    </DxGrid>
+                </HrmLoadingPanel>
+            </div>
+
+            <DuLieuThoDetailCard Summary="@DetailSummary"
+                                  @bind-Visible="IsDetailPopupVisible" />
+        }
+    </div>
+</div>

@@ -1,0 +1,86 @@
+::deep .leave-holiday-allowance-lock-popup {
+    max-width: min(96vw, 640px);
+}
+
+.leave-holiday-allowance-lock-popup-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem 0 0.25rem;
+}
+
+.leave-holiday-allowance-lock-popup-message,
+.leave-holiday-allowance-lock-popup-context,
+.leave-holiday-allowance-lock-popup-option-description {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    line-height: 1.45;
+}
+
+.leave-holiday-allowance-lock-popup-message {
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.leave-holiday-allowance-lock-popup-options {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.leave-holiday-allowance-lock-popup-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 82%, transparent);
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 95%, white);
+    color: inherit;
+    text-align: left;
+    transition: border-color 120ms ease, background-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.leave-holiday-allowance-lock-popup-option:not(:disabled) {
+    cursor: pointer;
+}
+
+.leave-holiday-allowance-lock-popup-option:not(:disabled):hover {
+    border-color: var(--dxds-color-border-primary-default-rest, #2563eb);
+    background: color-mix(in srgb, var(--dxds-color-surface-primary-subtle-rest, #eff6ff) 72%, white);
+    transform: translateY(-1px);
+}
+
+.leave-holiday-allowance-lock-popup-option:focus-visible {
+    outline: 2px solid var(--dxds-color-border-primary-default-rest, #2563eb);
+    outline-offset: 2px;
+}
+
+.leave-holiday-allowance-lock-popup-option.is-active {
+    border-color: var(--dxds-color-border-primary-default-rest, #2563eb);
+    background: color-mix(in srgb, var(--dxds-color-surface-primary-subtle-rest, #eff6ff) 88%, white);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--dxds-color-surface-primary-default-rest, #2563eb) 14%, transparent);
+}
+
+.leave-holiday-allowance-lock-popup-option.is-disabled,
+.leave-holiday-allowance-lock-popup-option:disabled {
+    opacity: 0.68;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.leave-holiday-allowance-lock-popup-option-title {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-weight: 700;
+}
+
+.leave-holiday-allowance-lock-popup-footer,
+.leave-holiday-allowance-lock-popup-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.leave-holiday-allowance-lock-popup-action {
+    min-width: 7rem;
+}

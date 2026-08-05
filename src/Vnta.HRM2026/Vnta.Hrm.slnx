@@ -1,0 +1,36 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="DebugWasm" />
+    <BuildType Name="Release" />
+    <BuildType Name="ReleaseWasm" />
+  </Configurations>
+  <Project Path="Vnta.Hrm.Application/Vnta.Hrm.Application.csproj">
+    <BuildType Solution="DebugWasm|*" Project="Debug" />
+    <BuildType Solution="ReleaseWasm|*" Project="Release" />
+  </Project>
+  <Project Path="Vnta.Hrm.Domain/Vnta.Hrm.Domain.csproj">
+    <BuildType Solution="DebugWasm|*" Project="Debug" />
+    <BuildType Solution="ReleaseWasm|*" Project="Release" />
+  </Project>
+  <Project Path="Vnta.Hrm.Infrastructure/Vnta.Hrm.Infrastructure.csproj">
+    <BuildType Solution="DebugWasm|*" Project="Debug" />
+    <BuildType Solution="ReleaseWasm|*" Project="Release" />
+  </Project>
+  <Project Path="Vnta.Hrm.Infrastructure.Tests/Vnta.Hrm.Infrastructure.Tests.csproj">
+    <BuildType Solution="DebugWasm|*" Project="Debug" />
+    <BuildType Solution="ReleaseWasm|*" Project="Release" />
+  </Project>
+  <Project Path="Vnta.Hrm.Web.Client/Vnta.Hrm.Web.Client.csproj">
+    <BuildType Solution="DebugWasm|*" Project="Debug" />
+    <BuildType Solution="ReleaseWasm|*" Project="Release" />
+  </Project>
+  <Project Path="Vnta.Hrm.Web/Vnta.Hrm.Web.csproj">
+    <BuildType Solution="DebugWasm|*" Project="Debug" />
+    <BuildType Solution="ReleaseWasm|*" Project="Release" />
+  </Project>
+  <Project Path="Vnta.Hrm.Web.Tests/Vnta.Hrm.Web.Tests.csproj">
+    <BuildType Solution="DebugWasm|*" Project="Debug" />
+    <BuildType Solution="ReleaseWasm|*" Project="Release" />
+  </Project>
+</Solution>

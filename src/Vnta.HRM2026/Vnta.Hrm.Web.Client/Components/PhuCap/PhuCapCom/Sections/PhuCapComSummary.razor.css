@@ -1,0 +1,125 @@
+.meal-allowance-grid-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem 0.625rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 94%, white);
+    border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 82%, transparent);
+}
+
+.meal-allowance-summary-strip {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    padding-bottom: 0.125rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+}
+
+.meal-allowance-grid-search {
+    flex: 0 0 auto;
+    min-width: 15rem;
+    max-width: min(100%, 20rem);
+}
+
+::deep .meal-allowance-grid-searchbox {
+    width: 100%;
+}
+
+::deep .meal-allowance-grid-searchbox .dxbl-text-editor {
+    min-height: 2.3rem;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 72%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 92%, white);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 80%, transparent);
+}
+
+::deep .meal-allowance-grid-searchbox .dxbl-text-editor-input {
+    min-width: 11rem;
+}
+
+::deep .meal-allowance-grid-searchbox .dxbl-btn-clear {
+    opacity: 0.68;
+}
+
+::deep .meal-allowance-summary-button-group,
+::deep .meal-allowance-total-amount-button-group {
+    display: inline-flex;
+    min-width: max-content;
+}
+
+::deep .meal-allowance-total-amount-button-group {
+    pointer-events: none;
+}
+
+::deep .meal-allowance-total-amount-button {
+    min-width: 11.5rem;
+    color: var(--allowance-color-success) !important;
+    font-size: 0.82rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+::deep .meal-allowance-summary-button {
+    --summary-accent: var(--dxds-color-content-info-default-rest);
+    min-width: 6rem;
+    color: var(--summary-accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+}
+
+::deep .meal-allowance-summary-button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--summary-accent) 9%, white);
+}
+
+::deep .meal-allowance-summary-button[aria-pressed="true"],
+::deep .meal-allowance-summary-button.dxbl-btn-selected,
+::deep .meal-allowance-summary-button.dxbl-btn-active {
+    border-color: var(--summary-accent);
+    background: color-mix(in srgb, var(--summary-accent) 14%, white);
+    box-shadow: inset 0 -0.18rem 0 var(--summary-accent);
+}
+
+::deep .meal-allowance-summary-button-all {
+    --summary-accent: var(--dxds-color-content-info-default-rest, #2563eb);
+}
+
+::deep .meal-allowance-summary-button-qualified {
+    --summary-accent: var(--allowance-color-success);
+}
+
+::deep .meal-allowance-summary-button-other {
+    --summary-accent: var(--dxds-color-content-neutral-default-rest);
+}
+
+@media (max-width: 768px) {
+    .meal-allowance-grid-header {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 0.75rem;
+    }
+
+    .meal-allowance-summary-strip {
+        flex-wrap: wrap;
+        overflow-x: visible;
+    }
+
+    .meal-allowance-grid-search {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+    }
+
+    ::deep .meal-allowance-summary-button {
+        min-width: 4.5rem;
+        font-size: 0.76rem;
+    }
+}

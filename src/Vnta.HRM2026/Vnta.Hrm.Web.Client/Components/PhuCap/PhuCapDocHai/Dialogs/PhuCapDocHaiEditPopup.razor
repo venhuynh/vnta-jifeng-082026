@@ -1,0 +1,66 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Điều chỉnh phụ cấp độc hại"
+         Width="min(42rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsSaving)"
+         ShowFooter="true"
+         CloseOnOutsideClick="false"
+         CloseOnEscape="@(!IsSaving)"
+         FooterCssClass="hazard-edit-popup-footer"
+         CssClass="hazard-edit-popup">
+    <BodyContentTemplate Context="editPopupBody">
+        <div class="hazard-edit-form">
+        <DxFormLayout CaptionPosition="CaptionPosition.Vertical">
+            <DxFormLayoutItem Caption="Nhân viên" ColSpanMd="6">
+                <DxTextBox Text="@Model.EmployeeDisplay" ReadOnly="true" ValidationEnabled="false" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Kỳ lương" ColSpanMd="6">
+                <DxTextBox Text="@Model.PayrollPeriod" ReadOnly="true" ValidationEnabled="false" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Công hợp lệ" ColSpanMd="4">
+                <DxSpinEdit T="decimal" Value="@Model.QualifiedWorkdayCount" ValueChanged="OnQualifiedWorkdayCountChangedAsync" MinValue="0m" Enabled="@(!IsSaving)" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Khấu trừ đi trễ/về sớm" ColSpanMd="4">
+                <DxSpinEdit T="decimal" Value="@Model.LateEarlyDeductionDays" ValueChanged="OnLateEarlyDeductionDaysChangedAsync" MinValue="0m" Enabled="@(!IsSaving)" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Công tính phụ cấp" ColSpanMd="4">
+                <DxSpinEdit T="decimal" Value="@Model.PayableWorkdayCount" ReadOnly="true" ValidationEnabled="false" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Đơn giá/ngày công" ColSpanMd="6">
+                <DxSpinEdit T="decimal" Value="@Model.HazardAllowancePerDay" ValueChanged="OnHazardAllowancePerDayChangedAsync" MinValue="0m" Enabled="@(!IsSaving)" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Phụ cấp độc hại" ColSpanMd="6">
+                <DxSpinEdit T="decimal" Value="@Model.HazardAllowanceAmount" ValueChanged="OnHazardAllowanceAmountChangedAsync" MinValue="0m" Enabled="@(!IsSaving)" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Đủ điều kiện hưởng" ColSpanMd="12">
+                <DxCheckBox Checked="@Model.IsEligibleDepartment"
+                            CheckedChanged="@((bool value) => OnIsEligibleDepartmentChangedAsync(value))"
+                            Enabled="@(!IsSaving)" />
+            </DxFormLayoutItem>
+            <DxFormLayoutItem Caption="Lý do loại trừ" ColSpanMd="12">
+                <DxMemo Text="@Model.ExclusionReason"
+                        TextChanged="OnExclusionReasonChangedAsync"
+                        Rows="3"
+                        MaxLength="1000"
+                        Enabled="@(!IsSaving && !Model.IsEligibleDepartment)" />
+            </DxFormLayoutItem>
+        </DxFormLayout>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="hazard-edit-actions">
+            <DxButton Text="Lưu"
+                      Click="SaveAsync"
+                      IconUrl="@VntaDevExpressIcons.Save"
+                      Enabled="@CanSave"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      Enabled="@(!IsSaving)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

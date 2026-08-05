@@ -1,0 +1,303 @@
+@using Vnta.Hrm.Application.Integrations.AttendanceGateway
+@using Vnta.Hrm.Web.Client.Models
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChanged"
+         HeaderText="Điều chỉnh bảng công ngày"
+         Width="min(76rem, calc(100vw - 3rem))"
+         Height="24rem"
+         ShowCloseButton="true"
+         ShowFooter="true"
+         FooterCssClass="bang-cong-ngay-detail-popup-footer"
+         CloseOnOutsideClick="false"
+         CssClass="bang-cong-ngay-detail-popup">
+    <BodyContentTemplate Context="popupBody">
+        @if (Summary is not null && EditModel is not null)
+        {
+            <div class="bang-cong-ngay-detail-surface">
+                <div class="bang-cong-ngay-detail-header">
+                    <div class="bang-cong-ngay-detail-heading">
+                        <div class="bang-cong-ngay-detail-title">@Summary.EmployeeDisplay</div>
+                        <div class="bang-cong-ngay-detail-subtitle">@BuildDetailSubtitle(Summary)</div>
+                    </div>
+                </div>
+
+                <div class="bang-cong-ngay-detail-splitter-host">
+                    <DxSplitter CssClass="bang-cong-ngay-detail-splitter"
+                                Width="100%"
+                                Height="100%"
+                                Orientation="Orientation.Horizontal">
+                        <Panes>
+                            <DxSplitterPane Size="70%"
+                                            MinSize="26rem"
+                                            CssClass="bang-cong-ngay-detail-pane">
+                                <div class="bang-cong-ngay-detail-panel">
+                                    <div class="bang-cong-ngay-detail-panel__body bang-cong-ngay-detail-panel__body--detail">
+                                        @if (!string.IsNullOrWhiteSpace(LockedNoticeMessage))
+                                        {
+                                            <div class="bang-cong-ngay-detail-locked-message">@LockedNoticeMessage</div>
+                                        }
+
+                                        <DxFormLayout CssClass="bang-cong-ngay-detail-form"
+                                                      CaptionPosition="CaptionPosition.Vertical">
+                                            <DxFormLayoutGroup ColSpanMd="12" aria-labelledby="attendance-result-header">
+                                                <HeaderContentTemplate>
+                                                    <div id="attendance-result-header" class="bang-cong-ngay-detail-group-header">
+                                                        Thông tin kết quả chấm công
+                                                    </div>
+                                                </HeaderContentTemplate>
+                                                <Items>
+                                                <DxFormLayoutItem Caption="Giờ vào" ColSpanMd="6">
+                                                    <DxMaskedInput @bind-Value="EditModel.CheckInAt"
+                                                                   Mask="00:00"
+                                                                   NullText="--"
+                                                                   CssClass="bang-cong-ngay-detail-editor"
+                                                                   Enabled="@CanEditFields" />
+                                                </DxFormLayoutItem>
+
+                                                <DxFormLayoutItem Caption="Giờ ra" ColSpanMd="6">
+                                                    <DxMaskedInput @bind-Value="EditModel.CheckOutAt"
+                                                                   Mask="00:00"
+                                                                   NullText="--"
+                                                                   CssClass="bang-cong-ngay-detail-editor"
+                                                                   Enabled="@CanEditFields" />
+                                                </DxFormLayoutItem>
+
+                                                <DxFormLayoutItem Caption="Kết quả chấm công" ColSpanMd="12" BeginRow="true">
+                                                    <DxDropDownBox Value="@EditModel.StatusCode"
+                                                                   ValueChanged="OnStatusCodeValueChanged"
+                                                                   QueryDisplayText="GetStatusCodeDisplayText"
+                                                                   NullText="Chưa có kết quả chấm công"
+                                                                   ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                                                   DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+                                                                   DropDownVisible="@StatusCodeDropDownVisible"
+                                                                   DropDownVisibleChanged="OnStatusCodeDropDownVisibleChanged"
+                                                                   DropDownBodyCssClass="bang-cong-ngay-detail-status-dropdown"
+                                                                   CssClass="bang-cong-ngay-detail-status-lookup"
+                                                                   Enabled="@CanEditFields">
+                                                        <DropDownBodyTemplate Context="dropDownContext">
+                                                            <DxGrid Data="@StatusCodeOptions"
+                                                                    KeyFieldName="@nameof(AttendanceStatusCodeRecord.Id)"
+                                                                    CssClass="bang-cong-ngay-detail-status-grid"
+                                                                    ShowAllRows="true"
+                                                                    ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                                                    TextWrapEnabled="true"
+                                                                    HighlightRowOnHover="true"
+                                                                    RowClick="OnStatusCodeLookupRowClick">
+                                                                <Columns>
+                                                                    <DxGridDataColumn FieldName="@nameof(AttendanceStatusCodeRecord.Code)"
+                                                                                      Caption="Code"
+                                                                                      MinWidth="120" />
+                                                                    <DxGridDataColumn FieldName="@nameof(AttendanceStatusCodeRecord.Name)"
+                                                                                      Caption="Tên kết quả"
+                                                                                      MinWidth="220" />
+                                                                    <DxGridDataColumn FieldName="@nameof(AttendanceStatusCodeRecord.Kind)"
+                                                                                      Caption="Loại"
+                                                                                      MinWidth="120">
+                                                                        <CellDisplayTemplate Context="statusCodeContext">
+                                                                            @{
+                                                                                var statusCode = (AttendanceStatusCodeRecord)statusCodeContext.DataItem;
+                                                                            }
+                                                                            @FormatStatusCodeKind(statusCode.Kind)
+                                                                        </CellDisplayTemplate>
+                                                                    </DxGridDataColumn>
+                                                                </Columns>
+                                                            </DxGrid>
+                                                        </DropDownBodyTemplate>
+                                                    </DxDropDownBox>
+                                                </DxFormLayoutItem>
+
+                                                <DxFormLayoutItem Caption="Tình trạng" ColSpanMd="6" BeginRow="true">
+                                                    <DxCheckBox Checked="@(Summary?.IsLocked == true)"
+                                                                CheckType="CheckType.Switch"
+                                                                Enabled="false">
+                                                        @(Summary?.IsLocked == true ? "Đã khóa" : "Mở khóa")
+                                                    </DxCheckBox>
+                                                </DxFormLayoutItem>
+
+                                                <DxFormLayoutItem Caption="Bổ sung hồ sơ" ColSpanMd="6">
+                                                    <DxCheckBox @bind-Checked="EditModel.RequireDocument"
+                                                                CheckType="CheckType.Switch"
+                                                                Enabled="@CanEditFields">
+                                                        @(EditModel.RequireDocument ? "Có" : "Không")
+                                                    </DxCheckBox>
+                                                </DxFormLayoutItem>
+                                                </Items>
+                                            </DxFormLayoutGroup>
+
+                                            <DxFormLayoutGroup ColSpanMd="12" aria-labelledby="attendance-rule-header">
+                                                <HeaderContentTemplate>
+                                                    <div id="attendance-rule-header" class="bang-cong-ngay-detail-group-header">
+                                                        Quy tắc tính công
+                                                    </div>
+                                                </HeaderContentTemplate>
+                                                <Items>
+                                                <DxFormLayoutItem Caption="Có tính ĐTVS" ColSpanMd="6" BeginRow="true">
+                                                    <DxCheckBox Checked="@EditModel.IsLateEarlyApplied"
+                                                                CheckedChanged="@((bool value) => OnLateEarlyAppliedChanged(value))"
+                                                                CheckType="CheckType.Switch"
+                                                                Enabled="@CanEditFields">
+                                                        @(EditModel.IsLateEarlyApplied ? "Có" : "Không")
+                                                    </DxCheckBox>
+                                                </DxFormLayoutItem>
+
+                                                <DxFormLayoutItem Caption="Số phút ĐTVS" ColSpanMd="6">
+                                                    <DxSpinEdit TValue="int"
+                                                                @bind-Value="EditModel.LateEarlyTotalMinutes"
+                                                                MinValue="0"
+                                                                Increment="1"
+                                                                CssClass="bang-cong-ngay-detail-editor"
+                                                                Enabled="@CanEditLateEarlyMinutes" />
+                                                </DxFormLayoutItem>
+
+                                                <DxFormLayoutItem Caption="Có tính tăng ca" ColSpanMd="6" BeginRow="true">
+                                                    <DxCheckBox Checked="@EditModel.IsOvertimeApplied"
+                                                                CheckedChanged="@((bool value) => OnOvertimeAppliedChanged(value))"
+                                                                CheckType="CheckType.Switch"
+                                                                Enabled="@CanEditFields">
+                                                        @(EditModel.IsOvertimeApplied ? "Có" : "Không")
+                                                    </DxCheckBox>
+                                                </DxFormLayoutItem>
+
+                                                <DxFormLayoutItem Caption="@GetOvertimeMinutesCaption()" ColSpanMd="6">
+                                                    <DxSpinEdit TValue="int"
+                                                                @bind-Value="EditModel.OvertimeMinutes"
+                                                                MinValue="0"
+                                                                Increment="1"
+                                                                CssClass="bang-cong-ngay-detail-editor"
+                                                                Enabled="@CanEditOvertimeMinutes" />
+                                                </DxFormLayoutItem>
+                                                </Items>
+                                            </DxFormLayoutGroup>
+                                            <DxFormLayoutGroup ColSpanMd="12" aria-labelledby="attendance-note-header">
+                                                <HeaderContentTemplate>
+                                                    <div id="attendance-note-header" class="bang-cong-ngay-detail-group-header">
+                                                        Ghi chú
+                                                    </div>
+                                                </HeaderContentTemplate>
+                                                <Items>
+                                                <DxFormLayoutItem Caption="Nội dung" ColSpanMd="12">
+                                                    <DxMemo @bind-Text="EditModel.Note"
+                                                            Rows="4"
+                                                            NullText="Không có ghi chú"
+                                                            CssClass="bang-cong-ngay-detail-editor bang-cong-ngay-detail-memo"
+                                                            Enabled="@CanEditFields" />
+                                                </DxFormLayoutItem>
+                                                </Items>
+                                            </DxFormLayoutGroup>
+                                        </DxFormLayout>
+
+                                        @if (!string.IsNullOrWhiteSpace(SaveErrorMessage))
+                                        {
+                                            <div class="bang-cong-ngay-detail-error-message">@SaveErrorMessage</div>
+                                        }
+                                    </div>
+                                </div>
+                            </DxSplitterPane>
+
+                            <DxSplitterPane Size="30%"
+                                            MinSize="20rem"
+                                            CssClass="bang-cong-ngay-detail-pane">
+                                <div class="bang-cong-ngay-detail-panel">
+                                    <div class="bang-cong-ngay-detail-panel__header">
+                                        <div>
+                                            <h2 class="bang-cong-ngay-detail-panel__title">Lịch sử chấm công</h2>
+                                            <p class="bang-cong-ngay-detail-panel__subtitle">
+                                                Theo ngày công @FormatDate(Summary.WorkDate)
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bang-cong-ngay-detail-panel__body bang-cong-ngay-detail-panel__body--logs">
+                                        <HrmLoadingPanel Visible="@IsLoadingLogs"
+                                                         IsContentBlocked="true"
+                                                         IsContentVisible="true"
+                                                         IndicatorVisible="true"
+                                                         IndicatorAreaVisible="true"
+                                                         CssClass="bang-cong-ngay-detail-loading-panel"
+                                                         Text="Đang tải lịch sử chấm công...">
+                                            @if (!string.IsNullOrWhiteSpace(LogErrorMessage))
+                                            {
+                                                <div class="bang-cong-ngay-detail-state">
+                                                    <div class="bang-cong-ngay-detail-state-title">Không thể tải lịch sử chấm công</div>
+                                                    <div class="bang-cong-ngay-detail-state-message">@LogErrorMessage</div>
+                                                    <DxButton Text="Thử lại"
+                                                              Click="LoadLogsAsync"
+                                                              Enabled="@(!IsLoadingLogs)"
+                                                              IconUrl="@VntaDevExpressIcons.Refresh"
+                                                              RenderStyle="ButtonRenderStyle.Primary"
+                                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <DxGrid Data="@Logs"
+                                                        KeyFieldName="@nameof(AttendanceLogListItemDto.Id)"
+                                                        CssClass="bang-cong-ngay-detail-grid"
+                                                        ShowAllRows="true"
+                                                        VirtualScrollingEnabled="true"
+                                                        ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                                        FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                                        TextWrapEnabled="false"
+                                                        HighlightRowOnHover="true">
+                                                    <Columns>
+                                                        <DxGridDataColumn Caption="STT"
+                                                                          Width="4.5rem"
+                                                                          MinWidth="72"
+                                                                          AllowSort="false">
+                                                            <CellDisplayTemplate>
+                                                                @(context.VisibleIndex + 1)
+                                                            </CellDisplayTemplate>
+                                                        </DxGridDataColumn>
+                                                        <DxGridDataColumn FieldName="@nameof(AttendanceLogListItemDto.DeviceCode)"
+                                                                          Caption="Mã máy"
+                                                                          MinWidth="130" />
+                                                        <DxGridDataColumn FieldName="@nameof(AttendanceLogListItemDto.AttTime)"
+                                                                          Caption="Thời điểm chấm"
+                                                                          MinWidth="160">
+                                                            <CellDisplayTemplate>
+                                                                @{
+                                                                    var log = (AttendanceLogListItemDto)context.DataItem;
+                                                                }
+                                                                @FormatDateTime(log.AttTime)
+                                                            </CellDisplayTemplate>
+                                                        </DxGridDataColumn>
+                                                        <DxGridDataColumn FieldName="@nameof(AttendanceLogListItemDto.Verify)"
+                                                                          Caption="Xác thực"
+                                                                          MinWidth="120">
+                                                            <CellDisplayTemplate>
+                                                                @{
+                                                                    var log = (AttendanceLogListItemDto)context.DataItem;
+                                                                }
+                                                                @FormatVerifyMode(log.Verify)
+                                                            </CellDisplayTemplate>
+                                                        </DxGridDataColumn>
+                                                    </Columns>
+                                                    <EmptyDataAreaTemplate>
+                                                        Không có lịch sử chấm công phù hợp.
+                                                    </EmptyDataAreaTemplate>
+                                                </DxGrid>
+                                            }
+                                        </HrmLoadingPanel>
+                                    </div>
+                                </div>
+                            </DxSplitterPane>
+                        </Panes>
+                    </DxSplitter>
+                </div>
+            </div>
+        }
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <DxButton Text="Lưu"
+                  Enabled="@CanSave"
+                  Click="SaveAsync"
+                  IconUrl="@VntaDevExpressIcons.Save"
+                  RenderStyle="ButtonRenderStyle.Primary"
+                  RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        <DxButton Text="Đóng"
+                  Enabled="@(!IsSaving)"
+                  Click="CloseAsync"
+                  IconUrl="@VntaDevExpressIcons.Cancel" />
+    </FooterContentTemplate>
+</DxPopup>

@@ -1,0 +1,35 @@
+@page "/Account/Register"
+
+@inject NavigationManager NavigationManager
+
+<PageTitle>VNTA HRM 2026 - Yêu cầu mở tài khoản nội bộ</PageTitle>
+
+<div class="main-content">
+    <div class="block-content card">
+        <DxFormLayout CaptionPosition=@CaptionPosition.Vertical>
+            <DxFormLayoutItem ColSpanMd="12">
+                <div class="title">
+                    <div class="title-text">Yêu cầu mở tài khoản nội bộ</div>
+                </div>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
+                <p>
+                    Hệ thống VNTA HRM không cho phép người dùng tự đăng ký tài khoản.
+                </p>
+                <p>
+                    Vui lòng liên hệ Phòng Nhân sự hoặc Quản trị hệ thống để được mở và phê duyệt tài khoản nhân viên trước khi sử dụng.
+                </p>
+            </DxFormLayoutItem>
+            <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
+                <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Login", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">
+                    Quay lại đăng nhập
+                </a>
+            </DxFormLayoutItem>
+        </DxFormLayout>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+}

@@ -1,0 +1,65 @@
+@using System.Globalization
+@using DevExpress.Blazor
+@using Vnta.Hrm.Application.PhuCap.PhuCapDocHai
+
+<DxGrid @ref="grid" Data="@Rows" KeyFieldName="PayrollAllowanceSummaryRecordId" CssClass="hazard-allowance-grid" ShowSearchBox="false" PagerVisible="false" ShowAllRows="true" SkeletonRowsEnabled="true" ColumnResizeMode="GridColumnResizeMode.NextColumn" FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always" TextWrapEnabled="false" FocusedRowEnabled="true" HighlightRowOnHover="true" AllowSelectRowByClick="true" SelectionMode="GridSelectionMode.Multiple" SelectedDataItems="@SelectedItems" SelectedDataItemsChanged="SelectedItemsChanged" FilterCriteriaChanged="FilterCriteriaChanged">
+                <Columns>
+                    <DxGridSelectionColumn Width="3rem" />
+                    <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                        <CellDisplayTemplate>@(PageIndex * PageSize + context.VisibleIndex + 1)</CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn Caption="Tác vụ" MinWidth="96" Width="6rem" AllowSort="false" TextAlignment="GridTextAlignment.Center" ShowInColumnChooser="false">
+                        <CellDisplayTemplate>
+                            @{ var row = (HazardAllowanceListItemDto)context.DataItem; }
+                            <div class="hazard-row-menu-host" @onclick:stopPropagation="true" @onmousedown:stopPropagation="true">
+                                <DxDropDownButton CssClass="hazard-row-menu-btn" IconCssClass="icon more-icon medium-icon" RenderStyle="ButtonRenderStyle.Link" DropDownToggleVisible="false" Enabled="@CanOperateOnCurrentDataset" Tooltip="Tác vụ dòng phụ cấp độc hại">
+                                    <Items>
+                                        <DxDropDownButtonItem Text="Điều chỉnh" IconUrl="@VntaDevExpressIcons.Edit" Click="@(() => EditRequested.InvokeAsync(row))" Enabled="@CanEditRow(row)" Tooltip="Điều chỉnh dữ liệu phụ cấp độc hại của dòng này." />
+                                        <DxDropDownButtonItem Text="Làm mới" IconUrl="@VntaDevExpressIcons.Refresh" Click="@(() => RefreshRequested.InvokeAsync(row))" Enabled="@CanRefreshRow(row)" Tooltip="Tính lại dữ liệu phụ cấp từ bảng công của nhân viên." />
+                                        <DxDropDownButtonItem Text="@GetLockActionText(row)" IconUrl="@GetLockActionIcon(row)" Click="@(() => LockToggleRequested.InvokeAsync(row))" Enabled="@CanToggleLock(row)" BeginGroup="true" Tooltip="@GetLockActionTooltip(row)" />
+                                        <DxDropDownButtonItem Text="Bảng công tháng" IconUrl="@VntaDevExpressIcons.Attendance" Click="@(() => MonthlyWorkRequested.InvokeAsync(row))" Enabled="@CanViewMonthlyWork(row)" Tooltip="Xem bảng công tháng của nhân viên ở chế độ chỉ đọc." />
+                                    </Items>
+                                </DxDropDownButton>
+                            </div>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="EmployeeCode" Caption="Nhân viên" MinWidth="240">
+                        <CellDisplayTemplate>
+                            @{ var row = (HazardAllowanceListItemDto)context.DataItem; var employeeDisplay = FormatEmployeeDisplay(row); }
+                            <div class="hazard-allowance-employee-cell">
+                                <span class="hazard-allowance-employee-text" title="@employeeDisplay">@HighlightSearchText(employeeDisplay)</span>
+                                <span class="hazard-allowance-position-text" title="@row.PositionName">@HighlightSearchText(row.PositionName)</span>
+                            </div>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="DepartmentName" Caption="Bộ phận" MinWidth="320" Width="24rem"><CellDisplayTemplate>@HighlightSearchText(((HazardAllowanceListItemDto)context.DataItem).DepartmentName)</CellDisplayTemplate></DxGridDataColumn>
+                    <DxGridDataColumn FieldName="PayableWorkdayCount" Caption="Công tính phụ cấp" MinWidth="130"><CellDisplayTemplate>@FormatPreciseWorkday(((HazardAllowanceListItemDto)context.DataItem).PayableWorkdayCount)</CellDisplayTemplate></DxGridDataColumn>
+                    <DxGridDataColumn FieldName="HazardAllowanceAmount" Caption="Tiền PC" MinWidth="140" TextAlignment="GridTextAlignment.Right"><CellDisplayTemplate>@{ var row = (HazardAllowanceListItemDto)context.DataItem; }@if(row.HazardAllowanceAmount != 0m) { <span class="hrm-grid-amount hrm-grid-amount--total">@FormatMoney(row.HazardAllowanceAmount)</span> }</CellDisplayTemplate></DxGridDataColumn>
+                    <DxGridDataColumn FieldName="IsEligibleForAllowance" Caption="Trạng thái hưởng" MinWidth="140">
+                        <CellDisplayTemplate>
+                            @{ var row = (HazardAllowanceListItemDto)context.DataItem; }
+                            <span class="@GetStatusBadgeCssClass(row.IsEligibleForAllowance)">
+                                @(row.IsEligibleForAllowance ? "Hưởng PC" : "Ngoại lệ")
+                            </span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="ExclusionReason" Caption="Lý do ngoại lệ" MinWidth="220"><CellDisplayTemplate>@HighlightSearchText(((HazardAllowanceListItemDto)context.DataItem).ExclusionReason)</CellDisplayTemplate></DxGridDataColumn>
+                    <DxGridDataColumn FieldName="IsLocked" Caption="Trạng thái khóa" MinWidth="130">
+                        <CellDisplayTemplate>
+                            @{ var row = (HazardAllowanceListItemDto)context.DataItem; }
+                            <span class="@GetLockBadgeCssClass(row.IsLocked)">
+                                @(row.IsLocked ? "Đã khóa" : "Đang mở")
+                            </span>
+                        </CellDisplayTemplate>
+                    </DxGridDataColumn>
+                    <DxGridDataColumn FieldName="PayrollAllowanceSummaryRecordId" Caption="Mã bản ghi tổng hợp" MinWidth="250" Visible="false"><CellDisplayTemplate><span class="hazard-summary-reference">@((HazardAllowanceListItemDto)context.DataItem).PayrollAllowanceSummaryRecordId</span></CellDisplayTemplate></DxGridDataColumn>
+                </Columns>
+                <TotalSummary><DxGridSummaryItem Name="HazardAllowanceAmountTotal" FieldName="@nameof(HazardAllowanceListItemDto.HazardAllowanceAmount)" SummaryType="GridSummaryItemType.Sum" Visible="false" /></TotalSummary>
+                <EmptyDataAreaTemplate>
+                    <div class="empty-state">
+                        <div class="state-title">@EmptyStateTitle</div>
+                        <div class="state-message">@EmptyStateMessage</div>
+                        <DxButton Text="@EmptyStateActionText" Click="EmptyStateActionRequested" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                    </div>
+                </EmptyDataAreaTemplate>
+</DxGrid>

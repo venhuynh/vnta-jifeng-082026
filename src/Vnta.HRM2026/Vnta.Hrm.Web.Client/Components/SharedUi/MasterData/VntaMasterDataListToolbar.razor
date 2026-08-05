@@ -1,0 +1,139 @@
+@using DevExpress.Blazor
+
+<DxToolbar CssClass="toolbar" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+    <DxToolbarItem Tooltip="@TitleTooltip">
+        <Template Context="toolbarTitleContext">
+            <div class="custom-item">
+                @if (TitleTemplate is not null)
+                {
+                    @TitleTemplate
+                }
+                else if (!string.IsNullOrWhiteSpace(BreadcrumbText))
+                {
+                    <span class="title">@BreadcrumbText</span>
+                }
+            </div>
+        </Template>
+    </DxToolbarItem>
+
+    <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                   Text="@AddText"
+                   CssClass="toolbar-action-item toolbar-action-primary"
+                   RenderStyle="ButtonRenderStyle.Primary"
+                   RenderStyleMode="ToolbarItemRenderStyleMode.Contained"
+                   Click="@OnAddClick"
+                   Enabled="@AddEnabled"
+                   Visible="@ShowAdd"
+                   Tooltip="@AddTooltip"
+                   IconUrl="@VntaDevExpressIcons.Add" />
+
+    <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                   Text="@EditText"
+                   CssClass="toolbar-action-item toolbar-action-edit"
+                   RenderStyle="ButtonRenderStyle.Secondary"
+                   RenderStyleMode="ToolbarItemRenderStyleMode.Contained"
+                   Click="@OnEditClick"
+                   Enabled="@EditEnabled"
+                   Visible="@ShowEdit"
+                   Tooltip="@EditTooltip"
+                   IconUrl="@VntaDevExpressIcons.Edit" />
+
+    <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                   Text="@ResetText"
+                   CssClass="toolbar-action-item toolbar-action-reset"
+                   RenderStyle="ButtonRenderStyle.Secondary"
+                   RenderStyleMode="ToolbarItemRenderStyleMode.Contained"
+                   Click="@OnResetClick"
+                   Enabled="@ResetEnabled"
+                   Visible="@ShowReset"
+                   Tooltip="@ResetTooltip"
+                   IconUrl="@VntaDevExpressIcons.Reset" />
+
+    <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                   Text="@DeleteText"
+                   CssClass="toolbar-action-item toolbar-action-danger"
+                   RenderStyle="ButtonRenderStyle.Danger"
+                   RenderStyleMode="ToolbarItemRenderStyleMode.Contained"
+                   Click="@OnDeleteClick"
+                   Enabled="@DeleteEnabled"
+                   Visible="@ShowDelete"
+                   Tooltip="@DeleteTooltip"
+                   IconUrl="@VntaDevExpressIcons.Delete" />
+
+    <DxToolbarItem Tooltip="@RefreshTooltip"
+                   BeginGroup="true"
+                   Alignment="ToolbarItemAlignment.Right"
+                   CssClass="toolbar-action-item toolbar-action-refresh"
+                   RenderStyle="ButtonRenderStyle.Secondary"
+                   RenderStyleMode="ToolbarItemRenderStyleMode.Contained"
+                   Click="@OnRefreshClick"
+                   Enabled="@RefreshEnabled"
+                   Visible="@ShowRefresh"
+                   IconUrl="@VntaDevExpressIcons.Refresh" />
+
+    <DxToolbarItem Text="@ExportText"
+                   BeginGroup="true"
+                   Alignment="ToolbarItemAlignment.Right"
+                   CssClass="toolbar-action-item toolbar-action-export"
+                   RenderStyle="ButtonRenderStyle.Secondary"
+                   RenderStyleMode="ToolbarItemRenderStyleMode.Contained"
+                   Enabled="@ExportEnabled"
+                   Visible="@ShowExport"
+                   Tooltip="@ExportTooltip"
+                   IconUrl="@VntaDevExpressIcons.Export">
+        <Items>
+            <DxToolbarItem Text="@ExportExcelText"
+                           Click="@OnExportAllDataToExcelClick"
+                           Enabled="@ExportEnabled"
+                           Tooltip="@ExportExcelTooltip"
+                           IconUrl="@VntaDevExpressIcons.Excel" />
+            <DxToolbarItem Text="@ExportPdfText"
+                           Click="@OnExportAllDataToPdfClick"
+                           Enabled="@ExportEnabled"
+                           Tooltip="@ExportPdfTooltip"
+                           IconUrl="@VntaDevExpressIcons.Pdf" />
+            <DxToolbarItem Text="@ExportSelectedExcelText"
+                           Click="@OnExportSelectedRowsToExcelClick"
+                           Enabled="@ExportSelectedEnabled"
+                           Tooltip="@ExportSelectedExcelTooltip"
+                           IconUrl="@VntaDevExpressIcons.Excel" />
+            <DxToolbarItem Text="@ExportSelectedPdfText"
+                           Click="@OnExportSelectedRowsToPdfClick"
+                           Enabled="@ExportSelectedEnabled"
+                           Tooltip="@ExportSelectedPdfTooltip"
+                           IconUrl="@VntaDevExpressIcons.Pdf" />
+        </Items>
+    </DxToolbarItem>
+
+    <DxToolbarItem Tooltip="@ColumnChooserTooltip"
+                   Alignment="ToolbarItemAlignment.Right"
+                   CssClass="toolbar-action-item toolbar-action-column-chooser"
+                   RenderStyle="ButtonRenderStyle.Secondary"
+                   RenderStyleMode="ToolbarItemRenderStyleMode.Contained"
+                   Click="@OnColumnChooserClick"
+                   Enabled="@ColumnChooserEnabled"
+                   Visible="@ShowColumnChooser"
+                   IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+
+    <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                   BeginGroup="true"
+                   CssClass="search-textbox-item"
+                   Tooltip="@SearchTooltip"
+                   Visible="@ShowSearch">
+        <Template Context="toolbarSearchContext">
+            <div class="custom-item search-shell">
+                <img class="toolbar-search-icon"
+                     src="@VntaDevExpressIcons.Search"
+                     alt=""
+                     aria-hidden="true" />
+                <DxSearchBox CssClass="search-textbox"
+                             Text="@SearchText"
+                             TextChanged="HandleSearchTextChanged"
+                             NullText="@SearchPlaceholder"
+                             BindValueMode="BindValueMode.OnInput"
+                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                             Enabled="@SearchEnabled" />
+            </div>
+        </Template>
+    </DxToolbarItem>
+</DxToolbar>

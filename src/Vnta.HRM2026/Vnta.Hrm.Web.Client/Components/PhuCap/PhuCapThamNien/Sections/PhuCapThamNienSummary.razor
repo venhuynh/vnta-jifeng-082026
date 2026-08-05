@@ -1,0 +1,32 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapThamNien
+
+<div class="seniority-allowance-grid-header">
+    <div class="seniority-allowance-summary-strip">
+        <DxButtonGroup CssClass="seniority-allowance-summary-button-group" RenderStyle="ButtonRenderStyle.Secondary" RenderStyleMode="ButtonRenderStyleMode.Outline" SelectionMode="ButtonGroupSelectionMode.Single" Enabled="@CanInteract">
+            <Items>
+                @foreach (var badge in RangeBadges)
+                {
+                    <DxButtonGroupItem Text="@($"{badge.ShortLabel} {badge.Count:N0}")" Tooltip="@badge.Label" CssClass="@GetRangeBadgeCssClass(badge.Key)" Selected="@(badge.Key == SelectedKey)" Click="@(() => RangeSelected.InvokeAsync(badge.Key))" />
+                }
+            </Items>
+        </DxButtonGroup>
+        <DxButtonGroup CssClass="seniority-allowance-total-amount-button-group" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Outline">
+            <Items><DxButtonGroupItem Text="@($"Tổng phụ cấp: {FormatCurrency(TotalAllowanceAmount)}")" Tooltip="Tổng tiền phụ cấp thâm niên của danh sách đang xem." CssClass="seniority-allowance-total-amount-button" /></Items>
+        </DxButtonGroup>
+    </div>
+    <div class="seniority-allowance-grid-search">
+        <DxSearchBox CssClass="seniority-allowance-grid-searchbox" NullText="Tìm kiếm mã nhân viên, họ tên, phòng ban, chức vụ" BindValueMode="BindValueMode.OnDelayedInput" InputDelay="500" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" Text="@SearchText" TextChanged="SearchTextChanged" Enabled="@CanInteract" />
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<PhuCapThamNienRangeBadge> RangeBadges { get; set; } = [];
+    [Parameter] public string SelectedKey { get; set; } = string.Empty;
+    [Parameter] public decimal TotalAllowanceAmount { get; set; }
+    [Parameter] public string? SearchText { get; set; }
+    [Parameter] public bool CanInteract { get; set; }
+    [Parameter, EditorRequired] public Func<string, string> GetRangeBadgeCssClass { get; set; } = default!;
+    [Parameter, EditorRequired] public Func<decimal, string> FormatCurrency { get; set; } = default!;
+    [Parameter] public EventCallback<string> RangeSelected { get; set; }
+    [Parameter] public EventCallback<string?> SearchTextChanged { get; set; }
+}

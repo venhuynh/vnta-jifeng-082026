@@ -1,0 +1,11 @@
+.content-root { height: 100%; display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
+.card { position: relative; display: flex; flex-direction: column; min-width: 0; background-color: var(--dxds-color-surface-neutral-default-rest); background-clip: border-box; border: 1px solid var(--dxds-color-border-neutral-default-rest); border-radius: .25rem; }
+.toolbar { flex: 0 0 3.25rem; height: 3.25rem; min-height: 3.25rem; padding: .5rem; margin-bottom: 1rem; overflow-x: auto; overflow-y: hidden; }
+::deep .toolbar .dxbl-toolbar { height: 100%; flex-wrap: nowrap; align-items: center; min-width: max-content; }
+::deep .toolbar .dxbl-toolbar-title { white-space: nowrap; }
+.other-allowance-root { display: flex; flex: 1 1 auto; flex-direction: column; gap: .875rem; min-height: 0; min-width: 0; overflow: hidden; }
+.other-allowance-grid-card { flex: 1 1 auto; min-height: 0; min-width: 0; overflow: hidden; }
+.other-allowance-grid-content { display: flex; flex-direction: column; height: 100%; min-height: 0; min-width: 0; overflow: hidden; }
+::deep .other-allowance-loading-panel { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; height: 100%; }
+.other-allowance-grid-content { flex: 1 1 auto; }
+::deep .other-allowance-grid { flex: 1 1 auto; min-height: 0; min-width: 0; max-height: 100%; }

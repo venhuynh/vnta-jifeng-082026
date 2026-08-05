@@ -1,0 +1,8 @@
+.other-allowance-toolbar .other-allowance-toolbar-custom-item { display: flex; align-items: center; margin: 0 .5rem; }
+.other-allowance-toolbar-filter-editor { gap: .5rem; }
+.other-allowance-toolbar-filter-label { color: var(--dxds-color-content-neutral-subtle-rest); white-space: nowrap; }
+::deep .other-allowance-toolbar .dxbl-toolbar { min-width: max-content; }
+::deep .other-allowance-toolbar-filter-item { min-width: 0; }
+::deep .other-allowance-toolbar-filter-year { width: 7rem; }
+::deep .other-allowance-toolbar-filter-month { width: 8rem; }
+::deep .other-allowance-toolbar-action-dropdown { min-width: max-content; }

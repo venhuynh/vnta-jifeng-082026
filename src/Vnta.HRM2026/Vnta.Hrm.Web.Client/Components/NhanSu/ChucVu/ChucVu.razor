@@ -1,0 +1,221 @@
+@page "/attendance/positions"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models
+
+@attribute [Authorize(Policy = InternalAccountPolicies.HumanResourcesAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>Chức vụ</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Chức vụ" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Thêm mới"
+                           Click="OnAddPositionClick"
+                           Enabled="@CanCreate"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tạo chức vụ mới"
+                           IconUrl="@VntaDevExpressIcons.Add" />
+            <DxToolbarItem Text="Điều chỉnh"
+                           Click="OnEditPositionClick"
+                           Enabled="@CanEditSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Điều chỉnh chức vụ đã chọn"
+                           IconUrl="@VntaDevExpressIcons.Edit" />
+            <DxToolbarItem Text="Xóa"
+                           Click="OnDeletePositionsClick"
+                           Enabled="@CanDeleteSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xóa chức vụ đã chọn"
+                           IconUrl="@VntaDevExpressIcons.Delete" />
+            <DxToolbarItem Tooltip="Cập nhật lại số nhân viên theo chức vụ"
+                           Enabled="@CanRefreshPositions"
+                           Click="RefreshEmployeeCountsAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Xuất dữ liệu"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất dữ liệu chức vụ"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel"
+                                   Click="ExportAllDataToExcel"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ danh sách chức vụ ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF"
+                                   Click="ExportAllDataToPdf"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ danh sách chức vụ ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra Excel"
+                                   Click="ExportSelectedRowsToExcel"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các chức vụ đã chọn ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra PDF"
+                                   Click="ExportSelectedRowsToPdf"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các chức vụ đã chọn ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh sách chức vụ"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanInteract"
+                           Click="OnColumnChooserItemClick"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+        </DxToolbar>
+    </div>
+
+    <div class="chuc-vu-root">
+        @if (HasLoadError)
+        {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải danh sách chức vụ</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="ReloadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+            <div class="card chuc-vu-grid-card">
+                <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="@LoadingText"
+                                 CssClass="chuc-vu-loading-panel">
+                    <div class="chuc-vu-grid-content">
+                        <div class="chuc-vu-grid-header">
+                            <div class="chuc-vu-summary-strip">
+                                @foreach (var badge in SummaryBadges)
+                                {
+                                    <button type="button"
+                                            class="summary-badge summary-badge-@badge.Key @(badge.Key == ActiveSummaryBadgeKey ? "is-active" : null)"
+                                            @onclick="() => OnSummaryBadgeClick(badge.Key)"
+                                            disabled="@(!CanInteract && badge.Key != ActiveSummaryBadgeKey)">
+                                        <span class="summary-badge-dot"></span>
+                                        <span class="summary-badge-label">@badge.Label</span>
+                                        <span class="summary-badge-value">@badge.Count.ToString("N0")</span>
+                                    </button>
+                                }
+                            </div>
+                            <div class="chuc-vu-grid-search">
+                                <DxSearchBox CssClass="chuc-vu-grid-searchbox"
+                                             NullText="Tìm kiếm chức vụ"
+                                             BindValueMode="BindValueMode.OnDelayedInput"
+                                             InputDelay="400"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             Text="@SearchText"
+                                             TextChanged="OnSearchTextChanged"
+                                             Enabled="@CanInteract" />
+                            </div>
+                        </div>
+
+                        <DxGrid @ref="Grid"
+                                Data="@VisiblePositions"
+                                KeyFieldName="Id"
+                                CssClass="chuc-vu-grid"
+                                ShowSearchBox="false"
+                                EditMode="GridEditMode.PopupEditForm"
+                                PopupEditFormCssClass="chuc-vu-popup"
+                                PopupEditFormHeaderText="Thông tin chức vụ"
+                                PageSize="@PageSize"
+                                PageSizeChanged="OnPageSizeChanged"
+                                PagerPosition="GridPagerPosition.Bottom"
+                                PagerSummaryVisible="true"
+                                PageSizeSelectorVisible="true"
+                                PageSizeSelectorItems="@(new int[] { 50, 100, 200 })"
+                                PageSizeSelectorAllRowsItemVisible="false"
+                                SkeletonRowsEnabled="true"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                TextWrapEnabled="false"
+                                FocusedRowEnabled="true"
+                                HighlightRowOnHover="true"
+                                AllowSelectRowByClick="true"
+                                SelectionMode="GridSelectionMode.Multiple"
+                                SelectedDataItems="@SelectedDataItems"
+                                SelectedDataItemsChanged="@OnSelectedDataItemsChanged"
+                                CustomizeEditModel="OnCustomizeEditModel"
+                                EditModelSaving="OnEditModelSaving">
+                            <Columns>
+                                <DxGridSelectionColumn Width="3rem" />
+                                <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @(context.VisibleIndex + 1)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="Name" Caption="Tên chức vụ" MinWidth="220">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var position = (AttendancePositionRecord)context.DataItem;
+                                        }
+                                        @HighlightSearchText(position.Name)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="Description" Caption="Mô tả" MinWidth="280">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var position = (AttendancePositionRecord)context.DataItem;
+                                        }
+                                        <span class="chuc-vu-description" title="@position.Description">@HighlightSearchText(position.Description)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="EmployeeCount" Caption="Số nhân viên" Width="140" MinWidth="140" />
+                                <DxGridDataColumn FieldName="CreatedAtUtc" Caption="Tạo lúc" MinWidth="160" DisplayFormat="dd/MM/yyyy HH:mm" Visible="false" />
+                                <DxGridDataColumn FieldName="UpdatedAtUtc" Caption="Cập nhật lúc" MinWidth="160" DisplayFormat="dd/MM/yyyy HH:mm" Visible="false" />
+                                <DxGridCommandColumn Visible="false"
+                                                     NewButtonVisible="false"
+                                                     EditButtonVisible="false"
+                                                     DeleteButtonVisible="false"
+                                                     SaveButtonVisible="false"
+                                                     CancelButtonVisible="false" />
+                            </Columns>
+                            <EmptyDataAreaTemplate>
+                                <div class="empty-state">
+                                    <div class="state-title">@EmptyStateTitle</div>
+                                    <div class="state-message">@EmptyStateMessage</div>
+                                    <DxButton Text="@EmptyStateActionText"
+                                              Click="OnEmptyStateActionClick"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                </div>
+                            </EmptyDataAreaTemplate>
+                            <EditFormTemplate Context="editFormContext">
+                                @{
+                                    var editModel = (AttendancePositionRecord)editFormContext.EditModel;
+                                }
+                                <ChucVuEditForm Model="@editModel"
+                                                EditFormContext="@editFormContext"
+                                                ErrorMessage="@EditErrorMessage"
+                                                IsCreatingNewPosition="@IsCreatingNewPosition" />
+                                <div class="chuc-vu-form-actions">
+                                    <DxButton Text="Lưu"
+                                              IconUrl="@VntaDevExpressIcons.Save"
+                                              CssClass="chuc-vu-form-action"
+                                              SubmitFormOnClick="true"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                    <DxButton Text="Hủy"
+                                              IconUrl="@VntaDevExpressIcons.Cancel"
+                                              CssClass="chuc-vu-form-action"
+                                              Click="OnCancelPositionEditClick"
+                                              RenderStyle="ButtonRenderStyle.Secondary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                                </div>
+                            </EditFormTemplate>
+                        </DxGrid>
+                    </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>

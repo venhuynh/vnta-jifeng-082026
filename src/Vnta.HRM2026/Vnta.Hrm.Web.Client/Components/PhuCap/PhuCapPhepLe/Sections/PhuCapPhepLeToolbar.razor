@@ -1,0 +1,48 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe
+@using DevExpress.Blazor
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe.Models
+
+<div class="card toolbar">
+    <DxToolbar Title="Phụ cấp Phép - Lễ" CssClass="toolbar" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right" CssClass="toolbar-filter-item" Tooltip="Chọn năm áp dụng">
+            <Template>
+                <div class="custom-item toolbar-filter-editor">
+                    <span class="toolbar-filter-label">Năm</span>
+                    <DxSpinEdit T="int" Value="@Year" ValueChanged="YearChanged" MinValue="@MinimumYear" MaxValue="@MaximumYear" Increment="1" ShowSpinButtons="true" Enabled="@CanChangeFilters" CssClass="toolbar-filter-year" />
+                </div>
+            </Template>
+        </DxToolbarItem>
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right" CssClass="toolbar-filter-item" Tooltip="Chọn tháng áp dụng">
+            <Template>
+                <div class="custom-item toolbar-filter-editor">
+                    <span class="toolbar-filter-label">Tháng</span>
+                    <DxComboBox TData="LeaveHolidayAllowanceMonthOption" TValue="int" @key="Year" Data="@AvailableMonths" Value="@Month" ValueChanged="MonthChanged" ValueFieldName="@nameof(LeaveHolidayAllowanceMonthOption.Value)" TextFieldName="@nameof(LeaveHolidayAllowanceMonthOption.Text)" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never" Enabled="@CanChangeFilters" CssClass="toolbar-filter-month" />
+                </div>
+            </Template>
+        </DxToolbarItem>
+        <DxToolbarItem Text="Xem" Click="ViewRequested" Enabled="@CanView" Alignment="ToolbarItemAlignment.Right" Tooltip="Chuẩn bị và tải dữ liệu phụ cấp Phép - Lễ theo kỳ lương đang chọn" IconUrl="@VntaDevExpressIcons.FolderOpenArrowImport" />
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right" Tooltip="Nhóm các hành động thao tác trên dữ liệu phụ cấp Phép - Lễ">
+            <Template>
+                <div class="custom-item">
+                    <DxDropDownButton Text="Hành động" IconUrl="@VntaDevExpressIcons.TaskList" RenderStyle="ButtonRenderStyle.Secondary" RenderStyleMode="ButtonRenderStyleMode.Outline" Enabled="@CanOperateOnCurrentDataset" CssClass="toolbar-action-dropdown">
+                        <Items>
+                            <DxDropDownButtonItem Text="Tính lại" IconUrl="@VntaDevExpressIcons.CalculatorCoins" Click="RecalculateRequested" Enabled="@CanRecalculate" />
+                            <DxDropDownButtonItem Text="Khóa" IconUrl="@VntaDevExpressIcons.Lock" Click="LockRequested" Enabled="@CanOpenLockAction" BeginGroup="true" />
+                            <DxDropDownButtonItem Text="Mở khóa" IconUrl="@VntaDevExpressIcons.Unlock" Click="UnlockRequested" Enabled="@CanOpenUnlockAction" />
+                        </Items>
+                    </DxDropDownButton>
+                </div>
+            </Template>
+        </DxToolbarItem>
+        <DxToolbarItem Text="Quy tắc" Click="RulesRequested" Enabled="@CanInteract" Alignment="ToolbarItemAlignment.Right" Tooltip="Xem quy tắc tính phụ cấp Phép - Lễ" IconUrl="@VntaDevExpressIcons.TextBoxDescription" />
+        <DxToolbarItem Text="Xuất dữ liệu" Enabled="@CanExport" Alignment="ToolbarItemAlignment.Right" Tooltip="Xuất dữ liệu phụ cấp Phép - Lễ đang hiển thị" IconUrl="@VntaDevExpressIcons.Export">
+            <Items>
+                <DxToolbarItem Text="Xuất Excel" Click="ExportAllExcelRequested" Enabled="@CanExport" Tooltip="Xuất toàn bộ dữ liệu phụ cấp Phép - Lễ ra Excel" IconUrl="@VntaDevExpressIcons.Excel" />
+                <DxToolbarItem Text="Xuất PDF" Click="ExportAllPdfRequested" Enabled="@CanExport" Tooltip="Xuất toàn bộ dữ liệu phụ cấp Phép - Lễ ra PDF" IconUrl="@VntaDevExpressIcons.Pdf" />
+                <DxToolbarItem Text="Xuất dòng đã chọn ra Excel" Click="ExportSelectedExcelRequested" Enabled="@CanExportSelected" Tooltip="Xuất các dòng phụ cấp Phép - Lễ đã chọn ra Excel" IconUrl="@VntaDevExpressIcons.Excel" />
+                <DxToolbarItem Text="Xuất dòng đã chọn ra PDF" Click="ExportSelectedPdfRequested" Enabled="@CanExportSelected" Tooltip="Xuất các dòng phụ cấp Phép - Lễ đã chọn ra PDF" IconUrl="@VntaDevExpressIcons.Pdf" />
+            </Items>
+        </DxToolbarItem>
+        <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh sách phụ cấp Phép - Lễ" Alignment="ToolbarItemAlignment.Right" Enabled="@CanOperateOnCurrentDataset" Click="ColumnChooserRequested" IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+    </DxToolbar>
+</div>

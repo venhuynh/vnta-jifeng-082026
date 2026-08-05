@@ -1,0 +1,117 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<HrmLoadingPanel Visible="@IsLoading"
+                 IsContentBlocked="true"
+                 IsContentVisible="true"
+                 IndicatorVisible="true"
+                 IndicatorAreaVisible="true"
+                 Text="Đang tải thông tin cá nhân..."
+                 CssClass="employee-personal-information-loading-panel">
+    <div class="employee-personal-information-grid">
+        <section class="card employee-personal-information-card">
+            <DxToolbar CssClass="employee-personal-information-toolbar"
+                       Title="Thông tin liên hệ"
+                       ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+                @if (!IsEditingContact)
+                {
+                    <DxToolbarItem Text="Điều chỉnh"
+                                   Click="BeginContactEditAsync"
+                                   Enabled="@CanBeginContactEdit"
+                                   Alignment="ToolbarItemAlignment.Right"
+                                   IconUrl="@VntaDevExpressIcons.Edit" />
+                }
+                else
+                {
+                    <DxToolbarItem Text="Lưu"
+                                   Click="SaveContactAsync"
+                                   Enabled="@CanSaveContact"
+                                   Alignment="ToolbarItemAlignment.Right"
+                                   IconUrl="@VntaDevExpressIcons.Save" />
+                    <DxToolbarItem Text="Hủy"
+                                   Click="CancelContactEditAsync"
+                                   Enabled="@(!IsSaving)"
+                                   Alignment="ToolbarItemAlignment.Right"
+                                   IconUrl="@VntaDevExpressIcons.Cancel" />
+                }
+            </DxToolbar>
+            @if (IsEditingContact && ContactEdit is { } contactModel && ContactEditContext is { } contactContext)
+            {
+                <EditForm EditContext="@contactContext" Context="contactEditFormContext">
+                    <DataAnnotationsValidator />
+                    <DxFormLayout CaptionPosition="CaptionPosition.Vertical">
+                        <DxFormLayoutItem Caption="Email cá nhân" ColSpanMd="6"><DxTextBox @bind-Text="contactModel.PersonalEmail" /><ValidationMessage For="@(() => contactModel.PersonalEmail)" /></DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Điện thoại cá nhân" ColSpanMd="6"><DxTextBox @bind-Text="contactModel.PersonalPhoneNumber" /><ValidationMessage For="@(() => contactModel.PersonalPhoneNumber)" /></DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Địa chỉ thường trú" ColSpanMd="12"><DxMemo @bind-Text="contactModel.PermanentAddress" Rows="2" /></DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Địa chỉ hiện tại" ColSpanMd="12"><DxMemo @bind-Text="contactModel.CurrentAddress" Rows="2" /></DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Họ tên liên hệ khẩn cấp" ColSpanMd="6"><DxTextBox @bind-Text="contactModel.EmergencyContactName" /></DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Quan hệ" ColSpanMd="6"><DxTextBox @bind-Text="contactModel.EmergencyContactRelationship" /></DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Điện thoại liên hệ khẩn cấp" ColSpanMd="12"><DxTextBox @bind-Text="contactModel.EmergencyContactPhoneNumber" /></DxFormLayoutItem>
+                    </DxFormLayout>
+                </EditForm>
+            }
+            else if (ContactProfile is null)
+            {
+                <div class="employee-personal-information-empty">Chưa bổ sung thông tin liên hệ cá nhân.</div>
+            }
+            else
+            {
+                <div class="employee-personal-information-list"><div><span>Email cá nhân</span><strong>@DisplayOptional(ContactProfile.PersonalEmail)</strong></div><div><span>Điện thoại cá nhân</span><strong>@DisplayOptional(ContactProfile.PersonalPhoneNumber)</strong></div><div><span>Địa chỉ thường trú</span><strong>@DisplayOptional(ContactProfile.PermanentAddress)</strong></div><div><span>Địa chỉ hiện tại</span><strong>@DisplayOptional(ContactProfile.CurrentAddress)</strong></div><div><span>Liên hệ khẩn cấp</span><strong>@FormatEmergencyContact(ContactProfile)</strong></div></div>
+            }
+        </section>
+
+        <section class="card employee-personal-information-card">
+            <DxToolbar CssClass="employee-personal-information-toolbar"
+                       Title="Thông tin CCCD"
+                       ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+                @if (!IsEditingCitizenIdentity)
+                {
+                    <DxToolbarItem Text="Điều chỉnh"
+                                   Click="BeginCitizenIdentityEditAsync"
+                                   Enabled="@CanBeginCitizenIdentityEdit"
+                                   Alignment="ToolbarItemAlignment.Right"
+                                   IconUrl="@VntaDevExpressIcons.Edit" />
+                }
+                else
+                {
+                    <DxToolbarItem Text="Lưu"
+                                   Click="SaveCitizenIdentityAsync"
+                                   Enabled="@CanSaveCitizenIdentity"
+                                   Alignment="ToolbarItemAlignment.Right"
+                                   IconUrl="@VntaDevExpressIcons.Save" />
+                    <DxToolbarItem Text="Hủy"
+                                   Click="CancelCitizenIdentityEditAsync"
+                                   Enabled="@(!IsSaving)"
+                                   Alignment="ToolbarItemAlignment.Right"
+                                   IconUrl="@VntaDevExpressIcons.Cancel" />
+                }
+            </DxToolbar>
+            @if (IsEditingCitizenIdentity && CitizenIdentityEdit is { } citizenModel && CitizenIdentityEditContext is { } citizenContext)
+            {
+                <EditForm EditContext="@citizenContext" Context="citizenEditFormContext">
+                    <DataAnnotationsValidator />
+                    <DxFormLayout CaptionPosition="CaptionPosition.Vertical">
+                        <DxFormLayoutItem Caption="Số CCCD" ColSpanMd="12"><DxTextBox @bind-Text="citizenModel.CitizenIdentityNumber" NullText="@(CitizenIdentity is null ? "Nhập 12 chữ số" : "Để trống nếu không đổi số CCCD")" /><ValidationMessage For="@(() => citizenModel.CitizenIdentityNumber)" /></DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Ngày cấp" ColSpanMd="6"><DxDateEdit @bind-Date="citizenModel.IssuedDate" /></DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Ngày hết hạn" ColSpanMd="6"><DxDateEdit @bind-Date="citizenModel.ExpiryDate" /></DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Nơi cấp" ColSpanMd="12"><DxTextBox @bind-Text="citizenModel.IssuedPlace" /></DxFormLayoutItem>
+                    </DxFormLayout>
+                </EditForm>
+            }
+            else if (CitizenIdentity is null)
+            {
+                <div class="employee-personal-information-empty">Chưa bổ sung thông tin căn cước công dân.</div>
+            }
+            else
+            {
+                <div class="employee-personal-information-list"><div><span>Số CCCD</span><strong>@CitizenIdentity.MaskedCitizenIdentityNumber</strong></div><div><span>Ngày cấp</span><strong>@DisplayDate(CitizenIdentity.IssuedDate)</strong></div><div><span>Nơi cấp</span><strong>@DisplayOptional(CitizenIdentity.IssuedPlace)</strong></div><div><span>Ngày hết hạn</span><strong>@DisplayDate(CitizenIdentity.ExpiryDate)</strong></div></div>
+            }
+        </section>
+    </div>
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <div class="employee-personal-information-error">
+            <div class="form-error-message">@ErrorMessage</div>
+            <DxButton Text="Thử lại" Click="LoadAsync" Enabled="@(!IsLoading && !IsSaving)" />
+        </div>
+    }
+</HrmLoadingPanel>

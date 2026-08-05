@@ -1,0 +1,34 @@
+::deep .attendance-allowance-recalculate-confirm-popup {
+    max-height: min(52vh, 24rem);
+    overflow-y: auto;
+}
+
+.attendance-allowance-recalculate-confirm-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+.attendance-allowance-recalculate-confirm-message {
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.55;
+}
+
+.attendance-allowance-recalculate-confirm-note {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.9rem;
+}
+
+.attendance-allowance-recalculate-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .attendance-allowance-recalculate-confirm-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+}

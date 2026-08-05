@@ -1,0 +1,415 @@
+/* Khung màn hình giữ vùng cuộn riêng cho grid; toolbar bám pattern chung của Phụ cấp tổng hợp. */
+.content-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    background-clip: border-box;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+}
+
+.toolbar {
+    flex: 0 0 auto;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+::deep .toolbar .dxbl-toolbar {
+    min-width: max-content;
+}
+
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+.toolbar-filter-editor {
+    gap: 0.5rem;
+}
+
+.toolbar-filter-label {
+    white-space: nowrap;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .toolbar-filter-item {
+    min-width: 0;
+}
+
+::deep .toolbar-filter-year {
+    width: 7rem;
+}
+
+::deep .toolbar-filter-month {
+    width: 8rem;
+}
+
+/* Data surface tách thông báo trạng thái khỏi vùng grid có thể tải lại độc lập. */
+.bang-cong-thang-root {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.bang-cong-thang-grid-card {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+::deep .bang-cong-thang-loading-panel {
+    height: 100%;
+}
+
+.bang-cong-thang-grid-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.bang-cong-thang-grid-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem 0.625rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 94%, white);
+    border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 82%, transparent);
+}
+
+.bang-cong-thang-summary-strip {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    padding-bottom: 0.125rem;
+}
+
+.bang-cong-thang-grid-search {
+    flex: 0 0 auto;
+    min-width: 15rem;
+    max-width: min(100%, 20rem);
+}
+
+::deep .bang-cong-thang-grid-searchbox {
+    width: 100%;
+}
+
+::deep .bang-cong-thang-grid-searchbox .dxbl-text-editor {
+    min-height: 2.3rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 72%, transparent);
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 92%, white);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 80%, transparent);
+}
+
+::deep .bang-cong-thang-grid-searchbox .dxbl-text-editor-input {
+    min-width: 11rem;
+}
+
+::deep .bang-cong-thang-grid-searchbox .dxbl-btn-clear {
+    opacity: 0.68;
+}
+
+::deep .bang-cong-thang-summary-button-group {
+    display: inline-flex;
+    min-width: max-content;
+    pointer-events: none;
+}
+
+::deep .bang-cong-thang-summary-button {
+    --summary-accent: var(--dxds-color-content-info-default-rest, #2563eb);
+    color: var(--summary-accent) !important;
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+::deep .bang-cong-thang-summary-button--regular {
+    --summary-accent: var(--dxds-color-content-info-default-rest, #2563eb);
+}
+
+::deep .bang-cong-thang-summary-button--holiday {
+    --summary-accent: var(--dxds-color-content-warning-default-rest, #d97706);
+}
+
+::deep .bang-cong-thang-summary-button--day-off {
+    --summary-accent: var(--dxds-color-content-neutral-default-rest, #64748b);
+}
+
+::deep .bang-cong-thang-summary-button--result {
+    --summary-accent: var(--dxds-color-content-success-default-rest, #15803d);
+}
+
+.bang-cong-thang-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.625rem 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.82rem;
+}
+
+.bang-cong-thang-pager-summary {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.bang-cong-thang-page-size {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    white-space: nowrap;
+}
+
+::deep .bang-cong-thang-page-size-editor {
+    width: 5.75rem;
+}
+
+::deep .bang-cong-thang-grid {
+    flex: 1 1 auto;
+    max-height: 100%;
+    border-radius: 0.25rem;
+}
+
+::deep .bang-cong-thang-grid .dxbl-grid-table {
+    border-top: none;
+    min-width: max-content;
+}
+
+.bang-cong-thang-employee-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+    padding: 0.2rem 0;
+}
+
+.bang-cong-thang-employee-primary {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    min-width: 0;
+}
+
+.bang-cong-thang-employee-code {
+    flex: 0 0 auto;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.76rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.bang-cong-thang-employee-name,
+.bang-cong-thang-employee-secondary {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bang-cong-thang-employee-name {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-weight: 700;
+}
+
+.bang-cong-thang-employee-secondary {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.76rem;
+}
+
+/* Header ngày và ô ngày cùng dùng màu đặc biệt để người dùng nhận ra ngày nghỉ/lễ khi cuộn ngang. */
+.bang-cong-thang-band-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.bang-cong-thang-day-band-header,
+.bang-cong-thang-day-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100%;
+    white-space: nowrap;
+    text-align: center;
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.bang-cong-thang-day-band-header-special,
+.bang-cong-thang-day-header-special {
+    color: #c62828;
+    font-weight: 700;
+}
+
+.bang-cong-thang-day-cell {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 2.5rem;
+    padding: 0.15rem 0.2rem;
+    border-radius: 0.35rem;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.bang-cong-thang-day-cell-clickable {
+    cursor: pointer;
+}
+
+.bang-cong-thang-day-cell-locked {
+    box-shadow: inset 0 0 0 1px #64748b;
+}
+
+.bang-cong-thang-day-cell-no-time {
+    background-color: #fef3c7;
+    box-shadow: inset 0 0 0 1px #f59e0b;
+}
+
+.bang-cong-thang-day-cell-locked.bang-cong-thang-day-cell-no-time {
+    box-shadow: inset 0 0 0 1px #64748b, inset 0 0 0 3px #f59e0b;
+}
+
+::deep .bang-cong-thang-day-cell-lock-icon {
+    position: absolute;
+    top: 0.05rem;
+    right: 0.05rem;
+    pointer-events: none;
+}
+
+::deep .bang-cong-thang-day-cell-lock-icon,
+::deep .bang-cong-thang-day-cell-lock-icon:disabled {
+    min-width: 1.25rem;
+    min-height: 1.25rem;
+    padding: 0.1rem;
+    opacity: 1 !important;
+}
+
+::deep .bang-cong-thang-day-cell-lock-icon.is-locked,
+::deep .bang-cong-thang-day-cell-lock-icon.is-locked:disabled {
+    color: #15803d;
+}
+
+::deep .bang-cong-thang-day-cell-lock-icon.is-unlocked,
+::deep .bang-cong-thang-day-cell-lock-icon.is-unlocked:disabled {
+    color: #dc2626;
+}
+
+.bang-cong-thang-day-cell-times {
+    display: flex;
+    align-self: stretch;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.1rem;
+    width: 100%;
+    padding-right: 1.1rem;
+    text-align: left;
+}
+
+.bang-cong-thang-day-cell-time {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.05;
+}
+
+.bang-cong-thang-day-cell-check-in {
+    color: #15803d;
+}
+
+.bang-cong-thang-day-cell-check-out {
+    color: #dc2626;
+}
+
+.bang-cong-thang-day-cell-result-code {
+    max-width: 100%;
+    overflow: hidden;
+    color: #92400e;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1.1;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bang-cong-thang-empty-state {
+    min-height: 14rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.state-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.state-message {
+    max-width: 40rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    line-height: 1.5;
+}
+
+/* Trên màn hình hẹp, toolbar tìm kiếm và pager tách dòng để không che grid matrix. */
+@media (max-width: 768px) {
+    .bang-cong-thang-grid-header {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 0.75rem;
+    }
+
+    .bang-cong-thang-pager {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 0.75rem;
+    }
+
+    .bang-cong-thang-page-size {
+        justify-content: flex-start;
+    }
+
+    .bang-cong-thang-grid-search {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+    }
+
+    .bang-cong-thang-summary-strip {
+        flex-wrap: wrap;
+        overflow-x: visible;
+    }
+}

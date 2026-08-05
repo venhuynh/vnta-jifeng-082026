@@ -1,0 +1,383 @@
+@page "/payroll/personal-income-tax-deductions"
+@page "/payroll/personal-income-tax-overview"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruThueTNCN.Models
+@using Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruThueTNCN.Dialogs
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Khấu trừ Thuế TNCN</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Thuế TNCN"
+                   CssClass="toolbar"
+                   ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-filter-item"
+                           Tooltip="Chọn năm kỳ lương">
+                <Template>
+                    <div class="custom-item toolbar-filter-editor">
+                        <span class="toolbar-filter-label">Năm</span>
+                        <DxSpinEdit T="int"
+                                    Value="@ToolbarYear"
+                                    ValueChanged="OnSelectedYearChangedAsync"
+                                    MinValue="@MinimumSupportedYear"
+                                    MaxValue="@MaximumSupportedYear"
+                                    Enabled="@CanChangeFilters"
+                                    CssClass="toolbar-filter-year" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-filter-item"
+                           Tooltip="Chọn tháng kỳ lương">
+                <Template>
+                    <div class="custom-item toolbar-filter-editor">
+                        <span class="toolbar-filter-label">Tháng</span>
+                        <DxComboBox TData="MonthOption"
+                                    TValue="int"
+                                    @key="ToolbarYear"
+                                    Data="@AvailableMonthOptions"
+                                    Value="@ToolbarMonth"
+                                    ValueChanged="OnSelectedMonthChangedAsync"
+                                    ValueFieldName="@nameof(MonthOption.Value)"
+                                    TextFieldName="@nameof(MonthOption.Text)"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                    Enabled="@CanChangeFilters"
+                                    CssClass="toolbar-filter-month" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Xem"
+                           Click="OnViewRequestedAsync"
+                           Enabled="@CanView"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tải dữ liệu thuế TNCN theo bộ lọc hiện tại"
+                           IconUrl="@VntaDevExpressIcons.FolderOpenArrowImport" />
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Nhóm thao tác trên dữ liệu thuế TNCN">
+                <Template>
+                    <div class="custom-item">
+                        <DxDropDownButton Text="Hành động"
+                                          IconUrl="@VntaDevExpressIcons.TaskList"
+                                          RenderStyle="ButtonRenderStyle.Secondary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Outline"
+                                          Enabled="@CanInteract"
+                                          CssClass="toolbar-action-dropdown">
+                            <Items>
+                                <DxDropDownButtonItem Text="Khóa"
+                                                      IconUrl="@VntaDevExpressIcons.Lock"
+                                                      Click="OnLockSelectedAsync"
+                                                      Enabled="@CanOpenLockAction"
+                                                      BeginGroup="true" />
+                                <DxDropDownButtonItem Text="Mở khóa"
+                                                      IconUrl="@VntaDevExpressIcons.Unlock"
+                                                      Click="OnUnlockSelectedAsync"
+                                                      Enabled="@CanOpenUnlockAction" />
+                            </Items>
+                        </DxDropDownButton>
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Quy tắc"
+                           Click="OpenRulesPopup"
+                           Enabled="@CanInteract"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xem thông tin quy tắc và phạm vi dữ liệu Thuế TNCN hiện tại"
+                           IconUrl="@VntaDevExpressIcons.TextBoxDescription" />
+            <DxToolbarItem Text="Xuất dữ liệu"
+                           Enabled="false"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="@ExportTooltip"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel"
+                                   Click="ExportAllDataToExcelAsync"
+                                   Enabled="false"
+                                   Tooltip="@ExportTooltip"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF"
+                                   Click="ExportAllDataToPdfAsync"
+                                   Enabled="false"
+                                   Tooltip="@ExportTooltip"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh sách thuế TNCN"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanOperateOnCurrentDataset"
+                           Click="OnColumnChooserRequested"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+        </DxToolbar>
+    </div>
+
+    <div class="personal-income-tax-root">
+        @if (HasLoadError)
+        {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải dữ liệu Thuế TNCN</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="ReloadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+            <div class="card personal-income-tax-grid-card">
+                <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="@LoadingText"
+                                 CssClass="personal-income-tax-loading-panel">
+                    <div class="personal-income-tax-grid-content">
+                        <div class="personal-income-tax-grid-header">
+                            <div class="personal-income-tax-summary-strip"
+                                 aria-label="Tổng khấu trừ đang hiển thị">
+                                <DxButtonGroup CssClass="personal-income-tax-total-amount-button-group"
+                                               RenderStyle="ButtonRenderStyle.Primary"
+                                               RenderStyleMode="ButtonRenderStyleMode.Outline">
+                                    <Items>
+                                        <DxButtonGroupItem Text="@($"Tổng khấu trừ đang hiển thị: {FormatMoney(VisibleDeductionTotal)}")"
+                                                           CssClass="personal-income-tax-total-amount-button" />
+                                    </Items>
+                                </DxButtonGroup>
+                            </div>
+                            <div class="personal-income-tax-grid-search">
+                                <DxSearchBox CssClass="personal-income-tax-grid-searchbox"
+                                             NullText="Tìm mã nhân viên, họ tên, phòng ban hoặc chức vụ"
+                                             BindValueMode="BindValueMode.OnDelayedInput"
+                                             InputDelay="500"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             Text="@SearchText"
+                                             TextChanged="OnSearchTextChanged"
+                                             Enabled="@CanInteract" />
+                            </div>
+                        </div>
+
+                        <DxGrid @ref="Grid"
+                                Data="@AllRecords"
+                                KeyFieldName="Id"
+                                CssClass="personal-income-tax-grid"
+                                Height="100%"
+                                ShowSearchBox="false"
+                                PageSize="@PageSize"
+                                PageSizeChanged="OnPageSizeChanged"
+                                PagerPosition="GridPagerPosition.Bottom"
+                                PagerSummaryVisible="true"
+                                PageSizeSelectorVisible="true"
+                                PageSizeSelectorItems="@(new int[] { 50, 100, 200 })"
+                                PageSizeSelectorAllRowsItemVisible="false"
+                                SkeletonRowsEnabled="true"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                TextWrapEnabled="false"
+                                FocusedRowEnabled="true"
+                                HighlightRowOnHover="true"
+                                AllowSelectRowByClick="true"
+                                SelectionMode="GridSelectionMode.Multiple"
+                                SelectedDataItems="@SelectedDataItems"
+                                SelectedDataItemsChanged="@OnSelectedDataItemsChanged"
+                                FilterCriteriaChanged="OnGridFilterCriteriaChangedAsync">
+                            <Columns>
+                                <DxGridSelectionColumn Width="3rem" />
+                                <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @(context.VisibleIndex + 1)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Tác vụ" Width="6rem" MinWidth="96" AllowSort="false" TextAlignment="GridTextAlignment.Center" ShowInColumnChooser="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollPersonalIncomeTaxDeductionRecord)context.DataItem;
+                                        }
+                                        <div class="personal-income-tax-row-menu-host"
+                                             @onclick:stopPropagation="true"
+                                             @onmousedown:stopPropagation="true">
+                                            <DxDropDownButton CssClass="personal-income-tax-row-menu-btn"
+                                                              IconCssClass="icon more-icon medium-icon"
+                                                              RenderStyle="ButtonRenderStyle.Link"
+                                                              DropDownToggleVisible="false"
+                                                              Enabled="@CanOperateOnCurrentDataset"
+                                                              Tooltip="Tác vụ dòng Thuế TNCN">
+                                                <Items>
+                                                    <DxDropDownButtonItem Text="Điều chỉnh"
+                                                                          IconUrl="@VntaDevExpressIcons.Edit"
+                                                                          Click="@(() => OpenEditPopup(row))"
+                                                                          Enabled="@CanEditRow(row)"
+                                                                          Tooltip="Điều chỉnh số tiền Thuế TNCN của dòng đang chọn" />
+                                                    <DxDropDownButtonItem Text="Làm mới"
+                                                                          IconUrl="@VntaDevExpressIcons.Refresh"
+                                                                          Click="@(() => RefreshRowAsync(row))"
+                                                                          Enabled="@CanRefreshRow(row)"
+                                                                          Tooltip="Đồng bộ số tiền Thuế TNCN hiện có vào dòng tổng kết khấu trừ" />
+                                                </Items>
+                                            </DxDropDownButton>
+                                        </div>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="EmployeeDisplay" Caption="Nhân viên" MinWidth="240">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollPersonalIncomeTaxDeductionRecord)context.DataItem;
+                                        }
+                                        <span class="personal-income-tax-employee-text"
+                                              title="@row.EmployeeDisplay">
+                                            @HighlightSearchText(row.EmployeeDisplay)
+                                        </span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Phòng ban" MinWidth="180">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollPersonalIncomeTaxDeductionRecord)context.DataItem;
+                                        }
+                                        <span title="@row.DepartmentDisplay">@HighlightSearchText(row.DepartmentDisplay)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" MinWidth="160">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollPersonalIncomeTaxDeductionRecord)context.DataItem;
+                                        }
+                                        <span title="@row.PositionDisplay">@HighlightSearchText(row.PositionDisplay)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" MinWidth="110">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollPersonalIncomeTaxDeductionRecord)context.DataItem;
+                                        }
+                                        @HighlightSearchText(row.PayrollPeriodDisplay)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="DeductionAmount" Caption="Số tiền khấu trừ" MinWidth="160" Visible="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollPersonalIncomeTaxDeductionRecord)context.DataItem;
+                                        }
+                                        <span class="hrm-grid-amount">@FormatMoney(row.DeductionAmount)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="StandardWorkdayCount" Caption="Công chuẩn" MinWidth="110" Visible="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollPersonalIncomeTaxDeductionRecord)context.DataItem;
+                                        }
+                                        @FormatWorkday(row.StandardWorkdayCount)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="ActualWorkdayCount" Caption="Công thực tế" MinWidth="120" Visible="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollPersonalIncomeTaxDeductionRecord)context.DataItem;
+                                        }
+                                        @FormatWorkday(row.ActualWorkdayCount)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="AttendanceRate" Caption="Tỷ lệ áp dụng" MinWidth="130" Visible="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollPersonalIncomeTaxDeductionRecord)context.DataItem;
+                                        }
+                                        @FormatRate(row.AttendanceRate)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="DeductionAmount" Caption="Số tiền khấu trừ" MinWidth="180">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollPersonalIncomeTaxDeductionRecord)context.DataItem;
+                                        }
+                                        <span class="hrm-grid-amount hrm-grid-amount--total">@FormatMoney(row.DeductionAmount)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="IsLocked" Caption="Trạng thái" MinWidth="110">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollPersonalIncomeTaxDeductionRecord)context.DataItem;
+                                        }
+                                        <span class="@GetLockBadgeCssClass(row.IsLocked)">@row.LockStatusText</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" MinWidth="260" />
+                            </Columns>
+
+                            <TotalSummary>
+                                <DxGridSummaryItem Name="DeductionAmountTotal"
+                                                   FieldName="@nameof(PayrollPersonalIncomeTaxDeductionRecord.DeductionAmount)"
+                                                   SummaryType="GridSummaryItemType.Sum"
+                                                   Visible="false" />
+                            </TotalSummary>
+
+                            <EmptyDataAreaTemplate>
+                                <div class="empty-state">
+                                    <div class="state-title">@EmptyStateTitle</div>
+                                    <div class="state-message">@EmptyStateMessage</div>
+                                    <DxButton Text="@EmptyStateActionText"
+                                              Click="OnEmptyStateActionClick"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                </div>
+                            </EmptyDataAreaTemplate>
+
+                        </DxGrid>
+                    </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="personal-income-tax-export-source" aria-hidden="true">
+    <DxGrid @ref="ExportGrid"
+            Data="@ExportRecords"
+            ShowAllRows="true"
+            PagerVisible="false"
+            TextWrapEnabled="true">
+        <Columns>
+            <DxGridDataColumn FieldName="EmployeeCode" Caption="Mã nhân viên" />
+            <DxGridDataColumn FieldName="EmployeeName" Caption="Nhân viên" />
+            <DxGridDataColumn FieldName="DepartmentName" Caption="Phòng ban" />
+            <DxGridDataColumn FieldName="PositionName" Caption="Chức vụ" />
+            <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" />
+            <DxGridDataColumn FieldName="DeductionAmount" Caption="Số tiền khấu trừ" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="LockStatusText" Caption="Trạng thái" />
+        </Columns>
+    </DxGrid>
+</div>
+
+<KhauTruThueTNCNRulesPopup @bind-Visible="@IsRulesPopupVisible" />
+
+<KhauTruThueTNCNEditPopup Visible="@IsEditPopupVisible"
+                            VisibleChanged="@(_ => CloseEditPopup())"
+                            IsSaving="@IsSavingEdit"
+                            Title="@EditPopupTitle"
+                            Model="@EditModel"
+                            CanEditFields="@(!IsSavingEdit && !EditModel.IsLocked && !HasPendingPeriodChange)"
+                            CanSave="@CanSaveEdit"
+                            ErrorMessage="@EditErrorMessage"
+                            SaveRequested="SaveEditAsync" />
+
+<KhauTruThueTNCNLockActionPopup Visible="@IsLockActionPopupVisible"
+                                  VisibleChanged="@(_ => CloseLockActionPopup())"
+                                  IsRefreshing="@IsLoading"
+                                  Title="@LockActionPopupTitle"
+                                  PromptText="@LockActionPromptText"
+                                  ContextText="@LockActionScopeContextText"
+                                  SelectedScope="@SelectedLockActionScope"
+                                  SelectedRowsScope="@LockScopeSelectedRows"
+                                  WholePeriodScope="@LockScopeWholePeriod"
+                                  SelectedRowsDescription="@SelectedRowsScopeDescription"
+                                  WholePeriodDescription="@WholePeriodScopeDescription"
+                                  WholePeriodLabel="@PendingLockActionPeriodLabel"
+                                  CanChooseSelectedRowsScope="@CanChooseSelectedRowsScope"
+                                  CanConfirm="@CanConfirmLockAction"
+                                  ShouldLock="@PendingLockActionState"
+                                  ScopeSelected="SelectLockActionScope"
+                                  ConfirmRequested="ConfirmLockActionAsync" />

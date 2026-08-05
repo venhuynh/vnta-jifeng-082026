@@ -1,0 +1,44 @@
+@namespace Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruTongHop
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Xác nhận làm mới khấu trừ"
+         Width="min(38rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsRefreshing)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="deduction-summary-recalculate-popup-footer"
+         CssClass="deduction-summary-recalculate-popup">
+    <BodyContentTemplate>
+        <div class="deduction-summary-recalculate-content">
+            <p>
+                Sẽ làm mới toàn bộ dòng tổng kết khấu trừ đã tồn tại của kỳ <strong>@PeriodLabel</strong>.
+            </p>
+            <p>
+                Hệ thống chỉ đồng bộ năm khoản tổng hợp từ các dòng chi tiết BHXH-YT, Thuế TNCN,
+                Phí công đoàn, Tạm ứng và Khấu trừ khác cùng kỳ.
+            </p>
+            <p>
+                Dòng chi tiết, kể cả khoản Khấu trừ khác đã điều chỉnh, không bị ghi đè. Dòng tổng kết đã khóa được giữ nguyên.
+                Nếu thiếu nguồn chi tiết, khoản tổng hợp tương ứng sẽ được đặt về 0.
+            </p>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="deduction-summary-recalculate-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Làm mới"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

@@ -1,0 +1,324 @@
+@page "/attendance/employees"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models.Employees
+
+@attribute [Authorize(Policy = InternalAccountPolicies.HumanResourcesAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>Nhân viên</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Nhân viên"
+                   ItemRenderStyleMode="ToolbarRenderStyleMode.Plain"
+                   ItemClick="OnToolbarItemClick">
+            <DxToolbarItem Text="Thêm mới"
+                           Name="@AddEmployeeToolbarItemName"
+                           Enabled="@CanCreate"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tạo nhân viên mới"
+                           IconUrl="@VntaDevExpressIcons.Add" />
+            <DxToolbarItem Text="Làm mới"
+                           Tooltip="Làm mới danh sách nhân viên"
+                           Enabled="@CanRefreshEmployees"
+                           Click="RefreshEmployeesFromAttendanceAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Xuất file"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất toàn bộ danh sách nhân viên đang hoạt động"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel" Click="ExportAllDataToExcelAsync" Enabled="@CanExport" Tooltip="Xuất toàn bộ danh sách nhân viên ra Excel" IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF" Click="ExportAllDataToPdfAsync" Enabled="@CanExport" Tooltip="Xuất toàn bộ danh sách nhân viên ra PDF" IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh sách nhân viên"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanInteract"
+                           Click="OnColumnChooserItemClick"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+        </DxToolbar>
+    </div>
+
+    <div class="employees-root">
+        @if(HasLoadError) {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải danh sách nhân viên</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="RetryListLoadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        } else {
+            <div class="card employees-grid-card">
+                <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="@LoadingText"
+                                 CssClass="employees-loading-panel">
+                    <div class="employees-grid-content">
+                        <div class="employees-grid-header">
+                            <div class="employee-summary-strip">
+                                <DxButtonGroup CssClass="employee-summary-button-group"
+                                               RenderStyle="ButtonRenderStyle.Secondary"
+                                               RenderStyleMode="ButtonRenderStyleMode.Outline"
+                                               SelectionMode="ButtonGroupSelectionMode.Single"
+                                               Enabled="@CanInteract">
+                                    <Items>
+                                        @foreach (var badge in SummaryBadges)
+                                        {
+                                            <DxButtonGroupItem Text="@($"{badge.ShortLabel} {badge.Count:N0}")"
+                                                               Tooltip="@badge.Label"
+                                                               CssClass="@($"employee-summary-button employee-summary-button-{badge.Key}")"
+                                                               Selected="@(badge.Key == ActiveSummaryBadgeKey)"
+                                                               Click="@(() => OnSummaryBadgeClick(badge.Key))" />
+                                        }
+                                    </Items>
+                                </DxButtonGroup>
+                            </div>
+                            <div class="employees-grid-side">
+                                <div class="employees-grid-search">
+                                    <DxSearchBox CssClass="employees-grid-searchbox"
+                                                 NullText="Tìm kiếm nhân viên"
+                                                 BindValueMode="BindValueMode.OnDelayedInput"
+                                                 InputDelay="500"
+                                                 ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                                 Text="@SearchText"
+                                                 TextChanged="OnSearchTextChanged"
+                                                 Enabled="@CanInteract" />
+                                </div>
+                            </div>
+                        </div>
+                        <DxGrid @ref="Grid"
+                                Data="@VisibleEmployees"
+                                KeyFieldName="Id"
+                                CssClass="employees-grid"
+                                ShowSearchBox="false"
+                                PagerVisible="false"
+                                ShowAllRows="true"
+                                SkeletonRowsEnabled="true"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Never"
+                                TextWrapEnabled="false"
+                                HighlightRowOnHover="true"
+                                >
+                            <Columns>
+                                <DxGridDataColumn Caption="Tác vụ"
+                                                  MinWidth="96"
+                                                  Width="6rem"
+                                                  AllowSort="false"
+                                                  TextAlignment="GridTextAlignment.Center"
+                                                  ShowInColumnChooser="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var employee = (EmployeeRecord)context.DataItem;
+                                        }
+                                        <div class="employees-row-menu-host"
+                                             @onclick:stopPropagation="true"
+                                             @onmousedown:stopPropagation="true">
+                                            <DxDropDownButton CssClass="employees-row-menu-btn"
+                                                              IconCssClass="icon more-icon medium-icon"
+                                                              RenderStyle="ButtonRenderStyle.Link"
+                                                              DropDownToggleVisible="false"
+                                                              Enabled="@CanInteract"
+                                                              Tooltip="Tác vụ nhân viên">
+                                                <Items>
+                                                    <DxDropDownButtonItem Text="Điều chỉnh"
+                                                                          IconUrl="@VntaDevExpressIcons.Edit"
+                                                                          Click="@(() => OpenEditEmployeePopupAsync(employee))"
+                                                                          Enabled="@CanInteract" />
+                                                    <DxDropDownButtonItem Text="Xóa"
+                                                                          IconUrl="@VntaDevExpressIcons.Delete"
+                                                                          Click="@(() => DeleteEmployeeAsync(employee))"
+                                                                          Enabled="@CanInteract"
+                                                                          BeginGroup="true" />
+                                                    <DxDropDownButtonItem Text="Trạng thái"
+                                                                          IconUrl="@VntaDevExpressIcons.TaskList"
+                                                                          Click="@(() => OpenStatusPopup(employee))"
+                                                                          Enabled="@CanChangeStatus(employee)"
+                                                                          BeginGroup="true" />
+                                                </Items>
+                                            </DxDropDownButton>
+                                        </div>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @(CurrentPageIndex * PageSize + context.VisibleIndex + 1)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="EmployeeCode" Caption="Mã nhân viên" Width="130" MinWidth="130" AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @HighlightSearchText(context.DisplayText)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="FullName" Caption="Họ tên" MinWidth="180" AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @HighlightSearchText(context.DisplayText)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="DepartmentPath" Caption="Phòng ban" MinWidth="280" AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var employee = (EmployeeRecord)context.DataItem;
+                                        }
+                                        <span class="employee-department-path" title="@employee.DepartmentPath">@HighlightSearchText(employee.DepartmentPath)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="PositionName" Caption="Chức vụ" MinWidth="160" AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @HighlightSearchText(context.DisplayText)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="HireDate" Caption="Ngày vào làm" MinWidth="130" DisplayFormat="dd/MM/yyyy" AllowSort="false" />
+                                <DxGridDataColumn FieldName="ResignedDate" Caption="Ngày nghỉ việc" MinWidth="140" DisplayFormat="dd/MM/yyyy" AllowSort="false" />
+                                <DxGridDataColumn FieldName="StatusText" Caption="Trạng thái" Width="140" MinWidth="140" AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var employee = (EmployeeRecord)context.DataItem;
+                                        }
+                                        <NhanVienStatus Employee="employee" />
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                            </Columns>
+                            <EmptyDataAreaTemplate>
+                                <div class="empty-state">
+                                    <div class="state-title">@EmptyStateTitle</div>
+                                    <div class="state-message">@EmptyStateMessage</div>
+                                    <DxButton Text="@EmptyStateActionText"
+                                              Click="OnEmptyStateActionClick"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                </div>
+                            </EmptyDataAreaTemplate>
+                        </DxGrid>
+
+                        <div class="employees-grid-footer" aria-label="Điều hướng trang nhân viên">
+                            <div class="employees-grid-page-summary">@PagerSummaryText</div>
+
+                            @if (CanBrowsePages)
+                            {
+                                <DxPager PageCount="@TotalPageCount"
+                                         ActivePageIndex="@CurrentPageIndex"
+                                         ActivePageIndexChanged="OnActivePageIndexChanged"
+                                         NavigationMode="PagerNavigationMode.NumericButtons"
+                                         VisibleNumericButtonCount="7" />
+                            }
+
+                            <div class="employees-grid-page-size">
+                                <span class="employees-grid-page-label">Số dòng:</span>
+                                <DxComboBox TData="int"
+                                            TValue="int"
+                                            Data="@PageSizeOptions"
+                                            Value="@PageSize"
+                                            ValueChanged="OnPageSizeChanged"
+                                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                            Enabled="@CanInteract"
+                                            CssClass="employees-grid-page-size-editor" />
+                            </div>
+                        </div>
+                    </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+
+    <div class="employees-export-source" aria-hidden="true">
+        <DxGrid @ref="ExportGrid"
+                Data="@ExportRows"
+                KeyFieldName="Id"
+                ShowAllRows="true"
+                PagerVisible="false"
+                TextWrapEnabled="true">
+            <Columns>
+                <DxGridDataColumn FieldName="EmployeeCode" Caption="Mã nhân viên" />
+                <DxGridDataColumn FieldName="FullName" Caption="Họ tên" />
+                <DxGridDataColumn FieldName="DepartmentPath" Caption="Phòng ban" />
+                <DxGridDataColumn FieldName="PositionName" Caption="Chức vụ" />
+                <DxGridDataColumn FieldName="HireDate" Caption="Ngày vào làm" DisplayFormat="dd/MM/yyyy" />
+                <DxGridDataColumn FieldName="ResignedDate" Caption="Ngày nghỉ việc" DisplayFormat="dd/MM/yyyy" />
+                <DxGridDataColumn FieldName="StatusText" Caption="Trạng thái" />
+                <DxGridDataColumn FieldName="PhoneNumber" Caption="Điện thoại" />
+            </Columns>
+        </DxGrid>
+    </div>
+</div>
+
+<NhanVienCreatePopup Visible="@IsCreatePopupVisible"
+                     VisibleChanged="OnEmployeePopupVisibleChanged"
+                     CreateModel="@CreateEmployeeModel"
+                     IsEditMode="@(EditingEmployee is not null)"
+                     Departments="@DepartmentOptions"
+                     Positions="@PositionOptions"
+                     IsSaving="@IsSavingEmployee"
+                     IsLoadingLookups="@IsLoadingCreateLookups"
+                     EditErrorMessage="@EditErrorMessage"
+                     LookupErrorMessage="@CreateLookupErrorMessage"
+                     CreateRequested="OnCreateEmployeeRequested"
+                     UpdateRequested="OnUpdateEmployeeRequested" />
+
+<DxPopup @bind-Visible="IsStatusPopupVisible"
+         HeaderText="Cập nhật tình trạng nhân viên"
+         Width="min(30rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsChangingEmployeeStatus)"
+         ShowFooter="true"
+         CloseOnOutsideClick="false"
+         CssClass="employee-status-popup">
+    <BodyContentTemplate Context="statusPopupBody">
+        @if (StatusEmployee is not null)
+        {
+            <div class="employee-status-form">
+                <div class="employee-status-subject">@StatusEmployee.EmployeeLookupText</div>
+                <DxFormLayout CaptionPosition="CaptionPosition.Vertical">
+                    <DxFormLayoutItem Caption="Tình trạng" ColSpanMd="12">
+                        <DxComboBox TData="EmployeeStatusOption"
+                                    TValue="EmployeeEmploymentStatus"
+                                    Data="@EmployeeStatusOptions"
+                                    TextFieldName="@nameof(EmployeeStatusOption.Text)"
+                                    ValueFieldName="@nameof(EmployeeStatusOption.Value)"
+                                    Value="@PendingStatus"
+                                    ValueChanged="OnPendingStatusChanged"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                    Enabled="@(!IsChangingEmployeeStatus)" />
+                    </DxFormLayoutItem>
+                    @if (PendingStatus == EmployeeEmploymentStatus.Resigned)
+                    {
+                        <DxFormLayoutItem Caption="Ngày nghỉ việc" ColSpanMd="12">
+                            <DxDateEdit @bind-Date="StatusEffectiveDate" Enabled="@(!IsChangingEmployeeStatus)" />
+                        </DxFormLayoutItem>
+                    }
+                    else if (PendingStatus == EmployeeEmploymentStatus.Official)
+                    {
+                        <DxFormLayoutItem Caption="Ngày bắt đầu tính thâm niên" ColSpanMd="12">
+                            <DxDateEdit @bind-Date="StatusEffectiveDate" Enabled="@(!IsChangingEmployeeStatus)" />
+                        </DxFormLayoutItem>
+                    }
+                </DxFormLayout>
+                @if (!string.IsNullOrWhiteSpace(StatusChangeErrorMessage))
+                {
+                    <div class="form-error-message">@StatusChangeErrorMessage</div>
+                }
+            </div>
+        }
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="statusPopupFooter">
+        <div class="employee-status-popup-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseStatusPopup"
+                      Enabled="@(!IsChangingEmployeeStatus)"
+                      IconUrl="@VntaDevExpressIcons.Cancel" />
+            <DxButton Text="Cập nhật"
+                      Click="SaveStatusChangeAsync"
+                      Enabled="@CanSaveStatusChange"
+                      IconUrl="@VntaDevExpressIcons.Save"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

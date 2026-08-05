@@ -1,0 +1,39 @@
+@page "/Account/Manage/Email"
+
+@using Microsoft.AspNetCore.Identity
+@using Vnta.Hrm.Infrastructure.Identity
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IdentityUserAccessor UserAccessor
+
+<PageTitle>VNTA HRM 2026 - Email liên hệ</PageTitle>
+
+<div class="block-content">
+    <DxFormLayout CaptionPosition="@CaptionPosition.Vertical">
+        <DxFormLayoutItem ColSpanMd="12">
+            <div class="title">
+                <div class="title-text">Email liên hệ</div>
+            </div>
+        </DxFormLayoutItem>
+        <DxFormLayoutItem Caption="Email hiện tại" ColSpanMd="12" BeginRow="true">
+            <InteractiveServerTextBox Name="email" Value="@email" Enabled="false" />
+        </DxFormLayoutItem>
+        <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
+            <p>Tài khoản đăng nhập được quản lý độc lập với email liên hệ.</p>
+            <p>Để cập nhật email của tài khoản nhân viên, vui lòng liên hệ Phòng Nhân sự hoặc Quản trị hệ thống.</p>
+        </DxFormLayoutItem>
+    </DxFormLayout>
+</div>
+
+@code {
+    private ApplicationUser user = default!;
+    private string? email;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync() {
+        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        email = await UserManager.GetEmailAsync(user);
+    }
+}

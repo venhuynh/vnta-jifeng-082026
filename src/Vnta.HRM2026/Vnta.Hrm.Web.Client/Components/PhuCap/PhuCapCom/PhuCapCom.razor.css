@@ -1,0 +1,113 @@
+.content-root {
+    --allowance-color-success: var(--dxds-color-content-success-default-rest, #15803d);
+    --allowance-color-warning: var(--dxds-color-content-warning-default-rest, #d97706);
+    --allowance-color-danger: var(--dxds-color-content-danger-default-rest, #dc2626);
+    --allowance-highlight-background: #fff1b3;
+    --allowance-note-content: #9a3412;
+    --allowance-note-background: #ffedd5;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100%;
+    overflow: hidden;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    background-clip: border-box;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+}
+
+.toolbar {
+    flex: 0 0 3.25rem;
+    min-height: 3.25rem;
+    height: 3.25rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+::deep .toolbar .dxbl-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    min-width: max-content;
+    height: 100%;
+}
+
+::deep .toolbar .dxbl-toolbar-title,
+.toolbar-filter-label {
+    white-space: nowrap;
+}
+
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+.toolbar-filter-editor {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toolbar-filter-label {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .toolbar-filter-item {
+    min-width: 0;
+}
+
+::deep .toolbar-filter-year {
+    width: 7rem;
+}
+
+::deep .toolbar-filter-month {
+    width: 8rem;
+}
+
+.meal-allowance-root {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    gap: 0.875rem;
+    overflow: hidden;
+}
+
+.meal-allowance-grid-card {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+::deep .meal-allowance-loading-panel {
+    height: 100%;
+}
+
+.meal-allowance-grid-content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .toolbar {
+        margin-bottom: 0.75rem;
+    }
+}

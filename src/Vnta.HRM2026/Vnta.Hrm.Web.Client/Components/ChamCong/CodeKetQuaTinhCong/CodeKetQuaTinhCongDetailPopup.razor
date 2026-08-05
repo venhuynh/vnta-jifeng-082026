@@ -1,0 +1,92 @@
+@using Vnta.Hrm.Web.Client.Models
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChanged"
+         HeaderText="Chi tiết mã kết quả tính công"
+         Width="min(56rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         CloseOnOutsideClick="false"
+         CssClass="attendance-result-code-detail-popup">
+    <BodyContentTemplate Context="popupBody">
+        @if (Record is not null)
+        {
+            <div class="attendance-result-code-detail-content">
+                <div class="detail-header">
+                    <div>
+                        <div class="detail-title">@Record.Name</div>
+                        <div class="detail-subtitle">@BuildDetailSubtitle(Record)</div>
+                    </div>
+                    <span class="@AttendanceStatusCodePresentation.GetActiveTextCssClass(Record.IsActive)">@AttendanceStatusCodePresentation.GetActiveText(Record.IsActive)</span>
+                </div>
+
+                <DxFormLayout CssClass="attendance-result-code-detail-form" CaptionPosition="CaptionPosition.Vertical">
+                    <DxFormLayoutGroup Caption="Thông tin chung" ColSpanMd="12">
+                        <DxFormLayoutItem Caption="Mã" ColSpanMd="3">
+                            <div class="readonly-field">@AttendanceStatusCodePresentation.GetDisplayValue(Record.Code)</div>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Tên" ColSpanMd="5">
+                            <div class="readonly-field">@AttendanceStatusCodePresentation.GetDisplayValue(Record.Name)</div>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Loại" ColSpanMd="3">
+                            <div class="readonly-field">
+                                <span class="@AttendanceStatusCodePresentation.GetKindCssClass(Record.Kind)">@AttendanceStatusCodePresentation.GetKindText(Record.Kind)</span>
+                            </div>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Trạng thái" ColSpanMd="4">
+                            <span class="@AttendanceStatusCodePresentation.GetActiveTextCssClass(Record.IsActive)">@AttendanceStatusCodePresentation.GetActiveText(Record.IsActive)</span>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Công tăng ca" ColSpanMd="4">
+                            <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(Record.CongTangCa)">@AttendanceStatusCodePresentation.GetYesNoStatusText(Record.CongTangCa)</span>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Công hành chính" ColSpanMd="4">
+                            <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(Record.CongHanhChinh)">@AttendanceStatusCodePresentation.GetYesNoStatusText(Record.CongHanhChinh)</span>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="PC trách nhiệm tính năng suất" ColSpanMd="4">
+                            <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(Record.PhuCapTrachNhiemTinhNangSuat)">@AttendanceStatusCodePresentation.GetYesNoStatusText(Record.PhuCapTrachNhiemTinhNangSuat)</span>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="PC độc hại" ColSpanMd="4">
+                            <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(Record.PhuCapDocHai)">@AttendanceStatusCodePresentation.GetYesNoStatusText(Record.PhuCapDocHai)</span>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="PC trách nhiệm khác" ColSpanMd="4">
+                            <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(Record.PhuCapTrachNhiemKhac)">@AttendanceStatusCodePresentation.GetYesNoStatusText(Record.PhuCapTrachNhiemKhac)</span>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="PC phép/lễ" ColSpanMd="4">
+                            <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(Record.PhuCapPhepLe)">@AttendanceStatusCodePresentation.GetYesNoStatusText(Record.PhuCapPhepLe)</span>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="PC trách nhiệm không tính năng suất" ColSpanMd="6">
+                            <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(Record.PhuCapTrachNhiemKhongTinhNangSuat)">@AttendanceStatusCodePresentation.GetYesNoStatusText(Record.PhuCapTrachNhiemKhongTinhNangSuat)</span>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="PC chuyên cần" ColSpanMd="3">
+                            <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(Record.PhuCapChuyenCan)">@AttendanceStatusCodePresentation.GetYesNoStatusText(Record.PhuCapChuyenCan)</span>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="PC thâm niên" ColSpanMd="3">
+                            <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(Record.PhuCapThamNien)">@AttendanceStatusCodePresentation.GetYesNoStatusText(Record.PhuCapThamNien)</span>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Khấu trừ tạm ứng" ColSpanMd="3">
+                            <span class="@AttendanceStatusCodePresentation.GetYesNoStatusCssClass(Record.KhauTruTamUng)">@AttendanceStatusCodePresentation.GetYesNoStatusText(Record.KhauTruTamUng)</span>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Ghi chú" ColSpanMd="12">
+                            <div class="readonly-field">@AttendanceStatusCodePresentation.GetDisplayValue(Record.Note)</div>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Ngày tạo" ColSpanMd="6">
+                            <div class="readonly-field">@AttendanceStatusCodePresentation.FormatDateTime(Record.CreatedAtUtc)</div>
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Ngày cập nhật" ColSpanMd="6">
+                            <div class="readonly-field">@AttendanceStatusCodePresentation.FormatDateTime(Record.UpdatedAtUtc)</div>
+                        </DxFormLayoutItem>
+                    </DxFormLayoutGroup>
+                </DxFormLayout>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="state-title">Không có mã kết quả tính công để hiển thị</div>
+                <div class="state-message">Vui lòng đóng cửa sổ và chọn lại một dòng hợp lệ.</div>
+            </div>
+        }
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <DxButton Text="Đóng" Click="CloseAsync" />
+    </FooterContentTemplate>
+</DxPopup>

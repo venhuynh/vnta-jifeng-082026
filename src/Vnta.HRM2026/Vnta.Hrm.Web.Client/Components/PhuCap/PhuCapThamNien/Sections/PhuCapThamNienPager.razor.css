@@ -1,0 +1,5 @@
+.seniority-allowance-pager { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; padding: 0.625rem 1rem; border-top: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent); color: var(--dxds-color-content-neutral-subtle-rest); font-size: 0.82rem; }
+.seniority-allowance-pager-summary { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.seniority-allowance-page-size { display: inline-flex; align-items: center; gap: 0.45rem; white-space: nowrap; }
+::deep .seniority-allowance-page-size-editor { width: 5.75rem; }
+@media (max-width: 768px) { .seniority-allowance-pager { align-items: flex-start; flex-direction: column; padding: 0.625rem 0.75rem; } }

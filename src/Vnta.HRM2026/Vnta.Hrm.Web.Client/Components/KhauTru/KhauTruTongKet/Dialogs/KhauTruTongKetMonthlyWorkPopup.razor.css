@@ -1,0 +1,129 @@
+.deduction-summary-monthly-work-header,
+.deduction-summary-monthly-work-title-row,
+.deduction-summary-monthly-work-header-actions,
+.deduction-summary-monthly-work-filter-strip,
+.deduction-summary-monthly-work-filter-strip > div,
+.deduction-summary-monthly-work-grid-tools {
+    display: flex;
+    align-items: center;
+}
+
+.deduction-summary-monthly-work-header {
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+}
+
+.deduction-summary-monthly-work-heading {
+    min-width: 0;
+}
+
+.deduction-summary-monthly-work-title-row,
+.deduction-summary-monthly-work-header-actions {
+    gap: 0.5rem;
+}
+
+.deduction-summary-monthly-work-title-row {
+    flex-wrap: wrap;
+}
+
+.deduction-summary-monthly-work-title {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.deduction-summary-monthly-work-lock {
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.deduction-summary-monthly-work-lock.is-locked { color: #a16207; background: #fff7e6; }
+.deduction-summary-monthly-work-lock.is-unlocked { color: #15803d; background: #e8f8ef; }
+
+.deduction-summary-monthly-work-context {
+    margin-top: 0.25rem;
+    overflow: hidden;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.8125rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.deduction-summary-monthly-work-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0.875rem 1rem;
+}
+
+.deduction-summary-monthly-work-summary {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(8.5rem, 1fr));
+    gap: 0.5rem;
+    overflow-x: auto;
+}
+
+.deduction-summary-monthly-work-summary-card {
+    min-width: 0;
+    min-height: 5.5rem;
+    padding: 0.75rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.5rem;
+    background: var(--dxds-color-surface-neutral-default-rest);
+    box-shadow: var(--hrm-shadow-sm, 0 1px 2px rgba(16, 24, 40, 0.08));
+}
+
+.deduction-summary-monthly-work-summary-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.deduction-summary-monthly-work-summary-card-title { color: var(--dxds-color-content-neutral-subtle-rest); font-size: 0.75rem; font-weight: 700; }
+.deduction-summary-monthly-work-summary-card-value { margin-top: 0.4rem; font-size: 1.5rem; font-weight: 800; line-height: 1; }
+
+.deduction-summary-monthly-work-filter-strip {
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem 1rem;
+}
+
+.deduction-summary-monthly-work-filter-strip > div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    min-width: 0;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.deduction-summary-monthly-work-grid-host {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 12rem;
+    overflow: hidden;
+}
+
+.deduction-summary-monthly-work-grid-tools { justify-content: flex-end; margin-bottom: 0.5rem; }
+::deep .deduction-summary-monthly-work-search { width: min(22rem, 100%); }
+::deep .deduction-summary-monthly-work-grid { flex: 1 1 auto; min-height: 0; }
+::deep .deduction-summary-monthly-work-grid .dxbl-grid { height: 100%; }
+
+.deduction-summary-monthly-work-content.is-compact { gap: 0.75rem; padding: 0.625rem 0.75rem; }
+
+@media (max-width: 760px) {
+    .deduction-summary-monthly-work-header { align-items: flex-start; flex-direction: column; }
+    .deduction-summary-monthly-work-header-actions { align-self: flex-end; }
+    .deduction-summary-monthly-work-filter-strip { align-items: stretch; flex-direction: column; }
+    .deduction-summary-monthly-work-filter-strip > div { overflow-x: auto; }
+    .deduction-summary-monthly-work-grid-host { min-height: 10rem; }
+    ::deep .deduction-summary-monthly-work-search { width: 100%; }
+}

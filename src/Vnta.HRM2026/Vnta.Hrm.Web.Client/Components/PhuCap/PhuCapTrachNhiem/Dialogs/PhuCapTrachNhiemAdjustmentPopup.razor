@@ -1,0 +1,98 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiem
+
+<DxPopup Visible="@IsAdjustmentPopupVisible"
+         VisibleChanged="OnVisibleChangedAsync"
+         Width="980px"
+         ShowFooter="false"
+         ShowCloseButton="true"
+         CloseOnEscape="true"
+         HeaderText="@AdjustmentPopupTitle"
+         CssClass="responsibility-popup">
+    <BodyContentTemplate>
+        <div class="responsibility-popup-body">
+            @if(!string.IsNullOrWhiteSpace(AdjustmentPopupErrorMessage)) {
+                <div class="responsibility-error-banner">@AdjustmentPopupErrorMessage</div>
+            }
+            @if(IsLoadingAdjustmentContext) {
+                <div class="responsibility-empty-banner">Đang tải ngữ cảnh điều chỉnh...</div>
+            } else if(AdjustmentContext is not null) {
+                <div class="responsibility-preview-grid">
+                    <div class="responsibility-preview-card">
+                        <div class="responsibility-preview-label">Nguồn đang áp dụng</div>
+                        <div class="responsibility-preview-value">@AdjustmentContext.SelectedSource.SourceLabel</div>
+                    </div>
+                    <div class="responsibility-preview-card">
+                        <div class="responsibility-preview-label">Công hợp lệ</div>
+                        <div class="responsibility-preview-value">@FormatNumber(AdjustmentContext.ValidWorkdaySummary.ValidWorkdays)</div>
+                    </div>
+                    <div class="responsibility-preview-card">
+                        <div class="responsibility-preview-label">Công chuẩn</div>
+                        <div class="responsibility-preview-value">@FormatNumber(AdjustmentContext.SalaryRate.StandardWorkDays)</div>
+                    </div>
+                    <div class="responsibility-preview-card">
+                        <div class="responsibility-preview-label">Preview tiền thực tế</div>
+                        <div class="responsibility-preview-value">@FormatCurrency(AdjustmentContext.CalculationPreview.ActualResponsibilityAllowanceAmount)</div>
+                    </div>
+                </div>
+
+                <div class="responsibility-editor-grid">
+                    <div class="responsibility-editor-card">
+                        <label class="responsibility-field-label">Bậc trách nhiệm</label>
+                        <select class="responsibility-input" @bind="AdjustmentForm.GradeIdText">
+                            <option value="">Không hưởng</option>
+                            @foreach(var grade in AdjustmentContext.AvailableGrades.OrderBy(x => x.DisplayOrder).ThenBy(x => x.Code)) {
+                                <option value="@grade.Id">@grade.Code - @grade.Name</option>
+                            }
+                        </select>
+                        <label class="responsibility-checkbox-row">
+                            <input type="checkbox" @bind="AdjustmentForm.IsActive" />
+                            <span>Hưởng trách nhiệm</span>
+                        </label>
+                        <label class="responsibility-field-label">THS</label>
+                        <DxSpinEdit T="decimal"
+                                    Value="@AdjustmentForm.MonthlyPerformanceBonusAmount"
+                                    ValueChanged="@OnAdjustmentPerformanceBonusChanged"
+                                    MinValue="0m"
+                                    Increment="0.1m"
+                                    DisplayFormat="0.####" />
+                        <label class="responsibility-checkbox-row">
+                            <input type="checkbox" @bind="AdjustmentForm.IsPerformanceBonusExcluded" />
+                            <span>Không áp dụng thưởng hiệu suất</span>
+                        </label>
+                        <label class="responsibility-field-label">Ghi chú</label>
+                        <textarea class="responsibility-input responsibility-textarea" @bind="AdjustmentForm.Note"></textarea>
+                        <button type="button" class="responsibility-primary-button" @onclick="SaveAdjustmentAsync">Lưu điều chỉnh</button>
+                    </div>
+                    <div class="responsibility-table-card">
+                        <table class="responsibility-editor-table">
+                            <thead>
+                                <tr>
+                                    <th>Khối dữ liệu</th>
+                                    <th>Bảng</th>
+                                    <th>Giá trị</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Record điều chỉnh</td>
+                                    <td>payroll_monthly_responsibility_allowance_employee_assignments</td>
+                                    <td>@(AdjustmentContext.EmployeeAssignment is null ? "Sẽ tạo mới khi lưu" : $"{AdjustmentContext.EmployeeAssignment.GradeName} / {FormatCurrency(AdjustmentContext.EmployeeAssignment.StandardResponsibilityAllowanceAmount)}")</td>
+                                </tr>
+                                <tr>
+                                    <td>Dòng ABC tháng</td>
+                                    <td>payroll_monthly_responsibility_allowance_abc</td>
+                                    <td>@(AdjustmentContext.CurrentAbcRecord is null ? "Sẽ tạo hoặc cập nhật khi refresh" : $"{AdjustmentContext.CurrentAbcRecord.GradeName} / {FormatCurrency(AdjustmentContext.CurrentAbcRecord.ActualResponsibilityAllowanceAmount)}")</td>
+                                </tr>
+                                <tr>
+                                    <td>Preview công thức</td>
+                                    <td>Backend calculation</td>
+                                    <td>@AdjustmentContext.CalculationPreview.Formula</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+    </BodyContentTemplate>
+</DxPopup>

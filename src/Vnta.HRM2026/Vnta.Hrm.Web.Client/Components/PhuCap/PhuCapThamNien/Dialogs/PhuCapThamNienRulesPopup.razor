@@ -1,0 +1,74 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapThamNien
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Quy tắc phụ cấp thâm niên"
+         Width="min(56rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         FooterCssClass="seniority-popup-footer"
+         CssClass="seniority-rules-popup">
+    <BodyContentTemplate>
+        <div class="rules-popup-content">
+            <div class="rules-popup-section">
+                <div class="rules-popup-title">Dữ liệu và phạm vi tính lại</div>
+                <div class="rules-popup-text">
+                    Mỗi dòng <strong>Tổng hợp phụ cấp</strong> có một snapshot tương ứng tại bảng
+                    <strong>Phụ cấp thâm niên</strong>. Khi bấm <strong>Tính lại</strong>, hệ thống chỉ cập nhật dữ liệu của bảng
+                    <strong>Phụ cấp thâm niên</strong>; số tiền ở bảng <strong>Tổng hợp phụ cấp</strong> không thay đổi.
+                    Các dòng phụ cấp thâm niên đã khóa được bỏ qua.
+                </div>
+            </div>
+            <div class="rules-popup-section">
+                <div class="rules-popup-title">Ưu tiên cao nhất</div>
+                <div class="rules-popup-text">
+                    Nhân viên có <strong>Chức vụ</strong> chứa <strong>Thời vụ</strong> luôn có phụ cấp thâm niên bằng <strong>0 đ</strong>,
+                    không phụ thuộc Công tính lương hoặc số năm thâm niên.
+                </div>
+            </div>
+            <div class="rules-popup-section">
+                <div class="rules-popup-title">Cách tính công</div>
+                <ol class="rules-list">
+                    <li>
+                        <strong>Công HC:</strong> mỗi record trong bảng công tháng có mã thuộc
+                        <strong>Code kết quả tính công</strong> được gắn cờ <strong>Thâm niên</strong> được tính 1 ngày công HC.
+                    </li>
+                    <li>
+                        <strong>ĐTVS:</strong> tổng số phút đi trễ và về sớm trong bảng công tháng chia 480,
+                        lấy 4 chữ số thập phân.
+                    </li>
+                    <li>
+                        <strong>CTL:</strong> Công HC trừ ĐTVS, lấy 4 chữ số thập phân.
+                    </li>
+                </ol>
+            </div>
+            <div class="rules-popup-section">
+                <div class="rules-popup-title">Ưu tiên thứ hai</div>
+                <div class="rules-popup-text">
+                    Nếu <strong>CTL &lt;= 5</strong> thì phụ cấp thâm niên bằng <strong>0 đ</strong>,
+                    bất kể số năm thâm niên.
+                </div>
+            </div>
+            <div class="rules-popup-section">
+                <div class="rules-popup-title">Thang phụ cấp theo thâm niên</div>
+                <ul class="rules-list">
+                    <li>Từ 1 đến dưới 3 năm: 150.000 đ</li>
+                    <li>Từ 3 đến dưới 6 năm: 200.000 đ</li>
+                    <li>Từ 6 đến dưới 10 năm: 250.000 đ</li>
+                    <li>Từ 10 đến dưới 13 năm: 350.000 đ</li>
+                    <li>Từ 13 năm trở lên: 400.000 đ</li>
+                </ul>
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <DxButton Text="Đóng"
+                  Click="CloseAsync"
+                  IconUrl="@VntaDevExpressIcons.Cancel"
+                  CssClass="seniority-popup-action"
+                  RenderStyle="ButtonRenderStyle.Secondary"
+                  RenderStyleMode="ButtonRenderStyleMode.Outline" />
+    </FooterContentTemplate>
+</DxPopup>

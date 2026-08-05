@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "dxdocs": {
+      "type": "http",
+      "url": "https://api.devexpress.com/mcp/docs"
+    },
+    "dxdocs26_1": {
+      "type": "http",
+      "url": "https://api.devexpress.com/mcp/docs?v=26.1"
+    }
+  }
+}

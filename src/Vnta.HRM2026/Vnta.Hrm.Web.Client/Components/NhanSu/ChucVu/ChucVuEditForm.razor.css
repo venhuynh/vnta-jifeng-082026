@@ -1,0 +1,31 @@
+.validation-summary {
+    margin-top: 1rem;
+    color: var(--dxbl-validation-summary-text-color, #b42318);
+}
+
+.edit-error-message {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    background-color: #fff2f0;
+    color: #b42318;
+}
+
+.chuc-vu-readonly-value {
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+    background-color: var(--dxds-color-surface-neutral-subtle-rest);
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+::deep .chuc-vu-edit-form {
+    width: 100%;
+    max-height: min(72vh, 30rem);
+    overflow-y: auto;
+    padding-right: 0.25rem;
+    box-sizing: border-box;
+}

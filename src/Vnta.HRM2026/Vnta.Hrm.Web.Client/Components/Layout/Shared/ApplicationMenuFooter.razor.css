@@ -1,0 +1,31 @@
+.application-menu-footer {
+    flex: 0 0 auto;
+    margin: 0.75rem 0.375rem 0;
+    padding: 0.875rem 0.75rem;
+    border-top: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 72%, transparent);
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+.application-menu-footer-product {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.application-menu-footer-description,
+.application-menu-footer-release {
+    margin-top: 0.2rem;
+    font-size: 0.75rem;
+    line-height: 1.35;
+}
+
+.application-menu-footer-release {
+    color: color-mix(in srgb, var(--dxds-color-content-neutral-subtle-rest) 82%, transparent);
+}
+
+@media (max-width: 768px) {
+    .application-menu-footer {
+        margin-top: 0.5rem;
+    }
+}

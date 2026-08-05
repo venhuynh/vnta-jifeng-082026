@@ -1,0 +1,18 @@
+.content-root {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.responsibility-root {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.875rem;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}

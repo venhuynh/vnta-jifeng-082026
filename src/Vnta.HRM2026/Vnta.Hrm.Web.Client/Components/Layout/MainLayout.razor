@@ -1,0 +1,207 @@
+@using System.Security.Claims
+@using Vnta.Hrm.Web.Client.Services
+@inherits LayoutComponentBase
+@implements IDisposable
+
+@inject NavigationManager NavigationManager
+@inject ThemeManager ThemeManager
+@inject SizeModeManager SizeModeManager
+@inject Vnta.Hrm.Web.Client.Services.Ui.HrmBusyStateService BusyStateService
+@inject CascadingValueSource<SizeMode> SizeModeSource
+
+<PageTitle>@($"VNTA - {CurrentModule}")</PageTitle>
+
+<div class="page">
+    @if (BusyStateService.IsBusy)
+    {
+        <div class="app-busy-overlay" role="status" aria-live="polite" aria-label="Đang tải dữ liệu">
+            <div class="app-busy-overlay__scrim"></div>
+        </div>
+    }
+    <header class="header">
+        <div class="content header-content">
+            <AuthorizeView Context="authorizeContext">
+                @{
+                    var userName = authorizeContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+                    var email = authorizeContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                }
+                <DxToolbar CssClass="toolbar" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+                    <Items>
+                        <DxToolbarItem IconCssClass="hamburger-icon icon medium-icon"
+                                       Click="@(() => IsSideMenuOpen = !IsSideMenuOpen)"
+                                       Tooltip="Ẩn hoặc hiện menu bên trái" />
+                        <DxToolbarItem Tooltip="VNTA 2026">
+                            <Template>
+                                <div class="custom-item">
+                                    <span class="title">VNTA 2026</span>
+                                </div>
+                            </Template>
+                        </DxToolbarItem>
+                        <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                                       Name="SizeMode"
+                                       Text="@(GetSizeModeDescriptor().Text)"
+                                       AdaptiveText="Cỡ hiển thị"
+                                       Tooltip="Đổi cỡ hiển thị của ứng dụng">
+                            <Items>
+                                <DxToolbarItem Name="@(GetSizeModeDescriptor(SizeMode.Small).Name)" Click="OnSizeModeChanged" Text="@(GetSizeModeDescriptor(SizeMode.Small).Text)" Tooltip="Dùng cỡ hiển thị nhỏ"></DxToolbarItem>
+                                <DxToolbarItem Name="@(GetSizeModeDescriptor(SizeMode.Medium).Name)" Click="OnSizeModeChanged" Text="@(GetSizeModeDescriptor(SizeMode.Medium).Text)" Tooltip="Dùng cỡ hiển thị vừa"></DxToolbarItem>
+                                <DxToolbarItem Name="@(GetSizeModeDescriptor(SizeMode.Large).Name)" Click="OnSizeModeChanged" Text="@(GetSizeModeDescriptor(SizeMode.Large).Text)" Tooltip="Dùng cỡ hiển thị lớn"></DxToolbarItem>
+                            </Items>
+                        </DxToolbarItem>
+                        <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                                       IconCssClass="@GetThemeSwitcherIconCssClasses()"
+                                       Click="OnThemeChanged"
+                                       AdaptiveText="Đổi giao diện"
+                                       Tooltip="Chuyển giao diện sáng/tối" />
+                        <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                                       IconCssClass="bell-icon icon medium-icon"
+                                       CssClass="@(NotificationCount > 0 ? "notification" : "")"
+                                       notification-count="@NotificationCount"
+                                       AdaptiveText="Thông báo"
+                                       Tooltip="@($"Thông báo. Bạn có {NotificationCount} thông báo đang hoạt động.")" />
+                        <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                                       CssClass="current-user-item"
+                                       Click="@(_ => ShowUserInfo = !ShowUserInfo)"
+                                       AdaptiveText="@userName"
+                                       Tooltip="Xem thông tin tài khoản hiện tại">
+                            <Template>
+                                <div class="avatar-item">
+                                    <UserAvatar Src="images/users/01.png" CssClass="avatar" AltText="@userName" />
+                                    @if (context.HiddenToAdaptiveMenu)
+                                    {
+                                        <div class="avatar-label">@context.AdaptiveText</div>
+                                    }
+                                </div>
+                            </Template>
+                        </DxToolbarItem>
+                    </Items>
+                </DxToolbar>
+                <DxDropDown PositionTarget=":not(div).current-user-item:not([style*='display: none'])" @bind-IsOpen="ShowUserInfo" PositionMode="DropDownPositionMode.Bottom">
+                    <BodyContentTemplate>
+                        <AccountManager DisplayName="@userName" Email="@email" AvatarSrc="images/users/01.png" />
+                    </BodyContentTemplate>
+                </DxDropDown>
+            </AuthorizeView>
+        </div>
+    </header>
+    <main class="main">
+        <div class="content main-content">
+            <DxLayoutBreakpoint DeviceSize="DeviceSize.XSmall | DeviceSize.Small | DeviceSize.Medium | DeviceSize.Large" IsActive="IsSmallScreen" IsActiveChanged="OnScreenSizeChanged" />
+            <DxDrawer CssClass="main-menu-drawer"
+                      @bind-IsOpen="IsSideMenuOpen"
+                      Mode="@SideMenuMode"
+                      Position="DrawerPosition.Left"
+                      ZIndex="102"
+                      PanelWidth="18rem">
+                <BodyTemplate>
+                    <div class="sidebar-shell">
+                        <div class="sidebar-navigation">
+                            <NavMenu CurrentModuleChanged="OnCurrentModuleChanged" />
+                        </div>
+                        <ApplicationMenuFooter />
+                    </div>
+                </BodyTemplate>
+                <TargetContent>
+                    <div id="main-content" class="module-content" tabindex="-1" @key="ThemeManager.CurrentTheme.Name">
+                        @Body
+                    </div>
+                </TargetContent>
+            </DxDrawer>
+        </div>
+
+        <HrmDialogProvider />
+        <HrmToastProvider />
+    </main>
+</div>
+
+@code {
+    private IDisposable? locationChangeSubscription;
+
+    [CascadingParameter(Name = "NotificationCount")]
+    public int NotificationCount { get; set; }
+
+    [CascadingParameter(Name = "ParentSizeMode")]
+    private SizeMode SizeMode { get; set; }
+
+    private bool IsSmallScreen { get; set; }
+    private bool IsSideMenuOpen { get; set; } = true;
+    private DrawerMode SideMenuMode { get; set; } = DrawerMode.Shrink;
+    private bool ShowUserInfo { get; set; }
+    private string CurrentModule { get; set; } = "Dashboard";
+
+    protected override void OnInitialized()
+    {
+        locationChangeSubscription = NavigationManager.RegisterLocationChangingHandler(context =>
+        {
+            if (BusyStateService.IsBusy)
+            {
+                context.PreventNavigation();
+                return ValueTask.CompletedTask;
+            }
+
+            if (SideMenuMode == DrawerMode.Overlap)
+            {
+                IsSideMenuOpen = false;
+            }
+
+            return ValueTask.CompletedTask;
+        });
+
+        BusyStateService.Changed += OnBusyStateChanged;
+
+        base.OnInitialized();
+    }
+
+    private void OnBusyStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnThemeChanged() => await ThemeManager.ToggleThemeAsync();
+
+    private string GetThemeSwitcherIconCssClasses() => $"{(ThemeManager.IsDarkTheme ? "sun-icon" : "moon-icon")} icon medium-icon";
+
+    private async Task OnSizeModeChanged(ToolbarItemClickEventArgs e)
+    {
+        await SizeModeSource.NotifyChangedAsync(e.ItemName switch
+        {
+            "Small" => SizeMode.Small,
+            "Large" => SizeMode.Large,
+            _ => SizeMode.Medium
+        });
+
+        await SizeModeManager.SwitchToSizeModeAsync(SizeMode);
+    }
+
+    private (string Name, string Text) GetSizeModeDescriptor(SizeMode? sizeMode = null)
+    {
+        var value = sizeMode ?? SizeMode;
+        var name = value.ToString();
+        var text = value switch
+        {
+            SizeMode.Small => "Cỡ nhỏ",
+            SizeMode.Large => "Cỡ lớn",
+            _ => "Cỡ vừa"
+        };
+        return (name, text);
+    }
+
+    private void OnScreenSizeChanged(bool isSmallScreen)
+    {
+        IsSmallScreen = isSmallScreen;
+        IsSideMenuOpen = !IsSmallScreen;
+        SideMenuMode = IsSmallScreen ? DrawerMode.Overlap : DrawerMode.Shrink;
+    }
+
+    private Task OnCurrentModuleChanged(string currentModule)
+    {
+        CurrentModule = currentModule;
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        locationChangeSubscription?.Dispose();
+        BusyStateService.Changed -= OnBusyStateChanged;
+    }
+}

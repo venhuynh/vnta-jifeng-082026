@@ -1,0 +1,36 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Xác nhận tính lại"
+         Width="min(32rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         FooterCssClass="other-deduction-popup-footer"
+         CssClass="other-deduction-confirm-popup">
+    <BodyContentTemplate>
+        <div class="other-deduction-confirm-content">
+            <div class="other-deduction-confirm-message">
+            Sẽ tính lại khấu trừ khác của kỳ @PeriodLabel từ dữ liệu gốc. Số tiền khấu trừ của các dòng chưa khóa có thể ghi đè giá trị đã chỉnh sửa thủ công. Các dòng đã khóa sẽ được giữ nguyên.
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="other-deduction-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="other-deduction-popup-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Tính lại"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                      CssClass="other-deduction-popup-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

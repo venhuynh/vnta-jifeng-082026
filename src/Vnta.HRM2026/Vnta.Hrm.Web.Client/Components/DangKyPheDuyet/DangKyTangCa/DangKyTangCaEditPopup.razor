@@ -1,0 +1,268 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Application.DangKyPheDuyet.DangKyTangCa
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@PopupTitle"
+         Width="min(92rem, calc(100vw - 2rem))"
+         ShowFooter="true"
+         ShowCloseButton="@CanClosePopup"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         CssClass="dang-ky-tang-ca-popup">
+    <BodyContentTemplate Context="popupBody">
+        @if (EditRequest is not null)
+        {
+            <HrmLoadingPanel Visible="@IsSaving"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             Text="@LoadingText"
+                             CssClass="dang-ky-tang-ca-popup-loading-panel">
+                <div class="popup-body">
+                    <div class="popup-banner">
+                        <div class="popup-banner-title">@RuleSummaryTitle</div>
+                        <div class="popup-banner-text">@RuleSummaryText</div>
+                    </div>
+
+                    <DxFormLayout CssClass="dang-ky-tang-ca-form" CaptionPosition="CaptionPosition.Vertical">
+                        <DxFormLayoutGroup Caption="Thông tin phiếu" ColSpanMd="12">
+                            <DxFormLayoutItem Caption="Ngày tăng ca" ColSpanMd="3">
+                                <DxDateEdit @bind-Date="EditRequest.WorkDate"
+                                            DisplayFormat="dd/MM/yyyy"
+                                            CssClass="w-100"
+                                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                            Enabled="@CanEditFields" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Loại ngày" ColSpanMd="3">
+                                <DxComboBox TData="EditDayTypeOption"
+                                            TValue="AttendanceWorkCalendarDayType"
+                                            Data="@EditDayTypeOptions"
+                                            TextFieldName="@nameof(EditDayTypeOption.Text)"
+                                            ValueFieldName="@nameof(EditDayTypeOption.Value)"
+                                            Value="@EditRequest.DayType"
+                                            ValueChanged="@(value => OnEditDayTypeChangedAsync(value))"
+                                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                            Enabled="@CanEditFields"
+                                            CssClass="w-100" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Xưởng phụ trách" ColSpanMd="3">
+                                <div class="readonly-field">@EditRequest.WorkshopName</div>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Người đăng ký" ColSpanMd="3">
+                                <div class="readonly-field">@EditRequest.RequestedBy</div>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Người duyệt" ColSpanMd="3">
+                                <div class="readonly-field">@EditRequest.ApprovedBy</div>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Hạn đăng ký" ColSpanMd="3">
+                                <div class="readonly-field">@EditRequest.RegistrationCutoffDisplay</div>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Hạn duyệt" ColSpanMd="3">
+                                <div class="readonly-field">@EditRequest.ApprovalCutoffDisplay</div>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Trạng thái dự kiến" ColSpanMd="3">
+                                <div class="readonly-field">
+                                    <span class="@DangKyTangCa.GetStatusBadgeCssClass(EditRequest.Status)">@EditRequest.StatusDisplay</span>
+                                </div>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Ghi chú" ColSpanMd="12">
+                                <DxMemo @bind-Text="EditRequest.Note"
+                                        Rows="3"
+                                        CssClass="w-100"
+                                        NullText="Ghi chú điều phối, lưu ý nhân sự không tham gia hoặc yêu cầu chuẩn bị"
+                                        Enabled="@CanEditFields" />
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+                    </DxFormLayout>
+
+                    <div class="employee-panel">
+                        <div class="employee-panel-header">
+                            <div class="employee-panel-heading">
+                                <div class="employee-panel-title">Danh sách nhân viên theo tổ</div>
+                                <div class="employee-panel-description">
+                                    @if (IsSpecialDay)
+                                    {
+                                        <span>Ngày nghỉ/ngày lễ chỉ cần chọn danh sách có đăng ký tăng ca, không chỉ định giờ.</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Ngày thường cho phép chọn mức tăng ca tới <strong>19:00</strong> hoặc <strong>21:00</strong>; nhân viên không chọn sẽ bị loại khỏi phiếu.</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="employee-panel-search">
+                                <DxSearchBox CssClass="employee-searchbox"
+                                         NullText="Tìm kiếm mã, tên hoặc tổ"
+                                             BindValueMode="BindValueMode.OnDelayedInput"
+                                             InputDelay="200"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             Text="@EmployeeSearchText"
+                                             TextChanged="OnEmployeeSearchTextChanged"
+                                             Enabled="@CanEditFields" />
+                            </div>
+                        </div>
+
+                        <div class="employee-quick-actions">
+                            <div class="quick-action-filter">
+                                <span class="quick-action-caption">Áp dụng cho</span>
+                                <DxComboBox TData="EditTeamOption"
+                                            TValue="string"
+                                            Data="@EditTeamOptions"
+                                            TextFieldName="@nameof(EditTeamOption.Text)"
+                                            ValueFieldName="@nameof(EditTeamOption.Value)"
+                                            Value="@SelectedTeamCode"
+                                            ValueChanged="@(value => OnTeamChanged(value))"
+                                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                            Enabled="@CanEditFields"
+                                            CssClass="team-filter-combobox" />
+                            </div>
+                            @if (IsSpecialDay)
+                            {
+                                <DxButton Text="Chọn danh sách"
+                                          Click="SelectEmployeesForSpecialDayAsync"
+                                          Enabled="@(CanEditFields && PopupVisibleEmployees.Count > 0)"
+                                          RenderStyle="ButtonRenderStyle.Primary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                                <DxButton Text="Bỏ chọn"
+                                          Click="ClearEmployeesForSpecialDayAsync"
+                                          Enabled="@(CanEditFields && PopupVisibleEmployees.Count > 0)"
+                                          RenderStyle="ButtonRenderStyle.Secondary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                            }
+                            else
+                            {
+                                <DxButton Text="Áp dụng 19:00"
+                                          Click="SetEmployeesUntil1900Async"
+                                          Enabled="@(CanEditFields && PopupVisibleEmployees.Count > 0)"
+                                          RenderStyle="ButtonRenderStyle.Primary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                                <DxButton Text="Áp dụng 21:00"
+                                          Click="SetEmployeesUntil2100Async"
+                                          Enabled="@(CanEditFields && PopupVisibleEmployees.Count > 0)"
+                                          RenderStyle="ButtonRenderStyle.Primary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                                <DxButton Text="Bỏ hết"
+                                          Click="ClearEmployeesForRegularDayAsync"
+                                          Enabled="@(CanEditFields && PopupVisibleEmployees.Count > 0)"
+                                          RenderStyle="ButtonRenderStyle.Secondary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                            }
+                        </div>
+
+                        <div class="popup-summary-strip">
+                            <section class="popup-summary-card">
+                                <div class="popup-summary-label">Nhân viên</div>
+                                <div class="popup-summary-value">@EditRequest.TotalEmployeeCount</div>
+                            </section>
+                            <section class="popup-summary-card">
+                    <div class="popup-summary-label">Đã đăng ký tăng ca</div>
+                                <div class="popup-summary-value">@EditRequest.RegisteredEmployeeCount</div>
+                            </section>
+                            <section class="popup-summary-card">
+                                <div class="popup-summary-label">Đến 19:00</div>
+                                <div class="popup-summary-value">@EditRequest.Until1900Count</div>
+                            </section>
+                            <section class="popup-summary-card">
+                                <div class="popup-summary-label">Đến 21:00</div>
+                                <div class="popup-summary-value">@EditRequest.Until2100Count</div>
+                            </section>
+                        </div>
+
+                        <DxGrid Data="@PopupVisibleEmployees"
+                                KeyFieldName="EmployeeId"
+                                CssClass="employee-grid"
+                                Height="42vh"
+                                PageSize="100"
+                                PagerVisible="false"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Never"
+                                TextWrapEnabled="false"
+                                HighlightRowOnHover="true">
+                            <Columns>
+                                <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                    <CellDisplayTemplate Context="employeeCell">
+                                        @(employeeCell.VisibleIndex + 1)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="EmployeeDisplay" Caption="Nhân viên" MinWidth="220" />
+                                <DxGridDataColumn FieldName="TeamName" Caption="Tổ" MinWidth="150" />
+                                <DxGridDataColumn FieldName="PositionName" Caption="Chức danh" MinWidth="150" />
+                                @if (IsSpecialDay)
+                                {
+                    <DxGridDataColumn FieldName="IsRegistered" Caption="Đăng ký tăng ca" MinWidth="150">
+                                        <CellDisplayTemplate Context="employeeCell">
+                                            @{
+                                                var row = (OvertimeEmployeeAssignmentRecord)employeeCell.DataItem;
+                                            }
+                                            <DxCheckBox Checked="@row.IsRegistered"
+                                                        CheckedChanged="@((bool value) => OnSpecialDayRegistrationChanged(row, value))"
+                                                        Enabled="@CanEditFields">
+                                                Có tham gia
+                                            </DxCheckBox>
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+                                }
+                                else
+                                {
+                                    <DxGridDataColumn FieldName="AssignmentType" Caption="Mức tăng ca" MinWidth="220">
+                                        <CellDisplayTemplate Context="employeeCell">
+                                            @{
+                                                var row = (OvertimeEmployeeAssignmentRecord)employeeCell.DataItem;
+                                            }
+                                            <DxComboBox TData="AssignmentOption"
+                                                        TValue="OvertimeEmployeeAssignmentType"
+                                                        Data="@RegularAssignmentOptions"
+                                                        TextFieldName="@nameof(AssignmentOption.Text)"
+                                                        ValueFieldName="@nameof(AssignmentOption.Value)"
+                                                        Value="@row.AssignmentType"
+                                                        ValueChanged="@((OvertimeEmployeeAssignmentType value) => OnRegularDayAssignmentChanged(row, value))"
+                                                        ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                                        Enabled="@CanEditFields"
+                                                        CssClass="assignment-combobox" />
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+                                }
+                                <DxGridDataColumn FieldName="RegistrationHint" Caption="Ghi chú" MinWidth="240" />
+                            </Columns>
+
+                            <EmptyDataAreaTemplate Context="emptyPopupGrid">
+                                <div class="empty-state employee-empty-state">
+                                    <div class="state-title">@PopupEmployeeEmptyTitle</div>
+                                    <div class="state-message">@PopupEmployeeEmptyMessage</div>
+                                </div>
+                            </EmptyDataAreaTemplate>
+                        </DxGrid>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(ValidationMessage))
+                    {
+                        <div class="popup-validation-message">@ValidationMessage</div>
+                    }
+                </div>
+            </HrmLoadingPanel>
+        }
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <div class="popup-footer">
+            <DxButton Text="Đóng"
+                      Click="CloseAsync"
+                      Enabled="@CanClosePopup"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Lưu nháp"
+                      Click="SaveDraftAsync"
+                      Enabled="@CanSaveDraft"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline"
+                      IconUrl="@VntaDevExpressIcons.Save" />
+            <DxButton Text="Lưu và gửi phê duyệt"
+                      Click="SaveAndSubmitAsync"
+                      Enabled="@CanSubmit"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained"
+                      IconUrl="@VntaDevExpressIcons.Upload" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

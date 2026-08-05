@@ -1,0 +1,23 @@
+.insurance-deduction-popup-footer,
+.insurance-deduction-confirm-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.insurance-deduction-confirm-actions {
+    gap: 0.5rem;
+}
+
+.insurance-deduction-popup-action {
+    min-width: 7rem;
+}
+
+.insurance-deduction-confirm-content {
+    padding: 0.5rem 0 0.25rem;
+}
+
+.insurance-deduction-confirm-message {
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.5;
+}

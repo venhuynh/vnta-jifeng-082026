@@ -1,0 +1,85 @@
+@page "/payroll/leave-holiday-allowance"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe.Models
+@using Vnta.Hrm.Web.Client.Components.ChamCong.MonthlyWork
+@using Vnta.Hrm.Web.Client.Components.Shared.Models
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Phụ cấp Phép - Lễ</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <PhuCapPhepLeToolbar Month="@ToolbarMonth"
+                            Year="@ToolbarYear"
+                            MinimumYear="@MinimumSupportedYear"
+                            MaximumYear="@MaximumSupportedYear"
+                            AvailableMonths="@AvailableMonthOptions"
+                            CanChangeFilters="@CanChangeFilters"
+                            CanView="@CanView"
+                            CanInteract="@CanInteract"
+                            CanOperateOnCurrentDataset="@CanOperateOnCurrentDataset"
+                            CanRecalculate="@CanRecalculate"
+                            CanOpenLockAction="@CanOpenLockAction"
+                            CanOpenUnlockAction="@CanOpenUnlockAction"
+                            CanExport="@CanExport"
+                            CanExportSelected="@CanExportSelected"
+                            MonthChanged="OnSelectedMonthChangedAsync"
+                            YearChanged="OnSelectedYearChangedAsync"
+                            ViewRequested="OnViewRequestedAsync"
+                            RecalculateRequested="OnRecalculateClickAsync"
+                            LockRequested="OnLockSelectedAsync"
+                            UnlockRequested="OnUnlockSelectedAsync"
+                            RulesRequested="OpenRulesPopup"
+                            ExportAllExcelRequested="ExportAllDataToExcel"
+                            ExportAllPdfRequested="ExportAllDataToPdf"
+                            ExportSelectedExcelRequested="ExportSelectedRowsToExcel"
+                            ExportSelectedPdfRequested="ExportSelectedRowsToPdf"
+                            ColumnChooserRequested="OnColumnChooserRequested" />
+    </div>
+    <div class="leave-holiday-allowance-root">
+        @if (HasLoadError)
+        {
+            <PhuCapPhepLeLoadError Message="@LoadErrorMessage" RetryRequested="OnRetryLoadButtonClickAsync" />
+        }
+        else
+        {
+            <div class="card leave-holiday-allowance-grid-card">
+                <HrmLoadingPanel Visible="@ShowLoadingPanel" IsContentBlocked="true" IsContentVisible="true" IndicatorVisible="true" IndicatorAreaVisible="true" Text="@LoadingPanelText" CssClass="leave-holiday-allowance-loading-panel">
+                    <div class="leave-holiday-allowance-grid-content">
+                        <PhuCapPhepLeSummary AllRecordCount="@AllRecordCount" OpenRecordCount="@OpenRecordCount" LockedRecordCount="@LockedRecordCount"
+                                               TotalAmountDisplay="@FormatMoney(TotalLeaveHolidayAllowanceAmount)" SearchText="@SearchText"
+                                               CanInteract="@CanInteract" CanSearch="@CanSearchScreen"
+                                               IsAllSelected="@(CurrentLockFilter == LeaveHolidayAllowanceLockFilter.All)" IsOpenSelected="@(CurrentLockFilter == LeaveHolidayAllowanceLockFilter.OpenOnly)" IsLockedSelected="@(CurrentLockFilter == LeaveHolidayAllowanceLockFilter.LockedOnly)"
+                                               AllRequested="@(() => OnLockFilterChipClickAsync(LeaveHolidayAllowanceLockFilter.All))" OpenRequested="@(() => OnLockFilterChipClickAsync(LeaveHolidayAllowanceLockFilter.OpenOnly))" LockedRequested="@(() => OnLockFilterChipClickAsync(LeaveHolidayAllowanceLockFilter.LockedOnly))"
+                                               SearchTextChanged="OnSearchTextChangedAsync" />
+                        <PhuCapPhepLeGrid @ref="GridSection"
+                                           Rows="@PagedRecords"
+                                           SelectedItems="@SelectedGridItems"
+                                           PageIndex="@CurrentPageIndex"
+                                           PageSize="@PageSize"
+                                           CanOperateOnCurrentDataset="@CanOperateOnCurrentDataset"
+                                           CanEdit="CanEditRow" CanRefresh="CanRefreshRow" CanToggleLock="CanToggleLock" CanViewMonthlyWork="CanViewMonthlyWork"
+                                           HighlightText="HighlightSearchText" FormatMoney="FormatMoneyCell" FormatQuantity="FormatQuantityCell"
+                                           GetLockStatusCssClass="GetLockStatusCssClass" GetNoteCssClass="GetNoteCssClass" GetNotePreview="GetNotePreview"
+                                           EmptyStateTitle="@EmptyStateTitle" EmptyStateMessage="@EmptyStateMessage" EmptyStateActionText="@EmptyStateActionText"
+                                           SelectedItemsChanged="OnSelectedGridItemsChangedAsync"
+                                           ManualEditRequested="OnManualEditButtonClick" RefreshRequested="RefreshRowAsync" LockToggleRequested="ToggleLockStateAsync" MonthlyWorkRequested="OpenMonthlyWorkPopupAsync"
+                                           EmptyStateActionRequested="OnEmptyStateActionButtonClickAsync" />
+                        <PhuCapPhepLePager SummaryText="@PagerSummaryText" PageCount="@TotalPageCount" ActivePageIndex="@CurrentPageIndex"
+                                              PageSizeOptions="@PageSizeOptions" PageSize="@PageSize" CanBrowsePages="@CanBrowsePages" CanChangeFilters="@CanChangeFilters"
+                                              ActivePageIndexChanged="OnActivePageIndexChangedAsync" PageSizeChanged="OnPageSizeChangedAsync" />
+                    </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>
+
+<PhuCapPhepLeExportGrid @ref="ExportGridSection" Records="@VisibleRecords" />
+<PhuCapPhepLeRulesPopup @bind-Visible="@IsRulesPopupVisible" />
+<ChamCongMonthlyWorkPopup Visible="@IsMonthlyWorkPopupVisible" VisibleChanged="@(_ => CloseMonthlyWorkPopup())" IsLoading="@IsMonthlyWorkPopupLoading" Title="@MonthlyWorkPopupTitle" Context="@MonthlyWorkPopupContext" ErrorMessage="@MonthlyWorkPopupErrorMessage" Rows="@MonthlyWorkRows" RefreshRequested="RefreshMonthlyWorkPopupAsync" />
+<PhuCapPhepLeLockActionPopup Visible="@IsLockActionPopupVisible" VisibleChanged="OnLockActionPopupVisibleChangedAsync" IsBusy="@IsProcessingScreenAction" ShouldLock="@PendingLockActionState" Title="@LockActionPopupTitle" PromptText="@LockActionPopupPrompt" ContextText="@LockActionPopupContext" SelectedScope="@SelectedLockActionScope" SelectedRowsScope="@LockScopeSelectedRows" WholePeriodScope="@LockScopeWholePeriod" SelectedRowsDescription="@SelectedLockActionScopeDescription" WholePeriodDescription="@WholePeriodLockActionScopeDescription" WholePeriodLabel="@PendingLockActionPeriodDisplay" CanChooseSelectedRowsScope="@CanChooseSelectedRowsLockScope" CanConfirm="@CanConfirmLockAction" ScopeSelected="SelectLockActionScopeAsync" ConfirmRequested="ConfirmLockActionAsync" />
+<PhuCapPhepLeManualEditPopup @bind-Visible="@IsManualEditPopupVisible" Title="@ManualEditPopupTitle" Model="@ManualEditModel" EditContext="@ManualEditFormContext" ErrorMessage="@ManualEditErrorMessage" IsSaving="@IsSavingManualEdit" SaveButtonText="@ManualEditSaveButtonText" CanSave="@CanSaveManualEdit" CancelRequested="OnManualEditCancelButtonClick" SaveRequested="OnManualEditSaveButtonClickAsync" />

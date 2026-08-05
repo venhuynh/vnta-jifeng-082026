@@ -1,0 +1,29 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapDocHai
+
+<div class="hazard-summary-strip">
+    <DxButtonGroup CssClass="hazard-summary-button-group"
+                   RenderStyle="ButtonRenderStyle.Secondary"
+                   RenderStyleMode="ButtonRenderStyleMode.Outline"
+                   SelectionMode="ButtonGroupSelectionMode.Single"
+                   Enabled="@Enabled">
+        <Items>
+            @foreach(var badge in Badges)
+            {
+                <DxButtonGroupItem Text="@($"{badge.Label} {badge.Count:N0}")"
+                                   Tooltip="@badge.Label"
+                                   CssClass="@($"hazard-summary-button hazard-summary-button-{badge.Key}")"
+                                   Selected="@(badge.Key == ActiveKey)"
+                                   Click="@(() => BadgeSelected.InvokeAsync(badge.Key))" />
+            }
+        </Items>
+    </DxButtonGroup>
+    <DxButtonGroup CssClass="hazard-total-amount-button-group"
+                   RenderStyle="ButtonRenderStyle.Primary"
+                   RenderStyleMode="ButtonRenderStyleMode.Outline">
+        <Items>
+        <DxButtonGroupItem Text="@($"Tổng: {FormattedAllowanceTotal}")"
+                               CssClass="hazard-total-amount-button" />
+        </Items>
+    </DxButtonGroup>
+</div>

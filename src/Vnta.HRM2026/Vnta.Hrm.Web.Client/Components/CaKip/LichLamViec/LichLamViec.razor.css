@@ -1,0 +1,363 @@
+.content-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.toolbar {
+    flex: 0 0 3.25rem;
+    height: 3.25rem;
+    min-height: 3.25rem;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.work-calendar-toolbar-scroll {
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+::deep .work-calendar-toolbar-scroll .dxbl-toolbar {
+    height: 100%;
+    flex-wrap: nowrap;
+    align-items: center;
+    min-width: max-content;
+}
+
+::deep .work-calendar-toolbar-scroll .dxbl-toolbar-title {
+    white-space: nowrap;
+}
+
+::deep .work-calendar-year-toolbar-item .dxbl-toolbar-item-template {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    background-clip: border-box;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+}
+
+.work-calendar-root {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.work-calendar-year-editor {
+    gap: 0.5rem;
+}
+
+.work-calendar-year-label {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-weight: 600;
+}
+
+::deep .work-calendar-year-spin {
+    width: 8rem;
+}
+
+::deep .work-calendar-loading-panel {
+    height: 100%;
+}
+
+.work-calendar-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.work-calendar-selected-day,
+.work-calendar-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.work-calendar-selected-title {
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.work-calendar-selected-note {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+.day-type-badge,
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-height: 1.75rem;
+    padding: 0.125rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.day-type-badge-regular {
+    background-color: #eef1f6;
+    color: #536076;
+}
+
+.day-type-badge-day-off {
+    background-color: #fff1f1;
+    color: #b42318;
+}
+
+.day-type-badge-holiday {
+    background-color: #ffe3e3;
+    color: #a11212;
+}
+
+.legend-swatch {
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+}
+
+.legend-regular {
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+}
+
+.legend-day-off {
+    background-color: #fff1f1;
+}
+
+.legend-holiday {
+    background-color: #ffe3e3;
+}
+
+.work-calendar-year-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(15rem, 1fr));
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.work-calendar-month {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+}
+
+.work-calendar-month-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.work-calendar-month-title {
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+    text-transform: capitalize;
+}
+
+.work-calendar-month-count {
+    font-size: 0.8125rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    white-space: nowrap;
+}
+
+::deep .work-calendar-month-calendar {
+    width: 100%;
+}
+
+::deep .work-calendar-month-calendar-navigation {
+    display: none;
+}
+
+.work-calendar-day-cell {
+    min-width: 2rem;
+    min-height: 2rem;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.0625rem;
+    border-radius: 0.25rem;
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1;
+}
+
+.work-calendar-day-cell-selected {
+    outline: 2px solid var(--dxds-color-border-brand-default-rest, #2563eb);
+    outline-offset: 1px;
+}
+
+.work-calendar-day-cell-day-off,
+.work-calendar-day-cell-holiday {
+    color: #b42318;
+    font-weight: 700;
+}
+
+.work-calendar-day-cell-day-off {
+    background-color: #fff1f1;
+}
+
+.work-calendar-day-cell-holiday {
+    background-color: #ffe3e3;
+}
+
+.work-calendar-day-cell-outside {
+    opacity: 0.45;
+}
+
+.work-calendar-day-number {
+    font-size: 0.875rem;
+}
+
+.work-calendar-day-type {
+    font-size: 0.625rem;
+}
+
+.work-calendar-month-days {
+    min-height: 2.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.work-calendar-month-empty {
+    min-height: 2rem;
+    display: flex;
+    align-items: center;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.875rem;
+}
+
+.work-calendar-month-day {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    text-align: left;
+    color: #b42318;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.work-calendar-month-day span:last-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.work-calendar-month-day-day-off {
+    background-color: #fff8f8;
+}
+
+.work-calendar-month-day-holiday {
+    background-color: #ffecec;
+}
+
+.work-calendar-month-day:hover {
+    border-color: #f3a6a6;
+}
+
+.empty-state,
+.error-state {
+    height: 100%;
+    min-height: 18rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.state-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.state-message {
+    max-width: 36rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .work-calendar-popup {
+    max-height: min(80vh, 42rem);
+}
+
+::deep .work-calendar-edit-form {
+    width: 100%;
+}
+
+.work-calendar-popup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.validation-summary {
+    margin-top: 0.75rem;
+    color: var(--dxbl-validation-summary-text-color, #b42318);
+}
+
+.edit-error-message {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    background-color: #fff2f0;
+    color: #b42318;
+}
+
+@media (max-width: 1280px) {
+    .work-calendar-year-grid {
+        grid-template-columns: repeat(3, minmax(15rem, 1fr));
+    }
+}
+
+@media (max-width: 960px) {
+    .work-calendar-summary {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .work-calendar-year-grid {
+        grid-template-columns: repeat(2, minmax(15rem, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .work-calendar-year-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,29 @@
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTongHop.Models
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTongHop
+
+<div class="attendance-allowance-grid-header">
+    <div class="attendance-allowance-summary-strip">
+        <DxButtonGroup CssClass="attendance-allowance-summary-button-group" RenderStyle="ButtonRenderStyle.Secondary" RenderStyleMode="ButtonRenderStyleMode.Outline" SelectionMode="ButtonGroupSelectionMode.Single" Enabled="@CanInteract">
+            <Items>
+            @foreach (var badge in SummaryBadges)
+            {
+                <DxButtonGroupItem Text="@($"{badge.Label} {badge.Count:N0}")" Tooltip="@badge.Label" CssClass="@GetBadgeCssClass(badge.Key)" Selected="@(badge.Key == ActiveSummaryBadgeKey)" Click="@(() => SummaryBadgeRequested.InvokeAsync(badge.Key))" />
+            }
+            </Items>
+        </DxButtonGroup>
+        @if (VisibleAllowanceSummaries.Count > 0)
+        {
+            <DxButtonGroup CssClass="attendance-allowance-total-amount-button-group" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Outline">
+                <Items>
+                    @foreach (var summary in VisibleAllowanceSummaries)
+                    {
+                        <DxButtonGroupItem Text="@($"{summary.Label}: {FormatSummaryMoney(summary.Amount)}")" CssClass="@summary.CssClass" />
+                    }
+                </Items>
+            </DxButtonGroup>
+        }
+    </div>
+    <div class="attendance-allowance-grid-search">
+        <DxSearchBox CssClass="attendance-allowance-grid-searchbox" NullText="Tìm kiếm nhân viên, phòng ban, chức vụ hoặc ghi chú" BindValueMode="BindValueMode.OnDelayedInput" InputDelay="500" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" Text="@SearchText" TextChanged="SearchChanged" Enabled="@CanChangeFilters" />
+    </div>
+</div>

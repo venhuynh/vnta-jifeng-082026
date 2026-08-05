@@ -1,0 +1,254 @@
+@page "/attendance/shift-scheduling-settings"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models
+
+@attribute [Authorize(Policy = InternalAccountPolicies.ShiftManagement)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Cài đặt xếp ca</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Cài đặt xếp ca" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Thêm phòng ban"
+                           Click="OnAddDepartmentSettingClick"
+                           Enabled="@CanCreate"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tạo cấu hình xếp ca theo phòng ban"
+                           IconUrl="@VntaDevExpressIcons.Add" />
+            <DxToolbarItem Text="Thêm nhân viên"
+                           Click="OnAddEmployeeSettingClick"
+                           Enabled="@CanCreate"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tạo cấu hình xếp ca theo nhân viên"
+                           IconUrl="@VntaDevExpressIcons.Add" />
+            <DxToolbarItem Text="Điều chỉnh"
+                           Click="OnEditSettingClick"
+                           Enabled="@CanEditSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Điều chỉnh cấu hình xếp ca đã chọn"
+                           IconUrl="@VntaDevExpressIcons.Edit" />
+            <DxToolbarItem Text="Xóa"
+                           Click="OnDeleteSettingsClick"
+                           Enabled="@CanDeleteSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xóa cấu hình xếp ca đã chọn"
+                           IconUrl="@VntaDevExpressIcons.Delete" />
+            <DxToolbarItem Tooltip="Làm mới danh sách cấu hình xếp ca"
+                           Enabled="@CanInteract"
+                           Click="ReloadAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Xuất dữ liệu"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất dữ liệu cấu hình xếp ca"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel" Click="ExportAllDataToExcel" Enabled="@CanExport" Tooltip="Xuất toàn bộ cấu hình xếp ca ra Excel" IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF" Click="ExportAllDataToPdf" Enabled="@CanExport" Tooltip="Xuất toàn bộ cấu hình xếp ca ra PDF" IconUrl="@VntaDevExpressIcons.Pdf" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra Excel" Click="ExportSelectedRowsToExcel" Enabled="@CanExportSelected" Tooltip="Xuất cấu hình xếp ca đã chọn ra Excel" IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra PDF" Click="ExportSelectedRowsToPdf" Enabled="@CanExportSelected" Tooltip="Xuất cấu hình xếp ca đã chọn ra PDF" IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh sách cấu hình xếp ca"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanInteract"
+                           Click="OnColumnChooserItemClick"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+        </DxToolbar>
+    </div>
+
+    <div class="shift-scheduling-settings-root">
+        @if (HasLoadError)
+        {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải danh sách cấu hình xếp ca</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="ReloadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+            <div class="card shift-scheduling-settings-grid-card">
+                <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="@LoadingText"
+                                 CssClass="shift-scheduling-settings-loading-panel">
+                    <div class="shift-scheduling-settings-grid-content">
+                        <div class="shift-scheduling-settings-grid-header">
+                            <div class="shift-scheduling-settings-grid-search">
+                                <DxSearchBox CssClass="shift-scheduling-settings-grid-searchbox"
+                                             NullText="Tìm kiếm cấu hình xếp ca"
+                                             BindValueMode="BindValueMode.OnDelayedInput"
+                                             InputDelay="400"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             Text="@SearchText"
+                                             TextChanged="OnSearchTextChanged"
+                                             Enabled="@CanInteract" />
+                            </div>
+                        </div>
+
+                        <DxGrid @ref="Grid"
+                                Data="@VisibleSettings"
+                                KeyFieldName="Id"
+                                CssClass="shift-scheduling-settings-grid"
+                                ShowSearchBox="false"
+                                EditMode="GridEditMode.PopupEditForm"
+                                EditFormButtonsVisible="false"
+                                PopupEditFormCssClass="shift-scheduling-settings-popup"
+                                PopupEditFormHeaderText="Thông tin cài đặt xếp ca"
+                                PageSize="20"
+                                PagerPosition="GridPagerPosition.Bottom"
+                                PagerSummaryVisible="true"
+                                PageSizeSelectorVisible="true"
+                                PageSizeSelectorItems="@(new int[] { 10, 20, 50 })"
+                                SkeletonRowsEnabled="true"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                TextWrapEnabled="false"
+                                FocusedRowEnabled="true"
+                                HighlightRowOnHover="true"
+                                AllowSelectRowByClick="true"
+                                SelectionMode="GridSelectionMode.Multiple"
+                                SelectedDataItems="@SelectedDataItems"
+                                SelectedDataItemsChanged="@OnSelectedDataItemsChanged"
+                                CustomizeEditModel="OnCustomizeEditModel"
+                                EditModelSaving="OnEditModelSaving">
+                            <Columns>
+                                <DxGridSelectionColumn Width="3rem" />
+                                <DxGridCommandColumn Width="5.5rem"
+                                                     NewButtonVisible="false"
+                                                     EditButtonVisible="false"
+                                                     DeleteButtonVisible="false"
+                                                     SaveButtonVisible="false"
+                                                     CancelButtonVisible="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (ShiftSchedulingSettingRecord)context.DataItem;
+                                        }
+                                        <DxButton CssClass="shift-scheduling-settings-row-action-btn"
+                                                  RenderStyle="ButtonRenderStyle.Link"
+                                                  IconCssClass="shift-scheduling-settings-edit-icon shift-scheduling-settings-icon shift-scheduling-settings-medium-icon"
+                                                  aria-label="Sửa"
+                                                  Click="@(() => OnEditSettingRowClickAsync(row))" />
+                                        <DxButton CssClass="shift-scheduling-settings-row-action-btn"
+                                                  RenderStyle="ButtonRenderStyle.Link"
+                                                  IconCssClass="shift-scheduling-settings-delete-icon shift-scheduling-settings-icon shift-scheduling-settings-medium-icon"
+                                                  aria-label="Xóa"
+                                                  Click="@(() => OnDeleteSettingRowClickAsync(row))" />
+                                    </CellDisplayTemplate>
+                                </DxGridCommandColumn>
+                                <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @(context.VisibleIndex + 1)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="ClassificationTypeText" Caption="Phân loại" MinWidth="180">
+                                    <CellDisplayTemplate>
+                                        @HighlightSearchText(context.DisplayText)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="ShiftDisplayText" Caption="Ca làm việc" MinWidth="240">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var setting = (ShiftSchedulingSettingRecord)context.DataItem;
+                                        }
+                                        <span class="shift-scheduling-settings-shift" title="@setting.ShiftDisplayText">@HighlightSearchText(setting.ShiftDisplayText)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="Value" Caption="Giá trị" MinWidth="220">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var setting = (ShiftSchedulingSettingRecord)context.DataItem;
+                                        }
+                                        <span class="shift-scheduling-settings-value" title="@setting.Value">@HighlightSearchText(setting.Value)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="AssignmentScopeModeText" Caption="Hình thức áp dụng" MinWidth="170">
+                                    <CellDisplayTemplate>
+                                        @HighlightSearchText(context.DisplayText)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="ActivityStatusText" Caption="Trạng thái" MinWidth="130">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var setting = (ShiftSchedulingSettingRecord)context.DataItem;
+                                        }
+                                        <span class="@GetActivityStatusCssClass(setting.IsActive)">@setting.ActivityStatusText</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                            </Columns>
+                            <EmptyDataAreaTemplate>
+                                <div class="empty-state">
+                                    <div class="state-title">@EmptyStateTitle</div>
+                                    <div class="state-message">@EmptyStateMessage</div>
+                                    @if (HasSearchText)
+                                    {
+                                        <DxButton Text="Xóa tìm kiếm"
+                                                  Click="OnClearSearchClick"
+                                                  RenderStyle="ButtonRenderStyle.Primary"
+                                                  RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                    }
+                                    else
+                                    {
+                                        <div class="empty-state-actions">
+                                            <DxButton Text="Thêm phòng ban"
+                                                      Click="OnAddDepartmentSettingClick"
+                                                      RenderStyle="ButtonRenderStyle.Primary"
+                                                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                            <DxButton Text="Thêm nhân viên"
+                                                      Click="OnAddEmployeeSettingClick"
+                                                      RenderStyle="ButtonRenderStyle.Secondary"
+                                                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                        </div>
+                                    }
+                                </div>
+                            </EmptyDataAreaTemplate>
+                            <EditFormTemplate Context="editFormContext">
+                                @{
+                                    var editModel = (ShiftSchedulingSettingRecord)editFormContext.EditModel;
+                                }
+                                @if (editModel.ClassificationType == ShiftSchedulingClassificationType.TheoNhanVien)
+                                {
+                                    <CaiDatXepCaTheoNhanVien Model="@editModel"
+                                                             EditFormContext="@editFormContext"
+                                                             ErrorMessage="@EditErrorMessage"
+                                                             IsCreatingNewSetting="@IsCreatingNewSetting" />
+                                }
+                                else
+                                {
+                                    <CaiDatXepCaTheoPhongBan Model="@editModel"
+                                                             EditFormContext="@editFormContext"
+                                                             ErrorMessage="@EditErrorMessage"
+                                                             IsCreatingNewSetting="@IsCreatingNewSetting" />
+                                }
+                                <div class="shift-scheduling-settings-form-actions">
+                                    <DxButton Text="Lưu"
+                                              IconUrl="@VntaDevExpressIcons.Save"
+                                              CssClass="shift-scheduling-settings-form-action"
+                                              SubmitFormOnClick="true"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                    <DxButton Text="Hủy"
+                                              IconUrl="@VntaDevExpressIcons.Cancel"
+                                              CssClass="shift-scheduling-settings-form-action"
+                                              Click="OnCancelSettingEditClick"
+                                              RenderStyle="ButtonRenderStyle.Secondary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                                </div>
+                            </EditFormTemplate>
+                        </DxGrid>
+                    </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>

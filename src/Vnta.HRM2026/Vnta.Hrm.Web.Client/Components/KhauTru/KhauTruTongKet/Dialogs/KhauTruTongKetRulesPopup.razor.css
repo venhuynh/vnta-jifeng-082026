@@ -1,0 +1,40 @@
+.deduction-summary-popup-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.deduction-summary-popup-action {
+    min-width: 7rem;
+}
+
+.rules-popup-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem 0;
+}
+
+.rules-popup-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.rules-popup-period,
+.rules-popup-note {
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    background-color: color-mix(in srgb, var(--dxds-color-surface-primary-default-rest) 9%, var(--dxds-color-surface-neutral-default-rest));
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.5;
+}
+
+.rules-popup-note {
+    background-color: color-mix(in srgb, var(--dxds-color-surface-warning-default-rest) 10%, var(--dxds-color-surface-neutral-default-rest));
+}
+
+.rules-popup-title {
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}

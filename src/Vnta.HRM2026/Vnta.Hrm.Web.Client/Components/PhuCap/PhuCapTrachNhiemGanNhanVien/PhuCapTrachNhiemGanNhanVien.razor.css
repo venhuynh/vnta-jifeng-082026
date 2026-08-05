@@ -1,0 +1,78 @@
+.content-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    background-clip: border-box;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+}
+
+.toolbar {
+    flex: 0 0 3.25rem;
+    height: 3.25rem;
+    min-height: 3.25rem;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.employee-grade-list-root {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    overflow: hidden;
+}
+
+.employee-grade-list-grid-card {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.employee-grade-list-grid-content {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+::deep .employee-grade-list-loading-panel {
+    height: 100%;
+}
+
+::deep .employee-grade-list-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    max-height: 100%;
+    border-radius: 0.25rem;
+}
+
+::deep .employee-grade-list-grid .dxbl-grid-table {
+    border-top: none;
+}
+
+@media (max-width: 768px) {
+    .employee-grade-list-root {
+        gap: 0.625rem;
+    }
+}

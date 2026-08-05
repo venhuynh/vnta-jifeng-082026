@@ -1,0 +1,113 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Web.Client.Models
+@using Vnta.Hrm.Web.Client.Models.NhanSu.ChiTietNhanVien
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@HeaderText"
+         Width="min(58rem, calc(100vw - 2rem))"
+         ShowCloseButton="@CanClose"
+         ShowFooter="true"
+         CloseOnOutsideClick="false"
+         CssClass="employee-detail-edit-popup">
+    <BodyContentTemplate Context="popupBodyContext">
+        @if (Model is { } model && EditContext is not null)
+        {
+            <EditForm EditContext="@EditContext" Context="editFormContext">
+                <DataAnnotationsValidator />
+                <HrmLoadingPanel Visible="@IsBusy"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="Đang lưu hồ sơ nhân viên..."
+                                 CssClass="employee-detail-edit-loading-panel">
+                    <DxFormLayout CaptionPosition="CaptionPosition.Vertical">
+                        <DxFormLayoutGroup Caption="Thông tin hồ sơ" ColSpanMd="12">
+                            <DxFormLayoutItem Caption="Mã nhân viên" ColSpanMd="6">
+                                <DxTextBox @bind-Text="model.EmployeeCode"
+                                           BindValueMode="BindValueMode.OnInput"
+                                           ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                           NullText="Nhập đúng 5 ký tự"
+                                           Enabled="@(IsCreateMode && CanEdit)" />
+                                <ValidationMessage For="@(() => model.EmployeeCode)" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Họ tên" ColSpanMd="6">
+                                <DxTextBox @bind-Text="model.FullName"
+                                           BindValueMode="BindValueMode.OnInput"
+                                           ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                           NullText="Nhập họ tên nhân viên"
+                                           Enabled="@CanEdit" />
+                                <ValidationMessage For="@(() => model.FullName)" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Phòng ban" ColSpanMd="6">
+                                <DxComboBox TData="AttendanceDepartmentRecord"
+                                            TValue="Guid?"
+                                            Data="@Departments"
+                                            @bind-Value="model.DepartmentId"
+                                            ValueFieldName="@nameof(AttendanceDepartmentRecord.Id)"
+                                            TextFieldName="@nameof(AttendanceDepartmentRecord.FullPath)"
+                                            SearchMode="ListSearchMode.AutoSearch"
+                                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                            NullText="Chọn phòng ban"
+                                            Enabled="@CanEdit" />
+                                <ValidationMessage For="@(() => model.DepartmentId)" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Chức vụ" ColSpanMd="6">
+                                <DxComboBox TData="AttendancePositionRecord"
+                                            TValue="Guid?"
+                                            Data="@Positions"
+                                            @bind-Value="model.PositionId"
+                                            ValueFieldName="@nameof(AttendancePositionRecord.Id)"
+                                            TextFieldName="@nameof(AttendancePositionRecord.Name)"
+                                            SearchMode="ListSearchMode.AutoSearch"
+                                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                            NullText="Chọn chức vụ"
+                                            Enabled="@CanEdit" />
+                                <ValidationMessage For="@(() => model.PositionId)" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Tình trạng" ColSpanMd="6">
+                                <DxComboBox TData="ChiTietNhanVienStatusOption"
+                                            TValue="ChiTietNhanVienEmploymentStatus"
+                                            Data="@StatusOptions"
+                                            @bind-Value="model.Status"
+                                            ValueFieldName="@nameof(ChiTietNhanVienStatusOption.Value)"
+                                            TextFieldName="@nameof(ChiTietNhanVienStatusOption.Text)"
+                                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                            Enabled="@CanEdit" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Ngày vào làm" ColSpanMd="6">
+                                <DxDateEdit @bind-Date="model.HireDate" Enabled="@CanEdit" />
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+                    </DxFormLayout>
+                    <div class="employee-detail-edit-messages">
+                        <ValidationSummary class="validation-summary" />
+                        @if (!string.IsNullOrWhiteSpace(LookupErrorMessage))
+                        {
+                            <div class="form-error-message">@LookupErrorMessage</div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                        {
+                            <div class="form-error-message">@ErrorMessage</div>
+                        }
+                    </div>
+                </HrmLoadingPanel>
+            </EditForm>
+        }
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="employee-detail-edit-actions">
+            <DxButton Text="@SaveButtonText"
+                      Click="SaveAsync"
+                      Enabled="@CanSave"
+                      IconUrl="@VntaDevExpressIcons.Save"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            <DxButton Text="Hủy"
+                      Click="CancelAsync"
+                      Enabled="@CanClose"
+                      IconUrl="@VntaDevExpressIcons.Cancel" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

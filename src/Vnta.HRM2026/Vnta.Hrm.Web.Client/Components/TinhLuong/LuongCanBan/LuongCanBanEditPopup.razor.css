@@ -1,0 +1,25 @@
+.basic-salary-popup-footer,
+.basic-salary-popup-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.basic-salary-popup-actions {
+    gap: 0.5rem;
+}
+
+.basic-salary-popup-action {
+    min-width: 7rem;
+}
+
+@media (max-width: 768px) {
+    .basic-salary-popup-actions {
+        width: 100%;
+        flex-direction: column-reverse;
+    }
+
+    ::deep .basic-salary-popup-action {
+        width: 100%;
+    }
+}

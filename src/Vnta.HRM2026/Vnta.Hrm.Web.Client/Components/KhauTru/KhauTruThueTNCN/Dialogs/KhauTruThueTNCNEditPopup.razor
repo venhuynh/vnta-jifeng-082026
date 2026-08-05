@@ -1,0 +1,51 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="VisibleChanged"
+         HeaderText="@Title"
+         Width="520px"
+         ShowCloseButton="@(!IsSaving)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsSaving)"
+         CloseOnOutsideClick="false"
+         CssClass="personal-income-tax-edit-popup">
+    <BodyContentTemplate Context="editPopupBody">
+        <div class="personal-income-tax-edit-form">
+            <DxFormLayout CaptionPosition="CaptionPosition.Vertical">
+                <DxFormLayoutItem Caption="Nhân viên" ColSpanMd="12">
+                    <DxTextBox Text="@Model.EmployeeDisplay" ReadOnly="true" ValidationEnabled="false" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Kỳ lương" ColSpanMd="12">
+                    <DxTextBox Text="@Model.PayrollPeriodDisplay" ReadOnly="true" ValidationEnabled="false" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Số tiền khấu trừ" ColSpanMd="12">
+                    <DxSpinEdit TValue="decimal"
+                                @bind-Value="Model.DeductionAmount"
+                                MinValue="0"
+                                Increment="100000"
+                                Mask="n2"
+                                Enabled="@CanEditFields"
+                                ShowValidationIcon="true" />
+                </DxFormLayoutItem>
+                @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    <DxFormLayoutItem ColSpanMd="12">
+                        <div class="edit-error-message">@ErrorMessage</div>
+                    </DxFormLayoutItem>
+                }
+            </DxFormLayout>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <DxButton Text="Hủy"
+                  Click="@(() => VisibleChanged.InvokeAsync(false))"
+                  IconUrl="@VntaDevExpressIcons.Cancel"
+                  Enabled="@(!IsSaving)"
+                  RenderStyle="ButtonRenderStyle.Secondary"
+                  RenderStyleMode="ButtonRenderStyleMode.Outline" />
+        <DxButton Text="Lưu"
+                  Click="SaveRequested"
+                  IconUrl="@VntaDevExpressIcons.Save"
+                  Enabled="@CanSave"
+                  RenderStyle="ButtonRenderStyle.Primary"
+                  RenderStyleMode="ButtonRenderStyleMode.Contained" />
+    </FooterContentTemplate>
+</DxPopup>

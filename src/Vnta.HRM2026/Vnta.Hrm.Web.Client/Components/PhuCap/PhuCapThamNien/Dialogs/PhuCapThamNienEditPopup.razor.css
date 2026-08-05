@@ -1,0 +1,27 @@
+.seniority-popup-footer,
+.seniority-edit-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.seniority-popup-action {
+    min-width: 7rem;
+}
+
+.seniority-edit-form {
+    padding: 0.25rem 0;
+}
+
+.form-error-message {
+    margin-bottom: 0.75rem;
+    color: var(--dxds-color-content-danger-default-rest);
+}
+
+.seniority-edit-actions {
+    gap: 0.5rem;
+}
+
+::deep .seniority-edit-readonly .dxbl-text-editor-input {
+    font-weight: 600;
+}

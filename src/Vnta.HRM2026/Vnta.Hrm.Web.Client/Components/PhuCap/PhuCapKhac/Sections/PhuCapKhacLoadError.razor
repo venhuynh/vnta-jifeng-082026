@@ -1,0 +1,10 @@
+<div class="other-allowance-load-error-card other-allowance-load-error-state">
+    <div class="other-allowance-load-error-title">Không thể tải dữ liệu phụ cấp khác</div>
+    <div class="other-allowance-load-error-message">@ErrorMessage</div>
+    <DxButton Text="Thử lại"
+              Click="RetryRequested"
+              IconUrl="@VntaDevExpressIcons.Refresh"
+              Enabled="@(!IsLoading)"
+              RenderStyle="ButtonRenderStyle.Primary"
+              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+</div>

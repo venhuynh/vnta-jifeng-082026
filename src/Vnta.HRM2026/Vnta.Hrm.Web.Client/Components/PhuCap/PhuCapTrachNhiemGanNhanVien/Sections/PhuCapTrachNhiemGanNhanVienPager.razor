@@ -1,0 +1,27 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemGanNhanVien.Sections
+
+<div class="employee-grade-list-pager" aria-label="Điều hướng trang gán cấp bậc nhân viên">
+    <span class="employee-grade-list-pager-summary">Hiển thị @RowCount/@TotalCount dòng</span>
+    @if (CanBrowsePages)
+    {
+        <DxPager PageCount="@PageCount" ActivePageIndex="@CurrentPageIndex" ActivePageIndexChanged="PageChanged" NavigationMode="PagerNavigationMode.NumericButtons" VisibleNumericButtonCount="7" />
+    }
+    <div class="employee-grade-list-page-size">
+        <span>Hiển thị</span>
+        <DxComboBox TData="int" TValue="int" Data="@PageSizeOptions" Value="@PageSize" ValueChanged="PageSizeChanged" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never" Enabled="@CanChangeFilters" CssClass="employee-grade-list-page-size-editor" />
+        <span>dòng/trang</span>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int RowCount { get; set; }
+    [Parameter] public int TotalCount { get; set; }
+    [Parameter] public int PageCount { get; set; }
+    [Parameter] public int CurrentPageIndex { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public IReadOnlyList<int> PageSizeOptions { get; set; } = [];
+    [Parameter] public bool CanChangeFilters { get; set; }
+    [Parameter] public bool CanBrowsePages { get; set; }
+    [Parameter] public EventCallback<int> PageChanged { get; set; }
+    [Parameter] public EventCallback<int> PageSizeChanged { get; set; }
+}

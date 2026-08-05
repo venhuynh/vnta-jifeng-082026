@@ -1,0 +1,63 @@
+.vnta-circular-progress-callout {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.875rem;
+    min-width: 0;
+    padding: 0.75rem 0.9rem;
+    border-radius: 1rem;
+    border: 1px solid color-mix(in srgb, #7cc7a0 45%, white);
+    background: linear-gradient(135deg, color-mix(in srgb, #edf9f1 94%, white) 0%, color-mix(in srgb, #d7f3e3 96%, white) 100%);
+    box-shadow: 0 0.9rem 2rem color-mix(in srgb, #0f5132 10%, transparent), inset 0 1px 0 color-mix(in srgb, white 82%, transparent);
+}
+
+.vnta-circular-progress-callout__content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 0.15rem;
+}
+
+.vnta-circular-progress-callout__title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #0f5132;
+}
+
+.vnta-circular-progress-callout__message {
+    font-size: 0.82rem;
+    line-height: 1.35;
+    color: #1f2937;
+}
+
+.vnta-circular-progress-callout__detail {
+    font-size: 0.76rem;
+    line-height: 1.35;
+    color: #4b5563;
+}
+
+.vnta-circular-progress-callout--compact {
+    padding: 0.55rem 0.75rem;
+    border-radius: 999px;
+    gap: 0.7rem;
+}
+
+.vnta-circular-progress-callout--compact .vnta-circular-progress-callout__title {
+    font-size: 0.82rem;
+}
+
+.vnta-circular-progress-callout--compact .vnta-circular-progress-callout__message,
+.vnta-circular-progress-callout--compact .vnta-circular-progress-callout__detail {
+    font-size: 0.72rem;
+}
+
+::deep .vnta-circular-progress-callout__bar {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 768px) {
+    .vnta-circular-progress-callout {
+        width: 100%;
+        border-radius: 1rem;
+    }
+}

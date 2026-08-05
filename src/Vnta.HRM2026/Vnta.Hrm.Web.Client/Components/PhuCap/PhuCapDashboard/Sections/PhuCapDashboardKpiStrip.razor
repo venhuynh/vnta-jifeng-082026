@@ -1,0 +1,21 @@
+@using Vnta.Hrm.Application.PhuCap.PhuCapDashboard.Policies
+@using Vnta.Hrm.Application.PhuCap.PhuCapTongHop.Contracts
+
+<div class="allowance-dashboard-kpi-strip">
+    <DashboardMetric Title="Tổng phụ cấp" Value="@FormatMoney(Dashboard.Overview.TotalAllowanceAmount)" Detail="@GetMoneyChangeText()" Trend="@GetMoneyChangeRatio()" />
+    <DashboardMetric Title="Nhân viên có phụ cấp" Value="@Dashboard.Overview.TotalCount.ToString("N0")" Detail="@GetCountChangeText()" Trend="@GetCountChangeRatio()" />
+    <DashboardMetric Title="Tỷ lệ đã khóa" Value="@Kpis.LockRate.ToString("P0", DisplayCulture)" Detail="@($"{Dashboard.Overview.LockedCount:N0} / {Dashboard.Overview.TotalCount:N0} bản ghi")" Trend="@Kpis.LockRate" />
+    <DashboardMetric Title="Bình quân / nhân viên" Value="@FormatMoney(Kpis.AverageAllowance)" Detail="@PeriodLabel" Trend="0" />
+</div>
+
+@code {
+    private static readonly System.Globalization.CultureInfo DisplayCulture = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
+    [Parameter, EditorRequired] public PayrollAllowanceDashboardDto Dashboard { get; set; } = default!;
+    [Parameter] public string PeriodLabel { get; set; } = string.Empty;
+    private PayrollAllowanceDashboardKpiResult Kpis => PayrollAllowanceDashboardMetricPolicy.CalculateKpis(Dashboard.Overview);
+    private static string FormatMoney(decimal amount) => amount.ToString("N0", DisplayCulture) + " đ";
+    private string GetMoneyChangeText() => Dashboard.PreviousPeriodOverview.TotalAllowanceAmount == 0m ? "So với kỳ trước: chưa có dữ liệu" : $"So với kỳ trước: {GetMoneyChangeRatio():P1}";
+    private string GetCountChangeText() => Dashboard.PreviousPeriodOverview.TotalCount == 0 ? "So với kỳ trước: chưa có dữ liệu" : $"So với kỳ trước: {GetCountChangeRatio():P1}";
+    private double GetMoneyChangeRatio() => PayrollAllowanceDashboardMetricPolicy.Compare(Dashboard.Overview.TotalAllowanceAmount, Dashboard.PreviousPeriodOverview.TotalAllowanceAmount).Ratio;
+    private double GetCountChangeRatio() => PayrollAllowanceDashboardMetricPolicy.Compare(Dashboard.Overview.TotalCount, Dashboard.PreviousPeriodOverview.TotalCount).Ratio;
+}

@@ -1,0 +1,215 @@
+@using Microsoft.AspNetCore.Components
+@using Vnta.Hrm.Web.Client.Models.Employees
+@using Vnta.Hrm.Web.Client.Models.Payroll
+@using Vnta.Hrm.Web.Client.Services.DataProviders
+@implements IDisposable
+
+@if (Model is not null)
+{
+    <DxFormLayout CssClass="basic-salary-form" CaptionPosition="CaptionPosition.Vertical">
+            <DxFormLayoutGroup Caption="@(IsCreatingNewSalaryRecord ? "Khởi tạo lương căn bản" : "Điều chỉnh lương căn bản")" ColSpanMd="12">
+                <DxFormLayoutItem Caption="Nhân viên" ColSpanMd="12">
+                    <DxComboBox TData="EmployeeRecord"
+                                TValue="Guid?"
+                                Data="@Employees"
+                                TextFieldName="@nameof(EmployeeRecord.EmployeeLookupText)"
+                                ValueFieldName="@nameof(EmployeeRecord.Id)"
+                                @bind-Value="Model.EmployeeId"
+                                CssClass="w-100"
+                                NullText="Chọn nhân viên"
+                                ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                Enabled="@(CanEditFields && !IsLoadingEmployees)"
+                                ShowValidationIcon="true"
+                                ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.EmployeeId)" />
+                    @if (!string.IsNullOrWhiteSpace(EmployeeLoadErrorMessage))
+                    {
+                        <div class="edit-error-message">@EmployeeLoadErrorMessage</div>
+                    }
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Mã nhân viên" ColSpanMd="6">
+                    <div class="readonly-field">@CurrentEmployeeCode</div>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Chức danh" ColSpanMd="6">
+                    <div class="readonly-field">@CurrentPositionName</div>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Phòng ban" ColSpanMd="12">
+                    <div class="readonly-field">@CurrentDepartmentName</div>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Tháng áp dụng" ColSpanMd="6">
+                    <DxSpinEdit T="int"
+                                @bind-Value="Model.PayrollMonth"
+                                MinValue="1"
+                                MaxValue="12"
+                                Increment="1"
+                                ShowSpinButtons="true"
+                                CssClass="w-100"
+                                Enabled="@CanEditFields"
+                                ShowValidationIcon="true"
+                                ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.PayrollMonth)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Năm áp dụng" ColSpanMd="6">
+                    <DxSpinEdit T="int"
+                                @bind-Value="Model.PayrollYear"
+                                MinValue="1"
+                                MaxValue="9999"
+                                Increment="1"
+                                ShowSpinButtons="true"
+                                CssClass="w-100"
+                                Enabled="@CanEditFields"
+                                ShowValidationIcon="true"
+                                ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.PayrollYear)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Lương căn bản" ColSpanMd="6">
+                    <DxSpinEdit T="decimal"
+                                @bind-Value="Model.BasicSalary"
+                                MinValue="@DecimalZero"
+                                Increment="@BasicSalaryIncrement"
+                                CssClass="w-100"
+                                Enabled="@CanEditFields"
+                                ShowValidationIcon="true"
+                                ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.BasicSalary)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Số ngày làm việc tiêu chuẩn" ColSpanMd="6">
+                    <DxSpinEdit T="decimal"
+                                @bind-Value="Model.StandardWorkingDays"
+                                MinValue="@DecimalZero"
+                                Increment="@StandardWorkingDaysIncrement"
+                                CssClass="w-100"
+                                Enabled="@CanEditFields"
+                                ShowValidationIcon="true"
+                                ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.StandardWorkingDays)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Lương ngày" ColSpanMd="6">
+                    <DxSpinEdit T="decimal"
+                                @bind-Value="Model.DailySalary"
+                                MinValue="@DecimalZero"
+                                Increment="@DailySalaryIncrement"
+                                CssClass="w-100"
+                                Enabled="@CanEditFields"
+                                ShowValidationIcon="true"
+                                ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.DailySalary)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Lương giờ" ColSpanMd="6">
+                    <DxSpinEdit T="decimal"
+                                @bind-Value="Model.HourlySalary"
+                                MinValue="@DecimalZero"
+                                Increment="@HourlySalaryIncrement"
+                                CssClass="w-100"
+                                Enabled="@CanEditFields"
+                                ShowValidationIcon="true"
+                                ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.HourlySalary)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Gợi ý" ColSpanMd="12">
+                    <div class="readonly-field">
+                        Nếu để lương ngày hoặc lương giờ bằng 0, hệ thống sẽ tự tính khi lưu dựa trên lương căn bản và 8 giờ làm việc chuẩn.
+                    </div>
+                </DxFormLayoutItem>
+            </DxFormLayoutGroup>
+    </DxFormLayout>
+
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <div class="edit-error-message" role="alert">@ErrorMessage</div>
+    }
+}
+
+@code {
+    private const decimal DecimalZero = 0m;
+    private const decimal BasicSalaryIncrement = 100000m;
+    private const decimal StandardWorkingDaysIncrement = 0.5m;
+    private const decimal DailySalaryIncrement = 10000m;
+    private const decimal HourlySalaryIncrement = 1000m;
+
+    private readonly CancellationTokenSource disposalTokenSource = new();
+
+    private IReadOnlyList<EmployeeRecord> Employees { get; set; } = [];
+
+    private bool IsLoadingEmployees { get; set; }
+
+    private string? EmployeeLoadErrorMessage { get; set; }
+
+    [Inject]
+    private EmployeeDataProvider EmployeeDataProvider { get; set; } = default!;
+
+    [Parameter]
+    public BasicSalaryRecord? Model { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public bool IsCreatingNewSalaryRecord { get; set; }
+
+    [Parameter]
+    public bool CanEditFields { get; set; }
+
+    private EmployeeRecord? SelectedEmployee =>
+        Model is null || Model.EmployeeId is null
+            ? null
+            : Employees.FirstOrDefault(employee => employee.Id == Model.EmployeeId.Value);
+
+    private string CurrentEmployeeCode =>
+        SelectedEmployee?.EmployeeCode
+        ?? Model?.EmployeeCode
+        ?? "--";
+
+    private string CurrentDepartmentName =>
+        SelectedEmployee?.DepartmentPath
+        ?? SelectedEmployee?.DepartmentName
+        ?? Model?.DepartmentPath
+        ?? Model?.DepartmentName
+        ?? "Chưa có phòng ban";
+
+    private string CurrentPositionName =>
+        SelectedEmployee?.PositionName
+        ?? Model?.PositionName
+        ?? "Chưa có chức danh";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployeesAsync();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task LoadEmployeesAsync()
+    {
+        IsLoadingEmployees = true;
+        EmployeeLoadErrorMessage = null;
+
+        try
+        {
+            Employees = (await EmployeeDataProvider.GetAsync(disposalTokenSource.Token))
+                .OrderBy(employee => employee.EmployeeLookupText, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+        catch (OperationCanceledException)
+        {
+            if (!disposalTokenSource.IsCancellationRequested)
+            {
+                throw;
+            }
+        }
+        catch (Exception)
+        {
+            Employees = [];
+            EmployeeLoadErrorMessage = "Không thể tải danh sách nhân viên để chọn lương căn bản.";
+        }
+        finally
+        {
+            IsLoadingEmployees = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        disposalTokenSource.Cancel();
+        disposalTokenSource.Dispose();
+    }
+}

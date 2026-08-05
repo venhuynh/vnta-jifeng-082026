@@ -1,0 +1,40 @@
+@using Microsoft.AspNetCore.Components
+@using Vnta.Hrm.Application.PhuCap.PhuCapChuyenCan.Queries
+
+<div class="attendance-allowance-export-source" aria-hidden="true">
+    <DxGrid @ref="ExportGrid"
+            Data="@Records"
+            ShowAllRows="true"
+            PagerVisible="false"
+            TextWrapEnabled="true">
+        <Columns>
+            <DxGridDataColumn FieldName="EmployeeCode" Caption="Mã nhân viên" />
+            <DxGridDataColumn FieldName="EmployeeName" Caption="Nhân viên" />
+            <DxGridDataColumn FieldName="DepartmentName" Caption="Phòng ban" />
+            <DxGridDataColumn FieldName="PositionName" Caption="Chức vụ" />
+            <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" />
+            <DxGridDataColumn FieldName="ActualWorkdayCount" Caption="Công thực tế" DisplayFormat="0.0" />
+            <DxGridDataColumn FieldName="StandardWorkdayCount" Caption="Công chuẩn" DisplayFormat="0.0" />
+            <DxGridDataColumn FieldName="AttendanceRate" Caption="Tỷ lệ chuyên cần" DisplayFormat="p1" />
+            <DxGridDataColumn FieldName="ActualAllowanceAmount" Caption="Phụ cấp thực tế" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="LockStatusText" Caption="Trạng thái khóa" />
+        </Columns>
+    </DxGrid>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<AttendanceAllowanceExportRowDto> Records { get; set; } = [];
+    [Parameter] public EventCallback Rendered { get; set; }
+
+    private IGrid? ExportGrid { get; set; }
+
+    public Task ExportToExcelAsync(string fileName) => GetExportGrid().ExportToXlsxAsync(fileName);
+
+    public Task ExportToPdfAsync(string fileName) => GetExportGrid().ExportToPdfAsync(fileName);
+
+    protected override Task OnAfterRenderAsync(bool firstRender) =>
+        Records.Count > 0 ? Rendered.InvokeAsync() : Task.CompletedTask;
+
+    private IGrid GetExportGrid() => ExportGrid
+        ?? throw new InvalidOperationException("Lưới xuất dữ liệu chưa sẵn sàng.");
+}

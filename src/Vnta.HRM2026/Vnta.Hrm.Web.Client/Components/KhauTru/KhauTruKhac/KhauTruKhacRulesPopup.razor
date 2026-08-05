@@ -1,0 +1,29 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Thông tin khấu trừ khác"
+         Width="540px"
+         ShowCloseButton="true"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         FooterCssClass="other-deduction-popup-footer"
+         CssClass="other-deduction-rules-popup">
+    <BodyContentTemplate>
+        <div class="rules-popup-content">
+            <div class="rules-popup-section">
+                <div class="rules-popup-title">Khấu trừ khác</div>
+                <div class="rules-popup-text">
+                    Các khoản khấu trừ khác được cập nhật theo dữ liệu và chính sách hiện hành.
+                </div>
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <DxButton Text="Đóng"
+                  Click="CloseAsync"
+                  IconUrl="@VntaDevExpressIcons.Cancel"
+                  CssClass="other-deduction-popup-action"
+                  RenderStyle="ButtonRenderStyle.Secondary"
+                  RenderStyleMode="ButtonRenderStyleMode.Outline" />
+    </FooterContentTemplate>
+</DxPopup>

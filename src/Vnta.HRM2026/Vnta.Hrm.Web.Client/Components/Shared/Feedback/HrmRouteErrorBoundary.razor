@@ -1,0 +1,32 @@
+@namespace Vnta.Hrm.Web.Client.Components.Shared.Feedback
+@using Vnta.Hrm.Web.Client.Components.Layout
+@inject NavigationManager NavigationManager
+
+<ErrorBoundary @ref="errorBoundary">
+    <ChildContent>
+        @ChildContent
+    </ChildContent>
+    <ErrorContent Context="exception">
+        <LayoutView Layout="@typeof(MainLayout)">
+            <section class="hrm-route-error" role="alert" aria-live="assertive">
+                <h1>Không thể hiển thị nội dung</h1>
+                <p>Đã xảy ra lỗi khi tải màn hình này. Dữ liệu chưa được thay đổi.</p>
+                <div class="hrm-route-error__actions">
+                    <DxButton Text="Thử lại" RenderStyle="ButtonRenderStyle.Primary" Click="Recover" />
+                    <DxButton Text="Tải lại trang" Click="ReloadPage" />
+                </div>
+            </section>
+        </LayoutView>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    private ErrorBoundary? errorBoundary;
+
+    private void Recover() => errorBoundary?.Recover();
+
+    private void ReloadPage() => NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+}

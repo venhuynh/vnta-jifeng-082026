@@ -1,0 +1,34 @@
+::deep .meal-allowance-edit-popup {
+    max-width: min(96vw, 520px);
+}
+
+.meal-allowance-edit-form {
+    padding: 0.25rem 0;
+}
+
+.meal-allowance-edit-actions,
+.meal-allowance-popup-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.meal-allowance-popup-action {
+    min-width: 7rem;
+}
+
+.form-error-message {
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+    color: var(--dxds-color-content-danger-default-rest);
+}
+
+::deep .meal-allowance-edit-readonly .dxbl-text-editor-input {
+    font-weight: 600;
+}
+
+::deep .meal-allowance-edit-calculated .dxbl-text-editor-input {
+    color: var(--allowance-color-success);
+}

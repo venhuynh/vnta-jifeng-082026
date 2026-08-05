@@ -1,0 +1,199 @@
+.content-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.toolbar {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+.attendance-devices-root {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    background-clip: border-box;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+}
+
+.empty-state,
+.error-state {
+    height: 100%;
+    min-height: 18rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.state-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.state-message {
+    max-width: 32rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+.activation-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.readonly-field {
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+    background-color: var(--dxds-color-surface-neutral-subtle-rest);
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.validation-summary {
+    margin-top: 1rem;
+    color: var(--dxbl-validation-summary-text-color, #b42318);
+}
+
+.edit-error-message {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    background-color: #fff2f0;
+    color: #b42318;
+}
+
+.status-badge,
+.usage-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.75rem;
+    padding: 0.125rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge-active,
+.usage-badge-active {
+    background-color: #e7f6ec;
+    color: #18794e;
+}
+
+.status-badge-pending {
+    background-color: #fff4e5;
+    color: #b26a00;
+}
+
+.status-badge-idle {
+    background-color: #e9f2ff;
+    color: #0059b2;
+}
+
+.status-badge-draft,
+.usage-badge-inactive {
+    background-color: #eef1f6;
+    color: #536076;
+}
+
+.attendance-device-name-cell {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.attendance-device-name-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.attendance-device-detail-action {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+}
+
+.attendance-devices-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+::deep .attendance-device-detail-button {
+    width: 2rem;
+    height: 2rem;
+    min-width: 2rem;
+    padding: 0;
+}
+
+::deep .attendance-devices-loading-panel {
+    height: 100%;
+}
+
+::deep .attendance-devices-grid {
+    max-height: 100%;
+    border-radius: 0.25rem;
+}
+
+::deep .attendance-devices-popup {
+    width: min(62rem, calc(100vw - 2rem));
+    max-height: min(80vh, 44rem);
+    overflow-y: auto;
+}
+
+::deep .attendance-device-form {
+    width: 100%;
+    max-height: min(72vh, 36rem);
+    overflow-y: auto;
+    padding-right: 0.25rem;
+    box-sizing: border-box;
+}
+
+::deep .attendance-devices-form-action {
+    min-width: 6.5rem;
+}
+
+::deep .usage-toggle-item .dxbl-fl-cpt {
+    margin-bottom: 0.5rem;
+}
+
+::deep .usage-toggle-item .dxbl-fl-ctrl {
+    display: flex;
+    align-items: center;
+    min-height: 2.5rem;
+}
+
+::deep .search-textbox-item {
+    max-width: 14rem;
+}

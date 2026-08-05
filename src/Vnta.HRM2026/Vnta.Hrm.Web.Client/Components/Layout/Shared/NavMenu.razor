@@ -1,0 +1,30 @@
+@using Vnta.Hrm.Web.Client.Navigation
+
+@if (ShowLoadingState)
+{
+    <div class="main-menu main-menu-status" role="status" aria-live="polite">Đang tải menu...</div>
+}
+else if (ShowEmptyState)
+{
+    <div class="main-menu main-menu-status" role="status" aria-live="polite">No menu items available for the current role.</div>
+}
+else
+{
+    <DxTreeView @key="RenderKey"
+                AllowSelectNodes="true"
+                SelectionChanged="HandleSelectionChanged"
+                NodeExpandCollapseAction="TreeViewNodeExpandCollapseAction.NodeClick"
+                AnimationType="LayoutAnimationType.Slide"
+                ShowFilterPanel="true"
+                TextWrapEnabled="true"
+                FilterMode="NavigationFilterMode.Nodes"
+                UrlMatchMode="NavigationUrlMatchMode.CurrentPath"
+                CssClass="main-menu">
+        <Nodes>
+            @foreach (var node in VisibleNodes)
+            {
+                <NavMenuTreeNode @key="node.Key" Node="@node" CurrentPath="@CurrentPath" />
+            }
+        </Nodes>
+    </DxTreeView>
+}

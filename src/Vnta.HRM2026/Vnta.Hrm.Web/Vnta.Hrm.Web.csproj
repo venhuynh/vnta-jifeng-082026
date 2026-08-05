@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?><Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableDefaultItems>False</EnableDefaultItems>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-Vnta-Hrm-Web-53bc9b9d-9d6a-45d4-8429-2a2761773502</UserSecretsId>
+    <RootNamespace>Vnta.Hrm.Web</RootNamespace>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="DevExtreme.AspNet.Data" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Microsoft.Identity.Client" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Formatting.Compact" />
+    <PackageReference Include="Serilog.Settings.Configuration" />
+    <PackageReference Include="Serilog.Sinks.Async" />
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vnta.Hrm.Application\Vnta.Hrm.Application.csproj" />
+    <ProjectReference Include="..\Vnta.Hrm.Infrastructure\Vnta.Hrm.Infrastructure.csproj" />
+    <ProjectReference Include="..\Vnta.Hrm.Web.Client\Vnta.Hrm.Web.Client.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DevExpress.AIIntegration" VersionOverride="26.1.3" />
+    <PackageReference Include="DevExpress.Blazor" VersionOverride="26.1.3" />
+    <PackageReference Include="DevExpress.Images.Blazor" VersionOverride="26.1.3" />
+    <PackageReference Include="DevExpress.Drawing.Skia" VersionOverride="26.1.3" />
+    
+    
+    
+    
+    
+    
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="**/*.cs" Exclude="obj/**/*.cs;.artifacts/**/*.cs;artifacts/**/*.cs;bin/**/*.cs;.tmp/**/*.cs" />
+    <Content Include="Components\**\*.razor" />
+    <Content Include="Components\**\*.css" />
+    <Content Include="wwwroot\**\*.*" />
+    <Content Include="*.json" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="Localization\vi\*.resources.dll" TargetPath="vi\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <!-- Guard against stale VS/MSBuild metadata from the old attendance-gateway bootstrap copy. -->
+  <Target Name="RemoveLegacyAttendanceGatewayBootstrapArtifacts" BeforeTargets="AssignTargetPaths">
+    <ItemGroup>
+      <_LegacyAttendanceGatewayBootstrap Include="@(Content)" Condition="'%(Content.Filename)%(Content.Extension)' == 'InitialCreate.sql'&#xD;&#xA;                                         Or '%(Content.TargetPath)' == 'Schemas\\AttendanceGateway\\InitialCreate.sql'&#xD;&#xA;                                         Or '%(Content.Link)' == 'Schemas\\AttendanceGateway\\InitialCreate.sql'" />
+      <_LegacyAttendanceGatewayBootstrap Include="@(None)" Condition="'%(None.Filename)%(None.Extension)' == 'InitialCreate.sql'&#xD;&#xA;                                         Or '%(None.TargetPath)' == 'Schemas\\AttendanceGateway\\InitialCreate.sql'&#xD;&#xA;                                         Or '%(None.Link)' == 'Schemas\\AttendanceGateway\\InitialCreate.sql'" />
+      <Content Remove="@(_LegacyAttendanceGatewayBootstrap)" />
+      <None Remove="@(_LegacyAttendanceGatewayBootstrap)" />
+    </ItemGroup>
+  </Target>
+</Project>
+

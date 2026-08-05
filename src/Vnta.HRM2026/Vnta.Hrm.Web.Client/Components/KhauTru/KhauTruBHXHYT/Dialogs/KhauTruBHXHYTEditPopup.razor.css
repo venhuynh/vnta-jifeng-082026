@@ -1,0 +1,33 @@
+.insurance-deduction-popup-footer,
+.insurance-deduction-edit-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.insurance-deduction-edit-actions {
+    gap: 0.5rem;
+}
+
+.insurance-deduction-popup-action {
+    min-width: 7rem;
+}
+
+.insurance-deduction-form-scroll,
+::deep .insurance-deduction-form {
+    width: 100%;
+}
+
+.insurance-deduction-field-help {
+    margin-top: 0.35rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.75rem;
+}
+
+.insurance-deduction-edit-error-message {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    background-color: #fff2f0;
+    color: #b42318;
+}

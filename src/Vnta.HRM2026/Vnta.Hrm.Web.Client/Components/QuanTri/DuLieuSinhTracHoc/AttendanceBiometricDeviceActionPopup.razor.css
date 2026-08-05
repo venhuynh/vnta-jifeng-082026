@@ -1,0 +1,139 @@
+.attendance-biometric-device-action-content {
+    min-height: 30rem;
+}
+
+.attendance-biometric-device-action-subtitle {
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .attendance-biometric-device-action-form {
+    width: 100%;
+}
+
+.device-selection-host {
+    min-height: 22rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.device-selection-toolbar {
+    display: flex;
+    justify-content: flex-end;
+}
+
+::deep .device-selection-search {
+    width: min(20rem, 100%);
+}
+
+.device-selection-state {
+    min-height: 18rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.device-selection-state-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.device-selection-state-message {
+    max-width: 34rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .attendance-biometric-device-action-loading-panel {
+    flex: 1 1 auto;
+    min-height: 18rem;
+}
+
+::deep .attendance-biometric-device-action-grid {
+    max-height: min(48vh, 26rem);
+    border-radius: 0.25rem;
+}
+
+.usage-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.75rem;
+    padding: 0.125rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.usage-badge-active {
+    background-color: #e7f6ec;
+    color: #18794e;
+}
+
+.usage-badge-inactive {
+    background-color: #eef1f6;
+    color: #536076;
+}
+
+.attendance-biometric-device-action-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--dxds-color-border-neutral-default-rest);
+}
+
+::deep .attendance-biometric-device-action-submit-button .dxbl-btn-content {
+    width: 100%;
+}
+
+.attendance-biometric-device-action-button-content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 11rem;
+}
+
+.attendance-biometric-device-action-button-icon {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+}
+
+::deep .attendance-biometric-device-action-submit-button .dxbl-wait-indicator {
+    --dxbl-wait-indicator-color: currentColor;
+    flex: 0 0 auto;
+}
+
+@media (max-width: 768px) {
+    .attendance-biometric-device-action-content {
+        min-height: 24rem;
+    }
+
+    .device-selection-host,
+    .device-selection-state,
+    ::deep .attendance-biometric-device-action-loading-panel {
+        min-height: 15rem;
+    }
+
+    ::deep .device-selection-search {
+        width: 100%;
+    }
+
+    .attendance-biometric-device-action-footer {
+        flex-wrap: wrap;
+        justify-content: stretch;
+    }
+}

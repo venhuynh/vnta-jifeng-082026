@@ -1,0 +1,47 @@
+<DxPopup Visible="@State.Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Quy tắc phụ cấp khác"
+         Width="min(56rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         FooterCssClass="other-allowance-rules-popup-footer"
+         CssClass="other-allowance-rules-popup">
+    <BodyContentTemplate>
+        <div class="other-allowance-rules-content">
+            <div class="other-allowance-rules-period">Kỳ đang xem: @PeriodLabel</div>
+            <div class="other-allowance-rules-section">
+                <div class="other-allowance-rules-title">Phạm vi áp dụng</div>
+                <div class="other-allowance-rules-text">
+                    Quy tắc hiện hành của Phụ cấp khác là quy tắc tĩnh trong dịch vụ nghiệp vụ,
+                    không có phiên bản riêng theo kỳ lương.
+                </div>
+            </div>
+            <div class="other-allowance-rules-section">
+                <div class="other-allowance-rules-title">Dữ liệu phụ cấp</div>
+                <ul class="other-allowance-rules-list">
+                    <li>Tên phụ cấp là bắt buộc và không vượt quá 256 ký tự.</li>
+                    <li>Số tiền phụ cấp không được nhỏ hơn 0 đồng.</li>
+                    <li>Loại áp dụng <strong>Cố định</strong> lưu số tiền làm tròn đến đơn vị đồng.</li>
+                    <li>Loại áp dụng <strong>Không cố định</strong> luôn lưu số tiền bằng 0 đồng.</li>
+                </ul>
+            </div>
+            <div class="other-allowance-rules-section">
+                <div class="other-allowance-rules-title">Khóa và đồng thời dữ liệu</div>
+                <ul class="other-allowance-rules-list">
+                    <li>Không thể điều chỉnh khi dòng phụ cấp hoặc bản ghi tổng hợp phụ cấp đã khóa.</li>
+                    <li>Mỗi lần điều chỉnh phải khớp phiên bản dữ liệu đang lưu để tránh ghi đè thao tác khác.</li>
+                </ul>
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <DxButton Text="Đóng"
+                  Click="CloseAsync"
+                  IconUrl="@VntaDevExpressIcons.Cancel"
+                  CssClass="other-allowance-rules-popup-action"
+                  RenderStyle="ButtonRenderStyle.Secondary"
+                  RenderStyleMode="ButtonRenderStyleMode.Outline" />
+    </FooterContentTemplate>
+</DxPopup>

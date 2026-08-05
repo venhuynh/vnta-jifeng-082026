@@ -1,0 +1,15 @@
+@using System.Globalization
+
+<div class="other-allowance-grid-header">
+    <div class="other-allowance-summary-strip">
+        <DxButtonGroup CssClass="other-allowance-summary-button-group" RenderStyle="ButtonRenderStyle.Secondary" RenderStyleMode="ButtonRenderStyleMode.Outline">
+            <Items><DxButtonGroupItem Text="@($"Bản ghi: {State.TotalRecordCount:N0}")" Tooltip="Tổng số dòng phụ cấp khác phù hợp với kỳ lương và điều kiện tìm kiếm." CssClass="other-allowance-summary-button" /></Items>
+        </DxButtonGroup>
+        <DxButtonGroup CssClass="other-allowance-total-button-group" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Outline">
+            <Items><DxButtonGroupItem Text="@($"Tổng phụ cấp: {FormatVnd(State.TotalAllowanceAmount)}")" Tooltip="Tổng tiền phụ cấp khác phù hợp với kỳ lương và điều kiện tìm kiếm." CssClass="other-allowance-total-button" /></Items>
+        </DxButtonGroup>
+    </div>
+    <div class="other-allowance-grid-search">
+        <DxSearchBox CssClass="other-allowance-grid-searchbox" NullText="Tìm kiếm mã nhân viên, họ tên, tên phụ cấp hoặc ghi chú" BindValueMode="BindValueMode.OnDelayedInput" InputDelay="500" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" Text="@State.SearchText" TextChanged="SearchTextChanged" Enabled="@(!State.IsLoading)" />
+    </div>
+</div>

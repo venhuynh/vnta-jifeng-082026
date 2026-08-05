@@ -1,0 +1,25 @@
+@namespace Vnta.Hrm.Web.Client.Components
+
+<div class="@(string.Join(' ', "avatar-container", CssClass, SuppressHover ? "no-hover" : ""))"
+     style="@AvatarBackgroundStyle"
+     role="@AvatarRole"
+     aria-label="@AltText">
+</div>
+
+@code {
+    [Parameter]
+    public string? Src { get; set; }
+    [Parameter]
+    public string? AltText { get; set; }
+    [Parameter]
+    public string CssClass { get; set; } = string.Empty;
+    [Parameter]
+    public bool SuppressHover { get; set; }
+
+    private string? AvatarRole => string.IsNullOrWhiteSpace(AltText) ? null : "img";
+
+    private string? AvatarBackgroundStyle => string.IsNullOrWhiteSpace(Src)
+        ? null
+        : $"--user-avatar-image: url('{Src.Trim().Replace("'", "%27", StringComparison.Ordinal).Replace(")", "%29", StringComparison.Ordinal)}');";
+}
+

@@ -1,0 +1,93 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Web.Client.Models.Employees
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="min(48rem, calc(100vw - 2rem))"
+         ShowFooter="true"
+         ShowCloseButton="@(!IsSaving)"
+         CloseOnEscape="@(!IsSaving)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="family-deduction-popup-footer"
+         CssClass="family-deduction-edit-popup">
+    <BodyContentTemplate Context="editPopupBody">
+        <CascadingValue Value="@EditContext">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <DxFormLayout CaptionPosition="CaptionPosition.Vertical" CssClass="family-deduction-form w-100">
+                <DxFormLayoutGroup Caption="Thông tin người phụ thuộc" ColSpanMd="6">
+                    <DxFormLayoutItem Caption="Nhân viên" ColSpanMd="12">
+                        @if (Model.Id != Guid.Empty)
+                        {
+                            <DxTextBox Text="@EmployeeDisplay"
+                                       ReadOnly="true"
+                                       ValidationEnabled="false"
+                                       CssClass="family-deduction-edit-readonly" />
+                        }
+                        else
+                        {
+                            <DxComboBox TData="EmployeeRecord" TValue="Guid"
+                                        Data="@Employees"
+                                        @bind-Value="Model.EmployeeId"
+                                        ValueFieldName="@nameof(EmployeeRecord.Id)"
+                                        TextFieldName="@nameof(EmployeeRecord.EmployeeLookupText)"
+                                        SearchMode="ListSearchMode.AutoSearch"
+                                        Enabled="@CanChangeEmployee" />
+                        }
+                        <ValidationMessage For="@(() => Model.EmployeeId)" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Họ và tên người phụ thuộc" ColSpanMd="12">
+                        <DxTextBox @bind-Text="Model.DependentFullName" Enabled="@CanEditFields" />
+                        <ValidationMessage For="@(() => Model.DependentFullName)" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Giới tính" ColSpanMd="12">
+                        <DxComboBox TData="string" TValue="string"
+                                    Data="@GenderOptions"
+                                    @bind-Value="Model.DependentGender"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                    Enabled="@CanEditFields" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Ngày sinh" ColSpanMd="12"><DxDateEdit @bind-Date="Model.DependentBirthDate" Enabled="@CanEditFields" /></DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Quan hệ với nhân viên" ColSpanMd="12"><DxTextBox @bind-Text="Model.RelationshipToEmployee" Enabled="@CanEditFields" /></DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Quốc tịch" ColSpanMd="12"><DxTextBox @bind-Text="Model.DependentNationality" Enabled="@CanEditFields" /></DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="CCCD/CMND người phụ thuộc" ColSpanMd="12"><DxTextBox @bind-Text="Model.DependentIdentityNumber" Enabled="@CanEditFields" /></DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Mã số thuế người phụ thuộc" ColSpanMd="12"><DxTextBox @bind-Text="Model.DependentTaxCode" Enabled="@CanEditFields" /></DxFormLayoutItem>
+                </DxFormLayoutGroup>
+                <DxFormLayoutGroup Caption="Đăng ký giảm trừ" ColSpanMd="6">
+                    <DxFormLayoutItem Caption="Mã số thuế nhân viên" ColSpanMd="12"><DxTextBox @bind-Text="Model.EmployeeTaxCode" Enabled="@CanEditFields" /></DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="CCCD/CMND nhân viên" ColSpanMd="12"><DxTextBox @bind-Text="Model.EmployeeIdentityNumber" Enabled="@CanEditFields" /></DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Ngày đăng ký" ColSpanMd="12"><DxDateEdit @bind-Date="Model.RegistrationDate" Enabled="@CanEditFields" /></DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Sổ đăng ký" ColSpanMd="12"><DxTextBox @bind-Text="Model.RegistrationBookNumber" Enabled="@CanEditFields" /></DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Trang đăng ký" ColSpanMd="12"><DxTextBox @bind-Text="Model.RegistrationPageNumber" Enabled="@CanEditFields" /></DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Hiệu lực từ tháng" ColSpanMd="12"><DxDateEdit @bind-Date="Model.DeductionFromMonth" Enabled="@CanEditFields" /></DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Hiệu lực đến tháng" ColSpanMd="12"><DxDateEdit @bind-Date="Model.DeductionToMonth" Enabled="@CanEditFields" /></DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Trạng thái" ColSpanMd="12"><DxCheckBox @bind-Checked="Model.IsFamilyDeductionRegistered" Enabled="@CanEditFields">Đã đăng ký giảm trừ gia cảnh</DxCheckBox></DxFormLayoutItem>
+                </DxFormLayoutGroup>
+                <DxFormLayoutItem Caption="Ghi chú" ColSpanMd="12"><DxMemo @bind-Text="Model.GhiChu" Rows="3" Enabled="@CanEditFields" /></DxFormLayoutItem>
+            </DxFormLayout>
+        </CascadingValue>
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <div class="family-deduction-edit-error" role="alert">@ErrorMessage</div>
+        }
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="family-deduction-popup-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      Enabled="@(!IsSaving)"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="family-deduction-popup-action"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Lưu"
+                      Click="SaveAsync"
+                      Enabled="@CanSave"
+                      IconUrl="@VntaDevExpressIcons.Save"
+                      CssClass="family-deduction-popup-action"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

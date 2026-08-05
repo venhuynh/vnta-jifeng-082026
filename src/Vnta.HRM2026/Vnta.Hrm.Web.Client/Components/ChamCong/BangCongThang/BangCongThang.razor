@@ -1,0 +1,281 @@
+@page "/attendance/monthly-work-summaries"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Components.ChamCong.BangCongNgay
+@using Vnta.Hrm.Web.Client.Models
+
+@attribute [Authorize(Policy = InternalAccountPolicies.AttendanceAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>Bảng công tháng</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Bảng công tháng"
+                   CssClass="toolbar"
+                   ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-filter-item"
+                           Tooltip="Chọn năm để dựng lại khung cột ngày công">
+                <Template>
+                    <div class="custom-item toolbar-filter-editor">
+                        <span class="toolbar-filter-label">Năm</span>
+                        <DxSpinEdit T="int"
+                                    Value="@ToolbarYear"
+                                    ValueChanged="OnToolbarYearChangedAsync"
+                                    MinValue="@MinimumSupportedYear"
+                                    MaxValue="@MaximumSupportedYear"
+                                    Increment="1"
+                                    ShowSpinButtons="true"
+                                    Enabled="@CanChangeFilters"
+                                    CssClass="toolbar-filter-year" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-filter-item"
+                           Tooltip="Chọn tháng để dựng lại khung cột ngày công">
+                <Template>
+                    <div class="custom-item toolbar-filter-editor">
+                        <span class="toolbar-filter-label">Tháng</span>
+                        <DxComboBox TData="MonthOption"
+                                    TValue="int"
+                                    @key="ToolbarYear"
+                                    Data="@AvailableMonthOptions"
+                                    Value="@ToolbarMonth"
+                                    ValueChanged="OnToolbarMonthChangedAsync"
+                                    ValueFieldName="@nameof(MonthOption.Value)"
+                                    TextFieldName="@nameof(MonthOption.Text)"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                    Enabled="@CanChangeFilters"
+                                    CssClass="toolbar-filter-month" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Xem"
+                           Tooltip="Tải trang nhân viên của tháng và năm đang chọn"
+                           Enabled="@CanChangeFilters"
+                           Click="OnViewClickAsync"
+                           Alignment="ToolbarItemAlignment.Right" />
+        </DxToolbar>
+    </div>
+
+    <div class="bang-cong-thang-root">
+        <div class="card bang-cong-thang-grid-card">
+            <HrmLoadingPanel Visible="@IsBusy"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             Text="@LoadingText"
+                             CssClass="bang-cong-thang-loading-panel">
+                <div class="bang-cong-thang-grid-content">
+                    <div class="bang-cong-thang-grid-header">
+                        <div class="bang-cong-thang-summary-strip" aria-label="Tổng kết bảng công của trang hiện tại">
+                            <DxButtonGroup CssClass="bang-cong-thang-summary-button-group"
+                                           RenderStyle="ButtonRenderStyle.Secondary"
+                                           RenderStyleMode="ButtonRenderStyleMode.Outline">
+                                <Items>
+                                    @foreach(var summary in DayTypeSummaries)
+                                    {
+                                        <DxButtonGroupItem Text="@($"{summary.Label}: {summary.Count:N0}")"
+                                                           Tooltip="@summary.Tooltip"
+                                                           CssClass="@summary.CssClass" />
+                                    }
+                                </Items>
+                            </DxButtonGroup>
+                            @if(AttendanceResultCodeSummaries.Count > 0)
+                            {
+                                <DxButtonGroup CssClass="bang-cong-thang-summary-button-group"
+                                               RenderStyle="ButtonRenderStyle.Secondary"
+                                               RenderStyleMode="ButtonRenderStyleMode.Outline">
+                                    <Items>
+                                        @foreach(var summary in AttendanceResultCodeSummaries)
+                                        {
+                                            <DxButtonGroupItem Text="@($"{summary.Code}: {summary.Count:N0}")"
+                                                               Tooltip="@summary.Tooltip"
+                                                               CssClass="bang-cong-thang-summary-button bang-cong-thang-summary-button--result" />
+                                        }
+                                    </Items>
+                                </DxButtonGroup>
+                            }
+                        </div>
+                        <div class="bang-cong-thang-grid-search">
+                            <DxSearchBox CssClass="bang-cong-thang-grid-searchbox"
+                                         NullText="Tìm kiếm mã nhân viên, họ tên, bộ phận hoặc chức vụ"
+                                         BindValueMode="BindValueMode.OnDelayedInput"
+                                         InputDelay="500"
+                                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                         Text="@SearchText"
+                                         TextChanged="OnSearchTextChangedAsync"
+                                         Enabled="@CanChangeFilters" />
+                        </div>
+                    </div>
+
+                    <DxGrid @key="GridRenderVersion"
+                            Data="@GridRows"
+                            KeyFieldName="@nameof(MonthlyWorkSummaryGridRowRecord.Id)"
+                            CssClass="bang-cong-thang-grid"
+                            PagerVisible="false"
+                            ShowAllRows="true"
+                            ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                            TextWrapEnabled="false"
+                            HighlightRowOnHover="true"
+                            UnboundColumnData="OnGridUnboundColumnData">
+                        <Columns>
+                            <DxGridBandColumn Caption="Thông tin nhân viên"
+                                              Name="EmployeeInfoBand">
+                                <HeaderCaptionTemplate>
+                                    <div class="bang-cong-thang-band-header">Thông tin nhân viên</div>
+                                </HeaderCaptionTemplate>
+                                <Columns>
+                                    <DxGridDataColumn FieldName="@nameof(MonthlyWorkSummaryGridRowRecord.RowNumber)"
+                                                      Caption="STT"
+                                                      Width="72px"
+                                                      MinWidth="72"
+                                                      FixedPosition="GridColumnFixedPosition.Left"
+                                                      AllowSort="false" />
+                                    <DxGridDataColumn FieldName="@nameof(MonthlyWorkSummaryGridRowRecord.EmployeeName)"
+                                                      Caption="Nhân viên"
+                                                      Width="320px"
+                                                      MinWidth="280"
+                                                      FixedPosition="GridColumnFixedPosition.Left"
+                                                      AllowSort="false">
+                                        <CellDisplayTemplate Context="cellContext">
+                                            @{
+                                                var employee = (MonthlyWorkSummaryGridRowRecord)cellContext.DataItem;
+                                            }
+                                            <div class="bang-cong-thang-employee-cell"
+                                                 title="@GetEmployeeCellTooltip(employee)">
+                                                <div class="bang-cong-thang-employee-primary">
+                                                    <span class="bang-cong-thang-employee-code">@employee.EmployeeCode</span>
+                                                    <span class="bang-cong-thang-employee-name">@employee.EmployeeName</span>
+                                                </div>
+                                                <div class="bang-cong-thang-employee-secondary">@employee.DepartmentName - @employee.PositionName</div>
+                                            </div>
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+                                </Columns>
+                            </DxGridBandColumn>
+
+                            <DxGridBandColumn Caption="@WorkingDaysBandCaption"
+                                              Name="WorkingDaysBand">
+                                <HeaderCaptionTemplate>
+                                    <div class="bang-cong-thang-band-header">@WorkingDaysBandCaption</div>
+                                </HeaderCaptionTemplate>
+                                <Columns>
+                                    @foreach (var column in DateColumns)
+                                    {
+                                        <DxGridBandColumn Caption="@column.DateCaption"
+                                                          Name="@column.BandName">
+                                            <HeaderCaptionTemplate>
+                                                <div class="@GetDayBandHeaderCssClass(column)">
+                                                    <span>@column.DateCaption</span>
+                                                </div>
+                                            </HeaderCaptionTemplate>
+                                            <Columns>
+                                                <DxGridDataColumn FieldName="@column.FieldName"
+                                                                  Name="@column.FieldName"
+                                                                  Caption="@column.WeekdayText"
+                                                                  UnboundType="GridUnboundColumnType.String"
+                                                                  Width="96px"
+                                                                  MinWidth="96"
+                                                                  AllowSort="false"
+                                                                  SearchEnabled="false">
+                                                    <HeaderCaptionTemplate>
+                                                        <div class="@GetDayHeaderCssClass(column)">
+                                                            <span>@column.WeekdayText</span>
+                                                        </div>
+                                                    </HeaderCaptionTemplate>
+                                                    <CellDisplayTemplate Context="cellContext">
+                                                        @{
+                                                            var row = (MonthlyWorkSummaryGridRowRecord)cellContext.DataItem;
+                                                            var summary = GetDaySummary(row, column);
+                                                        }
+                                                        <div class="@GetDayCellCssClass(summary)"
+                                                             title="@GetDayCellTooltip(summary)"
+                                                             @onclick="@(() => OpenDayDetailAsync(row, summary))"
+                                                             @onclick:stopPropagation="true"
+                                                             role="button"
+                                                             tabindex="@(summary is null ? "-1" : "0")"
+                                                             aria-label="@GetDayCellDetailAriaLabel(summary)">
+                                                            @if (summary is not null)
+                                                            {
+                                                                <DxButton IconUrl="@GetDayCellLockIconUrl(summary)"
+                                                                          CssClass="@GetDayCellLockIconCssClass(summary)"
+                                                                          RenderStyle="ButtonRenderStyle.Link"
+                                                                          Enabled="false"
+                                                                          Tooltip="@GetDayCellLockStatusText(summary)" />
+
+                                                                @if (HasDayCellTime(summary))
+                                                                {
+                                                                    <div class="bang-cong-thang-day-cell-times">
+                                                                        @if (summary.CheckInDisplay is not null)
+                                                                        {
+                                                                            <span class="bang-cong-thang-day-cell-time bang-cong-thang-day-cell-check-in">@summary.CheckInDisplay</span>
+                                                                        }
+                                                                        @if (summary.CheckOutDisplay is not null)
+                                                                        {
+                                                                            <span class="bang-cong-thang-day-cell-time bang-cong-thang-day-cell-check-out">@summary.CheckOutDisplay</span>
+                                                                        }
+                                                                    </div>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="bang-cong-thang-day-cell-result-code">@GetAttendanceResultCode(summary)</span>
+                                                                }
+                                                            }
+                                                        </div>
+                                                    </CellDisplayTemplate>
+                                                </DxGridDataColumn>
+                                            </Columns>
+                                        </DxGridBandColumn>
+                                    }
+                                </Columns>
+                            </DxGridBandColumn>
+                        </Columns>
+
+                        <EmptyDataAreaTemplate>
+                            <div class="bang-cong-thang-empty-state">
+                                <div class="state-title">Chưa nạp dữ liệu nhân viên</div>
+                                <div class="state-message">@EmptyStateMessage</div>
+                            </div>
+                        </EmptyDataAreaTemplate>
+                    </DxGrid>
+
+                    <div class="bang-cong-thang-pager" aria-label="Điều hướng trang nhân viên">
+                        <div class="bang-cong-thang-pager-summary">@PagerSummaryText</div>
+                        @if (CanBrowsePages)
+                        {
+                            <DxPager PageCount="@TotalPageCount"
+                                     ActivePageIndex="@CurrentPageIndex"
+                                     ActivePageIndexChanged="OnActivePageIndexChangedAsync"
+                                     NavigationMode="PagerNavigationMode.NumericButtons"
+                                     VisibleNumericButtonCount="7" />
+                        }
+                        <div class="bang-cong-thang-page-size">
+                            <span>Hiển thị</span>
+                            <DxComboBox TData="int"
+                                        TValue="int"
+                                        Data="@PageSizeOptions"
+                                        Value="@PageSize"
+                                        ValueChanged="OnPageSizeChangedAsync"
+                                        ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                        Enabled="@CanChangePageSize"
+                                        CssClass="bang-cong-thang-page-size-editor" />
+                            <span>dòng/trang</span>
+                        </div>
+                    </div>
+                </div>
+            </HrmLoadingPanel>
+        </div>
+    </div>
+</div>
+
+<Vnta.Hrm.Web.Client.Components.Shared.Feedback.HrmComponentErrorBoundary
+    Title="Không thể mở chi tiết bảng công"
+    Message="Dữ liệu bảng công tháng chưa bị thay đổi. Hãy thử mở lại chi tiết.">
+    <BangCongNgayDetailCard Summary="@DetailSummary"
+                            SummarySaved="OnDetailSummarySaved"
+                            @bind-Visible="IsDetailPopupVisible" />
+</Vnta.Hrm.Web.Client.Components.Shared.Feedback.HrmComponentErrorBoundary>

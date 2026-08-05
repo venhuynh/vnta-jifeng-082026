@@ -1,0 +1,20 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Application.KhauTru.KhauTruTongHop
+
+<div class="dashboard-report">
+    <div class="dashboard-section-header">
+        <div>
+            <div class="dashboard-section-title">Khấu trừ theo phòng ban</div>
+            <div class="dashboard-subtitle">Hiển thị toàn bộ đơn vị theo Khối, Phòng ban, Tổ và Nhóm; so sánh với tháng liền trước.</div>
+        </div>
+        <DxButton IconUrl="@VntaDevExpressIcons.Refresh" Click="RefreshRequested" Enabled="@(!IsRefreshing)" Tooltip="Tải lại dashboard khấu trừ" CssClass="dashboard-report-refresh" />
+    </div>
+    @if(Comparison.Count == 0)
+    {
+        <div class="dashboard-report-message">Chưa có dữ liệu phòng ban cho kỳ đã chọn.</div>
+    }
+    else
+    {
+        <KhauTruDashboardDepartmentTreeList Comparison="@Comparison" PayrollMonth="@PayrollMonth" />
+    }
+</div>

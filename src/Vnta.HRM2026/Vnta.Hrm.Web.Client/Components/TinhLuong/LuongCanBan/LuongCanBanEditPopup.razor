@@ -1,0 +1,44 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Web.Client.Models.Payroll
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="min(62rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsSaving)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsSaving)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="basic-salary-popup-footer"
+         CssClass="basic-salary-edit-popup">
+    <BodyContentTemplate Context="editPopupBody">
+        <EditForm EditContext="@EditContext" OnValidSubmit="SaveAsync">
+            <DataAnnotationsValidator />
+
+            <LuongCanBanEditForm Model="@Draft"
+                                 ErrorMessage="@ErrorMessage"
+                                 IsCreatingNewSalaryRecord="@IsCreatingNewSalaryRecord"
+                                 CanEditFields="@CanEditFields" />
+
+            <ValidationSummary class="validation-summary" />
+        </EditForm>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="basic-salary-popup-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="basic-salary-popup-action"
+                      Enabled="@(!IsSaving)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Lưu"
+                      Click="SaveAsync"
+                      IconUrl="@VntaDevExpressIcons.Save"
+                      CssClass="basic-salary-popup-action"
+                      Enabled="@CanSave"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

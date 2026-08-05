@@ -1,0 +1,53 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsBusy)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsBusy)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="leave-holiday-allowance-lock-popup-footer"
+         CssClass="leave-holiday-allowance-lock-popup">
+    <BodyContentTemplate>
+        <div class="leave-holiday-allowance-lock-popup-content">
+            <div class="leave-holiday-allowance-lock-popup-message">@PromptText</div>
+            <div class="leave-holiday-allowance-lock-popup-context">@ContextText</div>
+            <div class="leave-holiday-allowance-lock-popup-options">
+                <button type="button"
+                        class="@GetScopeCssClass(SelectedRowsScope)"
+                        @onclick="@(() => SelectScopeAsync(SelectedRowsScope))"
+                        disabled="@(!CanChooseSelectedRowsScope || IsBusy)">
+                    <span class="leave-holiday-allowance-lock-popup-option-title">Các dòng đã chọn</span>
+                    <span class="leave-holiday-allowance-lock-popup-option-description">@SelectedRowsDescription</span>
+                </button>
+                <button type="button"
+                        class="@GetScopeCssClass(WholePeriodScope)"
+                        @onclick="@(() => SelectScopeAsync(WholePeriodScope))"
+                        disabled="@IsBusy">
+                    <span class="leave-holiday-allowance-lock-popup-option-title">Toàn bộ kỳ @WholePeriodLabel</span>
+                    <span class="leave-holiday-allowance-lock-popup-option-description">@WholePeriodDescription</span>
+                </button>
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="leave-holiday-allowance-lock-popup-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="leave-holiday-allowance-lock-popup-action"
+                      Enabled="@(!IsBusy)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="@(ShouldLock ? "Khóa" : "Mở khóa")"
+                      Click="ConfirmAsync"
+                      IconUrl="@(ShouldLock ? VntaDevExpressIcons.Lock : VntaDevExpressIcons.Unlock)"
+                      CssClass="leave-holiday-allowance-lock-popup-action"
+                      Enabled="@CanConfirm"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

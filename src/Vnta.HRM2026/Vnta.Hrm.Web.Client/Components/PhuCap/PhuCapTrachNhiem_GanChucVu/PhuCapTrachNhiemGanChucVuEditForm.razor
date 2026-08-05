@@ -1,0 +1,399 @@
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Application.PhuCap.PhuCapTrachNhiem
+@using Vnta.Hrm.Web.Client.Models
+
+@if (Model is not null)
+{
+    <div class="responsibility-editor-card">
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <div class="responsibility-error-banner">@ErrorMessage</div>
+        }
+
+        <DxFormLayout CaptionPosition="CaptionPosition.Vertical">
+            <DxFormLayoutGroup Caption="Thông tin gán chức vụ" ColSpanMd="12">
+                <DxFormLayoutItem Caption="Chức vụ" ColSpanMd="12">
+                    <DxDropDownBox Value="@Model.PositionId"
+                                   ValueChanged="@OnPositionValueChanged"
+                                   ValueExpression="@(() => Model.PositionId)"
+                                   QueryDisplayText="GetPositionDisplayText"
+                                   CssClass="responsibility-input responsibility-lookup-editor w-100"
+                                   DropDownBodyCssClass="responsibility-lookup-dropdown"
+                                   DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+                                   NullText="Chọn chức vụ"
+                                   ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                   DropDownVisible="@PositionDropDownVisible"
+                                   DropDownVisibleChanged="@OnPositionDropDownVisibleChanged"
+                                   Enabled="@CanSave"
+                                   ShowValidationIcon="true"
+                                   ShowValidationSuccessState="true">
+                        <DropDownBodyTemplate Context="dropDownContext">
+                            <div class="responsibility-lookup">
+                                <DxSearchBox CssClass="responsibility-lookup-search"
+                                             NullText="Tìm chức vụ"
+                                             BindValueMode="BindValueMode.OnInput"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             @bind-Text="PositionSearchText" />
+                                <DxGrid Data="@FilteredPositions"
+                                        KeyFieldName="@nameof(AttendancePositionRecord.Id)"
+                                        CssClass="responsibility-lookup-grid"
+                                        PageSize="@LookupPageSize"
+                                        PageIndex="@PositionLookupPageIndex"
+                                        PageIndexChanged="OnPositionLookupPageIndexChanged"
+                                        PagerVisible="true"
+                                        PagerPosition="GridPagerPosition.Bottom"
+                                        PagerSummaryVisible="true"
+                                        PageSizeSelectorVisible="true"
+                                        PageSizeSelectorItems="@LookupPageSizeSelectorItems"
+                                        FocusedRowEnabled="true"
+                                        HighlightRowOnHover="true"
+                                        TextWrapEnabled="true"
+                                        RowClick="@((GridRowClickEventArgs args) => OnPositionLookupRowClick(args, dropDownContext.DropDownBox))">
+                                    <Columns>
+                                        <DxGridDataColumn FieldName="@nameof(AttendancePositionRecord.Name)" Caption="Tên chức vụ" MinWidth="240" />
+                                    </Columns>
+                                </DxGrid>
+                            </div>
+                        </DropDownBodyTemplate>
+                    </DxDropDownBox>
+                    <ValidationMessage For="@(() => Model.PositionId)" />
+                </DxFormLayoutItem>
+
+                <DxFormLayoutItem Caption="Cấp bậc trách nhiệm" ColSpanMd="12">
+                    <DxDropDownBox Value="@Model.GradeId"
+                                   ValueChanged="@OnGradeValueChanged"
+                                   ValueExpression="@(() => Model.GradeId)"
+                                   QueryDisplayText="GetGradeDisplayText"
+                                   CssClass="responsibility-input responsibility-lookup-editor w-100"
+                                   DropDownBodyCssClass="responsibility-lookup-dropdown"
+                                   DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+                                   NullText="Chọn cấp bậc trách nhiệm"
+                                   ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                   DropDownVisible="@GradeDropDownVisible"
+                                   DropDownVisibleChanged="@OnGradeDropDownVisibleChanged"
+                                   Enabled="@CanSave"
+                                   ShowValidationIcon="true"
+                                   ShowValidationSuccessState="true">
+                        <DropDownBodyTemplate Context="dropDownContext">
+                            <div class="responsibility-lookup">
+                                <DxSearchBox CssClass="responsibility-lookup-search"
+                                             NullText="Tìm cấp bậc trách nhiệm"
+                                             BindValueMode="BindValueMode.OnInput"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             @bind-Text="GradeSearchText" />
+                                <DxGrid Data="@FilteredGrades"
+                                        KeyFieldName="@nameof(PayrollResponsibilityAllowanceGradeDto.Id)"
+                                        CssClass="responsibility-lookup-grid"
+                                        PageSize="@LookupPageSize"
+                                        PageIndex="@GradeLookupPageIndex"
+                                        PageIndexChanged="OnGradeLookupPageIndexChanged"
+                                        PagerVisible="true"
+                                        PagerPosition="GridPagerPosition.Bottom"
+                                        PagerSummaryVisible="true"
+                                        PageSizeSelectorVisible="true"
+                                        PageSizeSelectorItems="@LookupPageSizeSelectorItems"
+                                        FocusedRowEnabled="true"
+                                        HighlightRowOnHover="true"
+                                        TextWrapEnabled="true"
+                                        RowClick="@((GridRowClickEventArgs args) => OnGradeLookupRowClick(args, dropDownContext.DropDownBox))">
+                                    <Columns>
+                                        <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceGradeDto.Code)" Caption="Mã bậc" MinWidth="140" />
+                                        <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceGradeDto.Name)" Caption="Tên bậc" MinWidth="240" />
+                                    </Columns>
+                                </DxGrid>
+                            </div>
+                        </DropDownBodyTemplate>
+                    </DxDropDownBox>
+                    <ValidationMessage For="@(() => Model.GradeId)" />
+                </DxFormLayoutItem>
+
+                <DxFormLayoutItem Caption="Ghi chú" ColSpanMd="12">
+                    <DxMemo @bind-Text="Model.Note"
+                            CssClass="responsibility-input responsibility-textarea w-100"
+                            Rows="4"
+                            NullText="Bổ sung ghi chú nếu cần"
+                            Enabled="@CanSave" />
+                    <ValidationMessage For="@(() => Model.Note)" />
+                </DxFormLayoutItem>
+
+                <DxFormLayoutItem Caption="Trạng thái sử dụng" ColSpanMd="12">
+                    <div class="responsibility-checkbox-row">
+                        <DxCheckBox @bind-Checked="Model.IsActive" Enabled="@CanSave">
+                            Đánh dấu gán chức vụ này đang sử dụng
+                        </DxCheckBox>
+                        <span class="@GetActiveTextCssClass(Model.IsActive)">@GetActiveText(Model.IsActive)</span>
+                    </div>
+                </DxFormLayoutItem>
+            </DxFormLayoutGroup>
+        </DxFormLayout>
+
+        <ValidationSummary class="validation-summary" />
+    </div>
+}
+
+@code {
+    #region Constants
+
+    private const int LookupPageSize = 8;
+    private static readonly int[] LookupPageSizeSelectorItems = [8, 15, 30, 50];
+
+    #endregion
+
+    #region Local State
+
+    private string? positionSearchText;
+    private string? gradeSearchText;
+
+    #endregion
+
+    #region Parameters
+
+    [Parameter, EditorRequired]
+    public PhuCapTrachNhiemGanChucVuEditModel Model { get; set; } = PhuCapTrachNhiemGanChucVuEditModel.CreateDefault();
+
+    [Parameter]
+    public IReadOnlyList<AttendancePositionRecord> PositionOptions { get; set; } = [];
+
+    [Parameter]
+    public IReadOnlyList<PayrollResponsibilityAllowanceGradeDto> GradeOptions { get; set; } = [];
+
+    [Parameter]
+    public bool CanSave { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    #endregion
+
+    #region Cascading State
+
+    [CascadingParameter]
+    private EditContext? EditFormContext { get; set; }
+
+    #endregion
+
+    #region Lookup State
+
+    private bool PositionDropDownVisible { get; set; }
+    private bool GradeDropDownVisible { get; set; }
+    private int PositionLookupPageIndex { get; set; }
+    private int GradeLookupPageIndex { get; set; }
+
+    #endregion
+
+    #region Derived State
+
+    private string? PositionSearchText
+    {
+        get => positionSearchText;
+        set
+        {
+            if (positionSearchText == value)
+            {
+                return;
+            }
+
+            positionSearchText = value;
+            PositionLookupPageIndex = 0;
+        }
+    }
+
+    private string? GradeSearchText
+    {
+        get => gradeSearchText;
+        set
+        {
+            if (gradeSearchText == value)
+            {
+                return;
+            }
+
+            gradeSearchText = value;
+            GradeLookupPageIndex = 0;
+        }
+    }
+
+    private IEnumerable<AttendancePositionRecord> FilteredPositions =>
+        FilterRows(
+            PositionOptions,
+            PositionSearchText,
+            position => position.Code,
+            position => position.Name,
+            position => position.Description);
+
+    private IEnumerable<PayrollResponsibilityAllowanceGradeDto> FilteredGrades =>
+        FilterRows(
+            GradeOptions,
+            GradeSearchText,
+            grade => grade.Code,
+            grade => grade.Name,
+            grade => grade.Note);
+
+    #endregion
+
+    #region Lookup Events
+
+    private Task OnPositionDropDownVisibleChanged(bool visible)
+    {
+        PositionDropDownVisible = visible;
+        return Task.CompletedTask;
+    }
+
+    private Task OnGradeDropDownVisibleChanged(bool visible)
+    {
+        GradeDropDownVisible = visible;
+        return Task.CompletedTask;
+    }
+
+    private Task OnPositionLookupPageIndexChanged(int pageIndex)
+    {
+        PositionLookupPageIndex = pageIndex;
+        return Task.CompletedTask;
+    }
+
+    private Task OnGradeLookupPageIndexChanged(int pageIndex)
+    {
+        GradeLookupPageIndex = pageIndex;
+        return Task.CompletedTask;
+    }
+
+    private Task OnPositionValueChanged(object? value)
+    {
+        if (Model is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        Model.PositionId = ResolveGuid(value);
+        NotifyFieldChanged(nameof(PhuCapTrachNhiemGanChucVuEditModel.PositionId));
+        return Task.CompletedTask;
+    }
+
+    private Task OnGradeValueChanged(object? value)
+    {
+        if (Model is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        Model.GradeId = ResolveGuid(value);
+        NotifyFieldChanged(nameof(PhuCapTrachNhiemGanChucVuEditModel.GradeId));
+        return Task.CompletedTask;
+    }
+
+    private Task OnPositionLookupRowClick(GridRowClickEventArgs args, IDropDownBox dropDownBox)
+    {
+        return args.Grid.GetDataItem(args.VisibleIndex) is AttendancePositionRecord position
+            ? SelectPositionAsync(position, dropDownBox)
+            : Task.CompletedTask;
+    }
+
+    private Task OnGradeLookupRowClick(GridRowClickEventArgs args, IDropDownBox dropDownBox)
+    {
+        return args.Grid.GetDataItem(args.VisibleIndex) is PayrollResponsibilityAllowanceGradeDto grade
+            ? SelectGradeAsync(grade, dropDownBox)
+            : Task.CompletedTask;
+    }
+
+    #endregion
+
+    #region Selection Helpers
+
+    private Task SelectPositionAsync(AttendancePositionRecord? position, IDropDownBox? dropDownBox = null)
+    {
+        if (Model is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        Model.PositionId = position?.Id;
+        NotifyFieldChanged(nameof(PhuCapTrachNhiemGanChucVuEditModel.PositionId));
+        PositionDropDownVisible = false;
+        dropDownBox?.HideDropDown();
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private Task SelectGradeAsync(PayrollResponsibilityAllowanceGradeDto? grade, IDropDownBox? dropDownBox = null)
+    {
+        if (Model is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        Model.GradeId = grade?.Id;
+        NotifyFieldChanged(nameof(PhuCapTrachNhiemGanChucVuEditModel.GradeId));
+        GradeDropDownVisible = false;
+        dropDownBox?.HideDropDown();
+        return InvokeAsync(StateHasChanged);
+    }
+
+    #endregion
+
+    #region Display Helpers
+
+    private string GetPositionDisplayText(DropDownBoxQueryDisplayTextContext context)
+    {
+        var positionId = ResolveGuid(context.Value) ?? Model.PositionId;
+        var position = positionId.HasValue
+            ? PositionOptions.FirstOrDefault(item => item.Id == positionId.Value)
+            : null;
+
+        return position is null ? string.Empty : $"{position.Code} - {position.Name}";
+    }
+
+    private string GetGradeDisplayText(DropDownBoxQueryDisplayTextContext context)
+    {
+        var gradeId = ResolveGuid(context.Value) ?? Model.GradeId;
+        var grade = gradeId.HasValue
+            ? GradeOptions.FirstOrDefault(item => item.Id == gradeId.Value)
+            : null;
+
+        return grade is null ? string.Empty : $"{grade.Code} - {grade.Name}";
+    }
+
+    private void NotifyFieldChanged(string fieldName)
+    {
+        if (Model is null || EditFormContext is null)
+        {
+            return;
+        }
+
+        EditFormContext.NotifyFieldChanged(new FieldIdentifier(Model, fieldName));
+    }
+
+    private static Guid? ResolveGuid(object? value) =>
+        value switch
+        {
+            Guid guid => guid,
+            string text when Guid.TryParse(text, out var guid) => guid,
+            _ => null
+        };
+
+    private static IEnumerable<T> FilterRows<T>(
+        IEnumerable<T> rows,
+        string? searchText,
+        params Func<T, string?>[] selectors)
+    {
+        var normalizedSearch = NormalizeSearchText(searchText);
+        if (string.IsNullOrWhiteSpace(normalizedSearch))
+        {
+            return rows;
+        }
+
+        return rows.Where(row =>
+            selectors.Any(selector =>
+                NormalizeSearchText(selector(row))?.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase) == true));
+    }
+
+    private static string? NormalizeSearchText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string GetActiveTextCssClass(bool value) =>
+        string.Join(' ', "yes-no-status", value ? "yes-no-status-yes" : "yes-no-status-neutral");
+
+    private static string GetActiveText(bool isActive) => isActive ? "Đang dùng" : "Ngừng";
+
+    #endregion
+}

@@ -1,0 +1,30 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiem
+
+<div class="card toolbar">
+    <DxToolbar Title="Phụ cấp trách nhiệm" CssClass="toolbar" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right" CssClass="toolbar-filter-item" Tooltip="Chọn năm áp dụng">
+            <Template><div class="custom-item toolbar-filter-editor"><span class="toolbar-filter-label">Năm</span><DxSpinEdit T="int" Value="@Year" ValueChanged="YearChanged" MinValue="@MinimumYear" MaxValue="@MaximumYear" Increment="1" ShowSpinButtons="true" Enabled="@CanChangeFilters" CssClass="toolbar-filter-year" /></div></Template>
+        </DxToolbarItem>
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right" CssClass="toolbar-filter-item" Tooltip="Chọn tháng áp dụng">
+            <Template><div class="custom-item toolbar-filter-editor"><span class="toolbar-filter-label">Tháng</span><DxComboBox TData="MonthOption" TValue="int" @key="Year" Data="@AvailableMonths" Value="@Month" ValueChanged="MonthChanged" ValueFieldName="@nameof(MonthOption.Value)" TextFieldName="@nameof(MonthOption.Text)" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never" Enabled="@CanChangeFilters" CssClass="toolbar-filter-month" /></div></Template>
+        </DxToolbarItem>
+        <DxToolbarItem Text="Xem" Click="ViewRequested" Enabled="@CanView" Alignment="ToolbarItemAlignment.Right" Tooltip="Tải dữ liệu phụ cấp trách nhiệm theo kỳ lương đang chọn" IconUrl="@VntaDevExpressIcons.FolderOpenArrowImport" />
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right" Tooltip="Nhóm các hành động thao tác trên dữ liệu phụ cấp trách nhiệm">
+            <Template>
+                <div class="custom-item"><DxDropDownButton Text="Hành động" IconUrl="@VntaDevExpressIcons.TaskList" RenderStyle="ButtonRenderStyle.Secondary" RenderStyleMode="ButtonRenderStyleMode.Outline" Enabled="@CanOperate" CssClass="toolbar-action-dropdown"><Items>
+                    <DxDropDownButtonItem Text="Tính ABC" IconUrl="@VntaDevExpressIcons.CalculatorCoins" Click="CalculateAbcRequested" Enabled="@CanRecalculate" Tooltip="Tính xếp loại ABC cho các dòng đang áp dụng THS của kỳ lương hiện tại" />
+                    <DxDropDownButtonItem Text="Tính lại" IconUrl="@VntaDevExpressIcons.CalculatorCoins" Click="RecalculateRequested" Enabled="@CanRecalculate" Tooltip="Làm mới snapshot phụ cấp trách nhiệm của kỳ hiện tại; không tính lại xếp loại ABC" />
+                    <DxDropDownButtonItem Text="Nhập thưởng hiệu suất" IconUrl="@VntaDevExpressIcons.AllowancePerformanceBonus" Click="PerformanceBonusRequested" Enabled="@CanOperate" />
+                    <DxDropDownButtonItem Text="Khóa" IconUrl="@VntaDevExpressIcons.Lock" Click="LockRequested" Enabled="@CanLock" BeginGroup="true" />
+                    <DxDropDownButtonItem Text="Mở khóa" IconUrl="@VntaDevExpressIcons.Unlock" Click="UnlockRequested" Enabled="@CanUnlock" />
+                </Items></DxDropDownButton></div>
+            </Template>
+        </DxToolbarItem>
+        <DxToolbarItem Text="Quy tắc" Click="RulesRequested" Enabled="@CanInteract" Alignment="ToolbarItemAlignment.Right" Tooltip="Xem quy tắc phụ cấp trách nhiệm của kỳ đang chọn" IconUrl="@VntaDevExpressIcons.TextBoxDescription" />
+        <DxToolbarItem Text="Xuất file" Enabled="@CanExport" Alignment="ToolbarItemAlignment.Right" Tooltip="Xuất toàn bộ dữ liệu phụ cấp trách nhiệm của kỳ lương đang chọn" IconUrl="@VntaDevExpressIcons.Export"><Items>
+            <DxToolbarItem Text="Xuất Excel" Click="ExportExcelRequested" Enabled="@CanExport" Tooltip="Xuất toàn bộ dữ liệu phụ cấp trách nhiệm của kỳ lương đang chọn ra Excel" IconUrl="@VntaDevExpressIcons.Excel" />
+            <DxToolbarItem Text="Xuất PDF" Click="ExportPdfRequested" Enabled="@CanExport" Tooltip="Xuất toàn bộ dữ liệu phụ cấp trách nhiệm của kỳ lương đang chọn ra PDF" IconUrl="@VntaDevExpressIcons.Pdf" />
+        </Items></DxToolbarItem>
+        <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh sách phụ cấp trách nhiệm" Alignment="ToolbarItemAlignment.Right" Enabled="@CanOperate" Click="ColumnChooserRequested" IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+    </DxToolbar>
+</div>

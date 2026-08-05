@@ -1,0 +1,17 @@
+@page "/payroll/advance-deductions"
+
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Khấu trừ Tạm ứng</PageTitle>
+
+<div class="content-root">
+    <div class="card">
+        <div class="empty-state">
+            <div class="state-title">Khấu trừ Tạm ứng đang được tái cấu trúc</div>
+            <div class="state-message">Màn hình tạm thời không khả dụng để tách hoàn toàn khỏi dữ liệu Phụ cấp chuyên cần.</div>
+        </div>
+    </div>
+</div>

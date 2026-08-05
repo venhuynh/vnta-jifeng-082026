@@ -1,0 +1,135 @@
+.content-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.toolbar {
+    flex: 0 0 3.25rem;
+    height: 3.25rem;
+    min-height: 3.25rem;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+::deep .toolbar .dxbl-toolbar {
+    height: 100%;
+    flex-wrap: nowrap;
+    align-items: center;
+    min-width: max-content;
+}
+
+::deep .toolbar .dxbl-toolbar-title {
+    white-space: nowrap;
+}
+
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+.toolbar .toolbar-date {
+    width: 11rem;
+}
+
+::deep .toolbar-date-item {
+    min-width: max-content;
+}
+
+::deep .toolbar-date .dxbl-date-edit {
+    width: 100%;
+}
+
+.attendance-logs-root {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.attendance-logs-grid-card {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    background-clip: border-box;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+}
+
+.empty-state,
+.error-state {
+    height: 100%;
+    min-height: 18rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.state-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.state-message {
+    max-width: 32rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .attendance-logs-loading-panel {
+    height: 100%;
+}
+
+::deep .attendance-logs-grid {
+    max-height: 100%;
+    border-radius: 0.25rem;
+}
+
+.attendance-log-detail-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+::deep .attendance-log-detail-button.dxbl-btn {
+    width: 2rem;
+    height: 2rem;
+    min-width: 2rem;
+    padding: 0;
+    border-radius: 0.25rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .attendance-log-detail-button.dxbl-btn:hover {
+    color: var(--dxds-color-content-info-default-rest);
+    background-color: color-mix(in srgb, var(--dxds-color-content-info-default-rest) 10%, transparent);
+}
+
+::deep .attendance-log-detail-button .dxbl-image,
+::deep .attendance-log-detail-button .dxbl-btn-image,
+::deep .attendance-log-detail-button img,
+::deep .attendance-log-detail-button svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+::deep .search-textbox-item {
+    max-width: 14rem;
+}

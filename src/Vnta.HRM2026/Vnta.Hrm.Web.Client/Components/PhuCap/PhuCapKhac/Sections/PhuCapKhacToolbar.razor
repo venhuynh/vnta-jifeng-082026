@@ -1,0 +1,88 @@
+<DxToolbar Title="Phụ cấp khác"
+           CssClass="toolbar other-allowance-toolbar"
+           ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                       CssClass="other-allowance-toolbar-filter-item"
+                       Tooltip="Chọn năm áp dụng">
+            <Template>
+                <div class="other-allowance-toolbar-custom-item other-allowance-toolbar-filter-editor">
+                    <span class="other-allowance-toolbar-filter-label">Năm</span>
+                    <DxSpinEdit T="int"
+                                Value="@State.Year"
+                                ValueChanged="YearChanged"
+                                MinValue="@State.MinimumSupportedYear"
+                                MaxValue="@State.MaximumSupportedYear"
+                                Increment="1"
+                                ShowSpinButtons="true"
+                                Enabled="@State.CanChangeFilters"
+                                CssClass="other-allowance-toolbar-filter-year" />
+                </div>
+            </Template>
+        </DxToolbarItem>
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                       CssClass="other-allowance-toolbar-filter-item"
+                       Tooltip="Chọn tháng áp dụng">
+            <Template>
+                <div class="other-allowance-toolbar-custom-item other-allowance-toolbar-filter-editor">
+                    <span class="other-allowance-toolbar-filter-label">Tháng</span>
+                    <DxComboBox TData="int"
+                                TValue="int"
+                                @key="State.Year"
+                                Data="@State.AvailableMonths"
+                                Value="@State.Month"
+                                ValueChanged="MonthChanged"
+                                ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                Enabled="@State.CanChangeFilters"
+                                CssClass="other-allowance-toolbar-filter-month" />
+                </div>
+            </Template>
+        </DxToolbarItem>
+        <DxToolbarItem Text="Xem"
+                       Click="ViewRequested"
+                       Enabled="@State.CanView"
+                       Alignment="ToolbarItemAlignment.Right"
+                       Tooltip="Tải dữ liệu phụ cấp khác theo kỳ lương đang chọn"
+                       IconUrl="@VntaDevExpressIcons.FolderOpenArrowImport" />
+        <DxToolbarItem Text="Thêm"
+                       Click="CreateRequested"
+                       Enabled="@State.CanCreate"
+                       Alignment="ToolbarItemAlignment.Right"
+                       Tooltip="Thêm dòng phụ cấp khác cho nhân viên trong kỳ lương đang xem"
+                       IconUrl="@VntaDevExpressIcons.Add" />
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                       Tooltip="Thao tác hàng loạt trên các dòng phụ cấp khác đang chọn">
+            <Template>
+                <div class="custom-item other-allowance-toolbar-custom-item">
+                    <DxDropDownButton Text="Hành động"
+                                        IconUrl="@VntaDevExpressIcons.TaskList"
+                                        RenderStyle="ButtonRenderStyle.Secondary"
+                                        RenderStyleMode="ButtonRenderStyleMode.Outline"
+                                        Enabled="@CanOperate"
+                                        CssClass="toolbar-action-dropdown other-allowance-toolbar-action-dropdown">
+                        <Items>
+                            <DxDropDownButtonItem Text="Lấy từ tháng trước"
+                                                  IconUrl="@VntaDevExpressIcons.Download"
+                                                  Click="SyncFromPreviousMonthRequested"
+                                                  Enabled="@CanSyncFromPreviousMonth"
+                                                  Tooltip="Thêm dòng chưa có và cập nhật dòng Cố định từ kỳ lương liền trước." />
+                            <DxDropDownButtonItem Text="Khóa"
+                                                  IconUrl="@VntaDevExpressIcons.Lock"
+                                                  Click="LockRequested"
+                                                  Enabled="@CanLock"
+                                                  BeginGroup="true" />
+                            <DxDropDownButtonItem Text="Mở khóa"
+                                                  IconUrl="@VntaDevExpressIcons.Unlock"
+                                                  Click="UnlockRequested"
+                                                  Enabled="@CanUnlock" />
+                        </Items>
+                    </DxDropDownButton>
+                </div>
+            </Template>
+        </DxToolbarItem>
+        <DxToolbarItem Text="Quy tắc"
+                       Click="RulesRequested"
+                       Enabled="@State.CanInteract"
+                       Alignment="ToolbarItemAlignment.Right"
+                       Tooltip="Xem quy tắc áp dụng cho phụ cấp khác ở kỳ đang chọn"
+                       IconUrl="@VntaDevExpressIcons.TextBoxDescription" />
+</DxToolbar>

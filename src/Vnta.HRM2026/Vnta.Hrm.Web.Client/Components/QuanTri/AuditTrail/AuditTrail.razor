@@ -1,0 +1,234 @@
+@page "/admin/audit-trail"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Application.QuanTri.AuditTrail
+
+@attribute [Authorize(Policy = InternalAccountPolicies.AuditRead)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Nhật ký kiểm toán</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Nhật ký kiểm toán" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Áp dụng"
+                           Tooltip="Áp dụng điều kiện lọc"
+                           Enabled="@CanQuery"
+                           Click="ApplyFiltersAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Search" />
+            <DxToolbarItem Text="Đặt lại"
+                           Tooltip="Xóa điều kiện lọc và xem các sự kiện gần đây"
+                           Enabled="@CanQuery"
+                           Click="ResetFiltersAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Reset" />
+            <DxToolbarItem Text="Làm mới"
+                           Tooltip="Tải lại trang audit hiện tại"
+                           Enabled="@CanQuery"
+                           Click="RefreshAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Chi tiết"
+                           Tooltip="Xem thay đổi của sự kiện đang chọn"
+                           Enabled="@CanViewDetail"
+                           Click="OpenSelectedDetailAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.View" />
+        </DxToolbar>
+    </div>
+
+    <div class="audit-trail-root">
+        <div class="card audit-filter-card">
+            <div class="audit-filter-grid">
+                <DxDateEdit @bind-Date="FromDate"
+                            NullText="Từ ngày"
+                            Enabled="@CanQuery"
+                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+                <DxDateEdit @bind-Date="ToDate"
+                            NullText="Đến ngày"
+                            Enabled="@CanQuery"
+                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+                <DxTextBox @bind-Text="ActorId"
+                           NullText="Actor ID"
+                           Enabled="@CanQuery"
+                           ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+                <DxTextBox @bind-Text="Action"
+                           NullText="Hành động, ví dụ Shift.Updated"
+                           Enabled="@CanQuery"
+                           ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+                <DxTextBox @bind-Text="EntityType"
+                           NullText="Loại đối tượng, ví dụ Shift"
+                           Enabled="@CanQuery"
+                           ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+                <DxTextBox @bind-Text="EntityId"
+                           NullText="ID đối tượng"
+                           Enabled="@CanQuery"
+                           ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+                <DxTextBox @bind-Text="CorrelationId"
+                           NullText="Correlation ID"
+                           Enabled="@CanQuery"
+                           ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto" />
+            </div>
+            <div class="audit-filter-hint">Phạm vi tối đa cho một truy vấn là 366 ngày. Các giá trị lọc là đối sánh chính xác.</div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(LoadErrorMessage))
+        {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải nhật ký kiểm toán</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="RefreshAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+            <div class="card audit-events-card">
+                <HrmLoadingPanel Visible="@IsLoading"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="Đang tải nhật ký kiểm toán...">
+                    <DxGrid @ref="Grid"
+                            Data="@Events"
+                            KeyFieldName="Id"
+                            CssClass="audit-events-grid"
+                            PageSize="100"
+                            PagerPosition="GridPagerPosition.Bottom"
+                            PagerVisible="false"
+                            SkeletonRowsEnabled="true"
+                            ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                            FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                            TextWrapEnabled="false"
+                            FocusedRowEnabled="true"
+                            HighlightRowOnHover="true"
+                            AllowSelectRowByClick="true"
+                            SelectionMode="GridSelectionMode.Single"
+                            SelectedDataItems="@SelectedDataItems"
+                            SelectedDataItemsChanged="@OnSelectedDataItemsChanged">
+                        <Columns>
+                            <DxGridDataColumn Caption="Thời điểm" Width="11.75rem" MinWidth="170" AllowSort="false">
+                                <CellDisplayTemplate>
+                                    @FormatOccurredAt(((AuditEventListItemDto)context.DataItem).OccurredAtUtc)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="ActorDisplayName" Caption="Người thực hiện" MinWidth="180">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var item = (AuditEventListItemDto)context.DataItem;
+                                    }
+                                    <div class="audit-actor-cell">
+                                        <span>@item.ActorDisplayName</span>
+                                        <small>@item.ActorId</small>
+                                    </div>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="Action" Caption="Hành động" MinWidth="190" />
+                            <DxGridDataColumn FieldName="EntityType" Caption="Đối tượng" MinWidth="150">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var item = (AuditEventListItemDto)context.DataItem;
+                                    }
+                                    <div class="audit-entity-cell">
+                                        <span>@item.EntityType</span>
+                                        @if (!string.IsNullOrWhiteSpace(item.EntityDisplayName))
+                                        {
+                                            <small>@item.EntityDisplayName</small>
+                                        }
+                                    </div>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="EntityId" Caption="ID" MinWidth="185" />
+                            <DxGridDataColumn FieldName="Source" Caption="Nguồn" Width="130" MinWidth="130" />
+                            <DxGridDataColumn Caption="" Width="3.5rem" MinWidth="56" AllowSort="false">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var item = (AuditEventListItemDto)context.DataItem;
+                                    }
+                                    <DxButton Click="@(() => OpenDetailAsync(item.Id))"
+                                              IconUrl="@VntaDevExpressIcons.View"
+                                              Tooltip="Xem chi tiết"
+                                              RenderStyle="ButtonRenderStyle.None"
+                                              RenderStyleMode="ButtonRenderStyleMode.Text"
+                                              @onclick:stopPropagation="true" />
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                        </Columns>
+                        <EmptyDataAreaTemplate>
+                            <div class="audit-empty-state">Không có sự kiện nào phù hợp với bộ lọc.</div>
+                        </EmptyDataAreaTemplate>
+                    </DxGrid>
+                </HrmLoadingPanel>
+
+                <div class="audit-cursor-pager">
+                    <span>Trang @CurrentPageNumber — @Events.Count sự kiện</span>
+                    <div class="audit-cursor-actions">
+                        <DxButton Text="Trước"
+                                  Enabled="@CanGoPrevious"
+                                  Click="PreviousPageAsync"
+                                  RenderStyle="ButtonRenderStyle.Secondary"
+                                  RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                        <DxButton Text="Sau"
+                                  Enabled="@CanGoNext"
+                                  Click="NextPageAsync"
+                                  RenderStyle="ButtonRenderStyle.Primary"
+                                  RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<DxPopup Visible="@IsDetailPopupVisible"
+         VisibleChanged="OnDetailPopupVisibleChangedAsync"
+         HeaderText="Chi tiết sự kiện audit"
+         Width="min(58rem, calc(100vw - 2rem))"
+         CssClass="audit-detail-popup"
+         CloseOnEscape="true"
+         ShowCloseButton="true">
+    @if (IsDetailLoading)
+    {
+        <div class="audit-detail-loading">Đang tải chi tiết...</div>
+    }
+    else if (SelectedDetail is null)
+    {
+        <div class="audit-detail-empty">Không tìm thấy chi tiết sự kiện hoặc sự kiện đã không còn khả dụng.</div>
+    }
+    else
+    {
+        <div class="audit-detail-header">
+            <div><strong>@SelectedDetail.Action</strong></div>
+            <div>@FormatOccurredAt(SelectedDetail.OccurredAtUtc)</div>
+            <div>@SelectedDetail.ActorDisplayName (@SelectedDetail.ActorId)</div>
+            <div>@SelectedDetail.EntityType @SelectedDetail.EntityDisplayName</div>
+        </div>
+        <DxGrid Data="@SelectedDetail.PropertyChanges"
+                CssClass="audit-property-changes-grid"
+                PageSize="100"
+                PagerVisible="false"
+                TextWrapEnabled="true"
+                ColumnResizeMode="GridColumnResizeMode.NextColumn">
+            <Columns>
+                <DxGridDataColumn FieldName="PropertyLabel" Caption="Trường" MinWidth="180" />
+                <DxGridDataColumn Caption="Giá trị cũ" MinWidth="220">
+                    <CellDisplayTemplate>
+                        @FormatAuditValue(((AuditPropertyChangeDto)context.DataItem).OldDisplay)
+                    </CellDisplayTemplate>
+                </DxGridDataColumn>
+                <DxGridDataColumn Caption="Giá trị mới" MinWidth="220">
+                    <CellDisplayTemplate>
+                        @FormatAuditValue(((AuditPropertyChangeDto)context.DataItem).NewDisplay)
+                    </CellDisplayTemplate>
+                </DxGridDataColumn>
+            </Columns>
+            <EmptyDataAreaTemplate>
+                <div class="audit-empty-state">Sự kiện này là thao tác tổng hợp hoặc không có thay đổi trường dữ liệu.</div>
+            </EmptyDataAreaTemplate>
+        </DxGrid>
+    }
+</DxPopup>

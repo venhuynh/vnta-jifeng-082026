@@ -1,0 +1,208 @@
+@page "/attendance/employees/details"
+@page "/attendance/employees/details/{EmployeeId:guid}"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models.NhanSu.ChiTietNhanVien
+
+@attribute [Authorize(Policy = InternalAccountPolicies.HumanResourcesAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>Hồ sơ nhân viên</PageTitle>
+
+<DxLayoutBreakpoint DeviceSize="DeviceSize.XSmall | DeviceSize.Small | DeviceSize.Medium"
+                    @bind-IsActive="IsSmallScreen" />
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Hồ sơ nhân viên"
+                   ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Mới"
+                           Click="OpenCreateEditor"
+                           Enabled="@CanCreate"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tạo hồ sơ nhân viên mới"
+                           IconUrl="@VntaDevExpressIcons.Add" />
+            <DxToolbarItem Text="Điều chỉnh"
+                           Click="BeginInlineEditAsync"
+                           Enabled="@CanEdit"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Điều chỉnh hồ sơ nhân viên"
+                           IconUrl="@VntaDevExpressIcons.Edit" />
+            <DxToolbarItem Text="Tác vụ"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanEdit"
+                           IconUrl="@VntaDevExpressIcons.TaskList">
+                <Items>
+                    <DxToolbarItem Text="Xóa hồ sơ"
+                                   Click="DeleteCurrentEmployeeAsync"
+                                   Enabled="@CanDelete"
+                                   IconUrl="@VntaDevExpressIcons.Delete" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Tải lại hồ sơ nhân viên"
+                           Click="RefreshAsync"
+                           Enabled="@CanRefresh"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Tìm nhân viên"
+                           Click="OpenEmployeeSearchAsync"
+                           Enabled="@CanSearchEmployees"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tìm và mở hồ sơ nhân viên khác"
+                           IconUrl="@VntaDevExpressIcons.Search" />
+        </DxToolbar>
+    </div>
+
+    <main class="employee-profile-root">
+        @if (HasDetailLoadError)
+        {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải hồ sơ nhân viên</div>
+                <div class="state-message">@DetailLoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="RetryDetailLoadAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+            <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             Text="@LoadingText"
+                             CssClass="employee-detail-loading-panel">
+                @if (CurrentEmployee is null)
+                {
+                    <div class="card employee-detail-empty-state">
+                        <div class="state-title">Chưa có hồ sơ nhân viên để hiển thị</div>
+                        <div class="state-message">Dùng nút “Tìm nhân viên” hoặc “Mới” trên thanh công cụ để tiếp tục.</div>
+                    </div>
+                }
+                else
+                {
+                    <DxGridLayout ColumnSpacing="1rem" RowSpacing="1rem" CssClass="employee-profile-layout h-100">
+                        <Columns>
+                            @if (IsSmallScreen)
+                            {
+                                <DxGridLayoutColumn Width="100%" />
+                            }
+                            else
+                            {
+                                <DxGridLayoutColumn Width="clamp(22rem, 30vw, 27rem)" />
+                                <DxGridLayoutColumn Width="1fr" />
+                            }
+                        </Columns>
+                        <Rows>
+                            @if (IsSmallScreen)
+                            {
+                                <DxGridLayoutRow Areas="profile" />
+                                <DxGridLayoutRow Areas="details" />
+                            }
+                            else
+                            {
+                                <DxGridLayoutRow Areas="profile details" />
+                            }
+                        </Rows>
+                        <Items>
+                            <DxGridLayoutItem Area="profile">
+                                <Template>
+                                    <div class="employee-profile-sidebar">
+                                        <ChiTietNhanVienProfileForm @ref="ProfileForm"
+                                                                    Employee="@CurrentEmployee"
+                                                                    Departments="@DepartmentOptions"
+                                                                    Positions="@PositionOptions"
+                                                                    IsBusy="@IsSavingEmployee"
+                                                                    LookupErrorMessage="@LookupLoadErrorMessage"
+                                                                    ErrorMessage="@EditErrorMessage"
+                                                                    SavedVersion="@ProfileSavedVersion"
+                                                                    EditModeChanged="OnProfileEditModeChangedAsync"
+                                                                    SaveRequested="SaveInlineProfileAsync" />
+                                        <ChiTietNhanVienPersonalInformation EmployeeId="@CurrentEmployee.Id" />
+                                    </div>
+                                </Template>
+                            </DxGridLayoutItem>
+                            <DxGridLayoutItem Area="details">
+                                <Template>
+                                    <section class="card employee-detail-tabs-card" aria-label="Thông tin chi tiết nhân viên">
+                                        <DxTabs CssClass="employee-detail-tabs">
+                                            <DxTabPage Text="Tổng quan" CssClass="employee-tab-page">
+                                                <div class="detail-section-header">
+                                                    <div>
+                                                        <h2>Thông tin hồ sơ</h2>
+                                                        <p>Dữ liệu đang đồng bộ từ hồ sơ nhân viên hiện có.</p>
+                                                    </div>
+                                                </div>
+                                                <div class="employee-tab-grid">
+                                                    <div class="profile-field"><span class="profile-label">Mã nhân viên</span><span class="profile-value">@CurrentEmployee.EmployeeCode</span></div>
+                                                    <div class="profile-field"><span class="profile-label">Ngày vào làm</span><span class="profile-value">@CurrentEmployee.HireDate.ToString("dd/MM/yyyy")</span></div>
+                                                    <div class="profile-field"><span class="profile-label">Email</span><span class="profile-value">@DisplayOptional(CurrentEmployee.Email)</span></div>
+                                                    <div class="profile-field"><span class="profile-label">Điện thoại</span><span class="profile-value">@DisplayOptional(CurrentEmployee.PhoneNumber)</span></div>
+                                                    <div class="profile-field"><span class="profile-label">Mã phòng ban</span><span class="profile-value">@DisplayOptional(CurrentEmployee.DepartmentCode)</span></div>
+                                                    <div class="profile-field"><span class="profile-label">Mã chức vụ</span><span class="profile-value">@DisplayOptional(CurrentEmployee.PositionCode)</span></div>
+                                                </div>
+                                            </DxTabPage>
+                                            <DxTabPage Text="Công việc" CssClass="employee-tab-page">
+                                                <div class="sample-panel">
+                                                    <div class="sample-panel-header"><h2>Thông tin công việc</h2><span>Dữ liệu mẫu</span></div>
+                                                    <div class="employee-tab-grid">
+                                                        <div class="profile-field"><span class="profile-label">Quản lý trực tiếp</span><span class="profile-value">Nguyễn Minh Quân</span></div>
+                                                        <div class="profile-field"><span class="profile-label">Địa điểm làm việc</span><span class="profile-value">Văn phòng Hồ Chí Minh</span></div>
+                                                        <div class="profile-field"><span class="profile-label">Loại nhân sự</span><span class="profile-value">Toàn thời gian</span></div>
+                                                        <div class="profile-field"><span class="profile-label">Hình thức làm việc</span><span class="profile-value">Tại văn phòng</span></div>
+                                                    </div>
+                                                </div>
+                                            </DxTabPage>
+                                            <DxTabPage Text="Chấm công" CssClass="employee-tab-page">
+                                                <div class="sample-panel">
+                                                    <div class="sample-panel-header"><h2>Chấm công & nghỉ phép</h2><span>Dữ liệu mẫu</span></div>
+                                                    <div class="metric-grid">
+                                                        <div class="metric-card"><span>Ngày công tháng này</span><strong>20 / 22</strong></div>
+                                                        <div class="metric-card"><span>Phép còn lại</span><strong>7.5 ngày</strong></div>
+                                                        <div class="metric-card"><span>Đơn chờ xử lý</span><strong>1 đơn</strong></div>
+                                                    </div>
+                                                </div>
+                                            </DxTabPage>
+                                            <DxTabPage Text="Lịch sử" CssClass="employee-tab-page">
+                                                <div class="sample-panel">
+                                                    <div class="sample-panel-header"><h2>Lịch sử thay đổi</h2><span>Dữ liệu mẫu</span></div>
+                                                    <ol class="history-list">
+                                                        <li><strong>01/03/2024</strong><span>Tạo hồ sơ nhân viên</span></li>
+                                                        <li><strong>01/06/2024</strong><span>Cập nhật tình trạng chính thức</span></li>
+                                                        <li><strong>15/01/2026</strong><span>Điều chỉnh thông tin phòng ban</span></li>
+                                                    </ol>
+                                                </div>
+                                            </DxTabPage>
+                                        </DxTabs>
+                                    </section>
+                                </Template>
+                            </DxGridLayoutItem>
+                        </Items>
+                    </DxGridLayout>
+                }
+            </HrmLoadingPanel>
+        }
+    </main>
+</div>
+
+<ChiTietNhanVienEditForm Visible="@IsEditorVisible"
+                        VisibleChanged="OnEditorVisibleChangedAsync"
+                        IsCreateMode="@IsCreateMode"
+                        Model="@EditModel"
+                        Departments="@DepartmentOptions"
+                        Positions="@PositionOptions"
+                        IsBusy="@IsSavingEmployee"
+                        LookupErrorMessage="@LookupLoadErrorMessage"
+                        ErrorMessage="@EditErrorMessage"
+                        SaveRequested="SaveEmployeeAsync" />
+
+<ChiTietNhanVienSearchPopup Visible="@IsEmployeeSearchVisible"
+                             VisibleChanged="OnEmployeeSearchVisibleChangedAsync"
+                             Items="@EmployeeSearchItems"
+                             SearchText="@EmployeeSearchText"
+                             SearchTextChanged="OnEmployeeSearchTextChangedAsync"
+                             IsBusy="@IsSearchingEmployee"
+                             ErrorMessage="@EmployeeSearchErrorMessage"
+                             EmployeeSelected="OnEmployeeSelectedAsync" />

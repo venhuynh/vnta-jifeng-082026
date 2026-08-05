@@ -1,0 +1,18 @@
+.hazard-allowance-export-source {
+    position: fixed;
+    top: 0;
+    left: -10000px;
+    width: 1200px;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.hazard-allowance-export-employee {
+    font-weight: 600;
+}
+
+.hazard-allowance-export-position {
+    margin-top: 0.15rem;
+    font-size: 0.78em;
+    font-style: italic;
+}

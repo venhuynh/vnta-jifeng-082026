@@ -1,0 +1,10 @@
+.employee-personal-information-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+.employee-personal-information-card { padding: 1rem; border: 1px solid var(--dxds-color-border-neutral-default-rest); border-radius: 0.25rem; }
+::deep .employee-personal-information-toolbar { margin-bottom: 0.25rem; }
+.employee-personal-information-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.employee-personal-information-list div { display: flex; flex-direction: column; gap: 0.25rem; }
+.employee-personal-information-list span, .employee-personal-information-empty { color: var(--dxds-color-content-neutral-subtle-rest); font-size: 0.8125rem; }
+.employee-personal-information-list strong { color: var(--dxds-color-content-neutral-default-rest); overflow-wrap: anywhere; }
+.employee-personal-information-empty { min-height: 8rem; display: flex; align-items: center; justify-content: center; text-align: center; }
+.employee-personal-information-error { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem; }
+@media (max-width: 768px) { .employee-personal-information-grid { grid-template-columns: 1fr; } }

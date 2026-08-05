@@ -1,0 +1,37 @@
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+.toolbar-filter-editor {
+    gap: 0.5rem;
+}
+
+.toolbar-filter-label {
+    white-space: nowrap;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+::deep .toolbar .dxbl-toolbar {
+    height: 100%;
+    flex-wrap: nowrap;
+    align-items: center;
+    min-width: max-content;
+}
+
+::deep .toolbar .dxbl-toolbar-title {
+    white-space: nowrap;
+}
+
+::deep .toolbar-filter-item {
+    min-width: 0;
+}
+
+::deep .toolbar-filter-year {
+    width: 7rem;
+}
+
+::deep .toolbar-filter-month {
+    width: 8rem;
+}

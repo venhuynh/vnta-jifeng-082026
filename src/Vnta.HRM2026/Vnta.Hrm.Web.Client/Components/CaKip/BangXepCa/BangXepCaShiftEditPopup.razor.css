@@ -1,0 +1,67 @@
+.shift-edit-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 0;
+}
+
+.shift-edit-context {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+    background-color: var(--dxds-color-surface-neutral-subtle-rest);
+}
+
+.shift-edit-context-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: baseline;
+}
+
+.shift-edit-context-row > span {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+.shift-edit-context-row > strong {
+    color: var(--dxds-color-content-neutral-default-rest);
+    font-weight: 700;
+}
+
+.shift-edit-message {
+    margin-bottom: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    background-color: #fff2f0;
+    color: #b42318;
+}
+
+.shift-edit-popup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.shift-edit-option-text {
+    display: inline-flex;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+::deep .shift-edit-popup-footer {
+    border-top: 1px solid var(--dxds-color-border-neutral-default-rest);
+}
+
+::deep .shift-edit-combobox {
+    width: 100%;
+}
+
+::deep .shift-edit-loading-panel {
+    min-height: 0;
+}

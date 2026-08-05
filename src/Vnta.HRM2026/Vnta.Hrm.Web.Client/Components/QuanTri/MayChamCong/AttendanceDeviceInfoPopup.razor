@@ -1,0 +1,91 @@
+@using Vnta.Hrm.Web.Client.Models
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChanged"
+         HeaderText="Chi tiết máy chấm công"
+         Width="min(52rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         CloseOnOutsideClick="false"
+         CssClass="attendance-device-info-popup">
+    <BodyContentTemplate Context="popupBody">
+        <div class="attendance-device-info-content">
+            <div class="attendance-device-info-header">
+                <div class="attendance-device-info-name">@DisplayDeviceName</div>
+                <div class="attendance-device-info-meta">
+                    <span>Số serial: @DisplaySerialNumber</span>
+                    @if(ResponseTime.HasValue) {
+                        <span>Phản hồi lúc: @FormatResponseTime(ResponseTime)</span>
+                    }
+                </div>
+            </div>
+
+            <HrmLoadingPanel Visible="@IsLoading"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             CssClass="attendance-device-info-loading-panel">
+                @if(!string.IsNullOrWhiteSpace(ErrorMessage)) {
+                    <div class="attendance-device-info-state">
+                        <div class="attendance-device-info-state-title">Không thể tải thông tin máy chấm công</div>
+                        <div class="attendance-device-info-state-message">@ErrorMessage</div>
+                        <DxButton Text="Thử lại"
+                                  Click="RetryAsync"
+                                  Enabled="@(!IsLoading)"
+                                  RenderStyle="ButtonRenderStyle.Primary"
+                                  RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                    </div>
+                } else if(!IsLoading && Rows.Count == 0) {
+                    <div class="attendance-device-info-state">
+                        <div class="attendance-device-info-state-title">Chưa có dữ liệu truy vấn thông tin</div>
+                        <div class="attendance-device-info-state-message">@EmptyMessage</div>
+                    </div>
+                } else {
+                    <div class="attendance-device-info-grid-host">
+                        <div class="attendance-device-info-grid-tools">
+                            <DxSearchBox CssClass="attendance-device-info-search"
+                                         NullText="Tìm thông tin"
+                                         BindValueMode="BindValueMode.OnInput"
+                                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                         @bind-Text="SearchText" />
+                        </div>
+                        <DxGrid Data="@Rows"
+                                KeyFieldName="Key"
+                                CssClass="attendance-device-info-grid"
+                                SearchText="@SearchText"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                ShowFilterRow="true"
+                                ShowAllRows="true"
+                                TextWrapEnabled="true"
+                             HighlightRowOnHover="true">
+                            <Columns>
+                                <DxGridDataColumn Caption="STT"
+                                                  Width="4.5rem"
+                                                  MinWidth="72"
+                                                  AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @(context.VisibleIndex + 1)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="Information"
+                                                  Caption="Thông tin"
+                                                  Width="15rem"
+                                                  MinWidth="180" />
+                                <DxGridDataColumn FieldName="Value"
+                                                  Caption="Giá trị"
+                                                  MinWidth="260" />
+                            </Columns>
+                            <EmptyDataAreaTemplate>
+                                Không tìm thấy thông tin phù hợp.
+                            </EmptyDataAreaTemplate>
+                        </DxGrid>
+                    </div>
+                }
+            </HrmLoadingPanel>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <DxButton Text="Đóng" Click="CloseAsync" />
+    </FooterContentTemplate>
+</DxPopup>

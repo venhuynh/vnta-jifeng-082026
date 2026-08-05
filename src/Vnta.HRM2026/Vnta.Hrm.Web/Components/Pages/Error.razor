@@ -1,0 +1,30 @@
+﻿@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>VNTA HRM 2026 - Lỗi hệ thống</PageTitle>
+
+<h1 class="text-danger">Không thể hoàn thành yêu cầu</h1>
+<h2 class="text-danger">Hệ thống gặp sự cố tạm thời. Vui lòng tải lại trang hoặc thử lại sau ít phút.</h2>
+
+@if (ShowRequestId)
+{
+    <p>
+        <strong>Mã hỗ trợ:</strong> <code>@RequestId</code>
+    </p>
+}
+
+<p><a href="">Tải lại trang</a></p>
+
+@code{
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromQuery(Name = "traceId")]
+    private string? TraceId { get; set; }
+
+    private string? RequestId { get; set; }
+    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+
+    protected override void OnInitialized() =>
+        RequestId = TraceId ?? Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

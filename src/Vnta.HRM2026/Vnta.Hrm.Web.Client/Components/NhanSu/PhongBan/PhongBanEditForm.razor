@@ -1,0 +1,77 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Web.Client.Models
+
+@if(Model is not null && EditFormContext is not null) {
+    var editModel = Model;
+
+    <CascadingValue Value="EditFormContext.EditContext">
+        <DxFormLayout CssClass="phong-ban-form" CaptionPosition="CaptionPosition.Vertical">
+            <DxFormLayoutGroup Caption="@(IsCreatingNewDepartment ? "Thông tin khởi tạo" : "Thông tin điều chỉnh")" ColSpanMd="12">
+                <DxFormLayoutItem Caption="Khối" ColSpanMd="4">
+                    <DxComboBox Data="@BlockOptions"
+                                @bind-Value="editModel.BlockName"
+                                AllowUserInput="false"
+                                CssClass="w-100"
+                                NullText="Chọn khối"
+                                ShowValidationIcon="true"
+                                ShowValidationSuccessState="true" />
+                    <div class="field-validation-slot">
+                        <ValidationMessage For="@(() => editModel.BlockName)" />
+                    </div>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Phòng ban" ColSpanMd="8">
+                    <DxTextBox @bind-Text="editModel.DepartmentName"
+                               CssClass="w-100"
+                               NullText="Nhập phòng ban"
+                               ShowValidationIcon="true"
+                               ShowValidationSuccessState="true" />
+                    <div class="field-validation-slot">
+                        <ValidationMessage For="@(() => editModel.DepartmentName)" />
+                    </div>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Tổ" ColSpanMd="6">
+                    <DxTextBox @bind-Text="editModel.TeamName"
+                               CssClass="w-100"
+                               NullText="Nhập tổ"
+                               ShowValidationIcon="true"
+                               ShowValidationSuccessState="true" />
+                    <div class="field-validation-slot">
+                        <ValidationMessage For="@(() => editModel.TeamName)" />
+                    </div>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Nhóm" ColSpanMd="6">
+                    <DxTextBox @bind-Text="editModel.GroupName"
+                               CssClass="w-100"
+                               NullText="Nhập nhóm"
+                               ShowValidationIcon="true"
+                               ShowValidationSuccessState="true" />
+                    <div class="field-validation-slot">
+                        <ValidationMessage For="@(() => editModel.GroupName)" />
+                    </div>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Ghi chú" ColSpanMd="12">
+                    <DxMemo @bind-Text="editModel.Notes"
+                            CssClass="w-100"
+                            Rows="4"
+                            NullText="Nhập ghi chú"
+                            ShowValidationIcon="true"
+                            ShowValidationSuccessState="true" />
+                    <div class="field-validation-slot">
+                        <ValidationMessage For="@(() => editModel.Notes)" />
+                    </div>
+                </DxFormLayoutItem>
+            </DxFormLayoutGroup>
+        </DxFormLayout>
+    </CascadingValue>
+}
+
+@code {
+    [Parameter] public AttendanceDepartmentTreeNode? Model { get; set; }
+
+    [Parameter] public TreeListEditFormTemplateContext? EditFormContext { get; set; }
+
+    [Parameter] public bool IsCreatingNewDepartment { get; set; }
+
+    [Parameter] public IReadOnlyList<string> BlockOptions { get; set; } = [];
+}

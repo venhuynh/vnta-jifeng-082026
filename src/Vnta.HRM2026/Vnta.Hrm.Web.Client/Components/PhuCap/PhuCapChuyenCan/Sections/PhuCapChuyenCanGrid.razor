@@ -1,0 +1,40 @@
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapChuyenCan.Models
+@using Vnta.Hrm.Web.Client.Models.Payroll
+
+<DxGrid @ref="Grid" Data="@Records" KeyFieldName="Id" CssClass="attendance-allowance-grid" ShowSearchBox="false" PagerVisible="false" PageSize="@PageSize" SkeletonRowsEnabled="true" ColumnResizeMode="GridColumnResizeMode.NextColumn" FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always" TextWrapEnabled="false" FocusedRowEnabled="true" HighlightRowOnHover="true" AllowSelectRowByClick="true" SelectionMode="GridSelectionMode.Multiple" SelectedDataItems="@SelectedItems" SelectedDataItemsChanged="SelectedItemsChanged">
+    <Columns>
+        <DxGridSelectionColumn Width="3rem" />
+        <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false"><CellDisplayTemplate>@(context.VisibleIndex + 1)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn Caption="Tác vụ" MinWidth="96" Width="6rem" AllowSort="false" TextAlignment="GridTextAlignment.Center" ShowInColumnChooser="false">
+            <CellDisplayTemplate>
+                @{ var row = (AttendanceAllowanceResultRecord)context.DataItem; }
+                <div class="attendance-allowance-row-menu-host" @onclick:stopPropagation="true" @onmousedown:stopPropagation="true">
+                    <DxDropDownButton CssClass="attendance-allowance-row-menu-btn" IconCssClass="icon more-icon medium-icon" RenderStyle="ButtonRenderStyle.Link" DropDownToggleVisible="false" Enabled="@CanOperate" Tooltip="Tác vụ dòng phụ cấp chuyên cần">
+                        <Items>
+                            <DxDropDownButtonItem Text="Điều chỉnh" IconUrl="@VntaDevExpressIcons.Edit" Enabled="@CanEditRow(row)" Click="@(() => EditRequested.InvokeAsync(row))" Tooltip="Điều chỉnh số ngày công thực tế và công chuẩn của dòng phụ cấp chuyên cần" />
+                            <DxDropDownButtonItem Text="Làm mới" IconUrl="@VntaDevExpressIcons.Refresh" Enabled="@CanRefreshRow(row)" Click="@(() => RefreshRequested.InvokeAsync(row))" Tooltip="Làm mới dữ liệu phụ cấp chuyên cần của dòng này" />
+                            <DxDropDownButtonItem Text="@(row.IsLocked ? "Mở khóa" : "Khóa")" IconUrl="@(row.IsLocked ? VntaDevExpressIcons.Unlock : VntaDevExpressIcons.Lock)" Enabled="@CanToggleLock(row)" Click="@(() => LockToggleRequested.InvokeAsync(row))" BeginGroup="true" Tooltip="@(row.IsLocked ? "Mở khóa dòng phụ cấp chuyên cần" : "Khóa dòng phụ cấp chuyên cần")" />
+                            <DxDropDownButtonItem Text="Bảng công tháng" IconUrl="@VntaDevExpressIcons.TaskList" Enabled="@CanViewMonthlyWork(row)" Click="@(() => MonthlyWorkRequested.InvokeAsync(row))" Tooltip="Xem bảng công tháng của nhân viên" />
+                        </Items>
+                    </DxDropDownButton>
+                </div>
+            </CellDisplayTemplate>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="EmployeeDisplay" Caption="Nhân viên" MinWidth="240"><CellDisplayTemplate>@{ var row = (AttendanceAllowanceResultRecord)context.DataItem; }<span class="attendance-allowance-employee-text" title="@row.EmployeeDisplay">@HighlightText(row.EmployeeDisplay)</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Phòng ban" MinWidth="180"><CellDisplayTemplate>@{ var row = (AttendanceAllowanceResultRecord)context.DataItem; }<span title="@row.DepartmentDisplay">@HighlightText(row.DepartmentDisplay)</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" MinWidth="160"><CellDisplayTemplate>@{ var row = (AttendanceAllowanceResultRecord)context.DataItem; }<span title="@row.PositionDisplay">@HighlightText(row.PositionDisplay)</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" MinWidth="110"><CellDisplayTemplate>@HighlightText(((AttendanceAllowanceResultRecord)context.DataItem).PayrollPeriodDisplay)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn Caption="Chuyên cần" MinWidth="180" AllowSort="false"><CellDisplayTemplate>@{ var row = (AttendanceAllowanceResultRecord)context.DataItem; }<span title="@RuleSummary(row)">@RuleSummary(row)</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="ActualAllowanceAmount" Caption="Số tiền" MinWidth="150" TextAlignment="GridTextAlignment.Right"><CellDisplayTemplate>@{ var row = (AttendanceAllowanceResultRecord)context.DataItem; }@if(row.ActualAllowanceAmount != 0m) { <span class="hrm-grid-amount hrm-grid-amount--total">@FormatMoney(row.ActualAllowanceAmount)</span> }</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="LockStatusText" Caption="Trạng thái khóa" MinWidth="120"><CellDisplayTemplate>@{ var row = (AttendanceAllowanceResultRecord)context.DataItem; }<span class="@LockBadgeCssClass(row.IsLocked)">@row.LockStatusText</span></CellDisplayTemplate></DxGridDataColumn>
+    </Columns>
+    <EmptyDataAreaTemplate>
+        <div class="empty-state">
+            <div class="state-title">@EmptyStateTitle</div>
+            <div class="state-message">@EmptyStateMessage</div>
+            <DxButton Text="@EmptyStateActionText" Click="EmptyStateActionRequested" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </EmptyDataAreaTemplate>
+</DxGrid>

@@ -1,0 +1,163 @@
+@namespace Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruTongHop
+
+<DxLayoutBreakpoint DeviceSize="DeviceSize.XSmall | DeviceSize.Small | DeviceSize.Medium"
+                    IsActive="@IsCompactLayout"
+                    IsActiveChanged="OnCompactLayoutChangedAsync" />
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@Title"
+         Width="@PopupWidth"
+         Height="@PopupHeight"
+         ShowCloseButton="false"
+         ShowFooter="false"
+         CloseOnEscape="@(!IsLoading)"
+         CloseOnOutsideClick="false"
+         CssClass="deduction-summary-monthly-work-popup">
+    <HeaderContentTemplate>
+        <div class="deduction-summary-monthly-work-header">
+            <div class="deduction-summary-monthly-work-heading">
+                <div class="deduction-summary-monthly-work-title-row">
+                    <span class="deduction-summary-monthly-work-title">@Title</span>
+                    <span class="deduction-summary-monthly-work-lock @SourceLockCssClass">@SourceLockText</span>
+                </div>
+                <div class="deduction-summary-monthly-work-context">@Context</div>
+            </div>
+            <div class="deduction-summary-monthly-work-header-actions">
+                <DxButton Text="Làm mới"
+                          Click="RefreshAsync"
+                          Enabled="@(!IsLoading)"
+                          IconUrl="@VntaDevExpressIcons.Refresh"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                <DxButton Click="CloseAsync"
+                          Enabled="@(!IsLoading)"
+                          IconUrl="@VntaDevExpressIcons.Cancel"
+                          Tooltip="Đóng bảng đối chiếu"
+                          RenderStyle="ButtonRenderStyle.Secondary"
+                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            </div>
+        </div>
+    </HeaderContentTemplate>
+    <BodyContentTemplate Context="popupContext">
+        <HrmLoadingPanel Visible="@IsLoading"
+                         IsContentBlocked="true"
+                         IsContentVisible="true"
+                         IndicatorVisible="true"
+                         IndicatorAreaVisible="true"
+                         Text="Đang tải bảng công tháng...">
+            <div class="deduction-summary-monthly-work-content @(IsCompactLayout ? "is-compact" : string.Empty)">
+                @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    <div class="form-error-message">@ErrorMessage</div>
+                }
+                else if (Rows.Count == 0)
+                {
+                    <div class="state-message">Không có dữ liệu bảng công tháng cho nhân viên này.</div>
+                }
+                else
+                {
+                    <section class="deduction-summary-monthly-work-summary" aria-label="Tổng hợp công tháng">
+                        @foreach(var card in SummaryCards)
+                        {
+                            <article class="@card.CssClass">
+                                <div class="deduction-summary-monthly-work-summary-card-header">
+                                    <div>
+                                        <div class="deduction-summary-monthly-work-summary-card-title">@card.Title</div>
+                                        <div class="deduction-summary-monthly-work-summary-card-value">@card.ValueText</div>
+                                    </div>
+                                    <DxButton IconUrl="@card.IconUrl"
+                                              Attributes="@DecorativeIconButtonAttributes"
+                                              RenderStyle="@card.RenderStyle"
+                                              RenderStyleMode="ButtonRenderStyleMode.Text" />
+                                </div>
+                            </article>
+                        }
+                    </section>
+
+                    <section class="deduction-summary-monthly-work-filter-strip" aria-label="Tổng kết bảng công tháng">
+                        <div>
+                            <span>Loại ngày công</span>
+                            <DxButtonGroup RenderStyle="ButtonRenderStyle.Secondary"
+                                           RenderStyleMode="ButtonRenderStyleMode.Outline"
+                                           SelectionMode="ButtonGroupSelectionMode.Single"
+                                           Enabled="@(!IsLoading)">
+                                <Items>
+                                    @foreach(var badge in DayTypeSummaryBadges)
+                                    {
+                                        <DxButtonGroupItem Text="@($"{badge.ShortLabel} {badge.Count:N0}")"
+                                                           Tooltip="@badge.Label"
+                                                           Selected="@(badge.Key == SelectedDayTypeSummaryKey)"
+                                                           Click="@(() => SelectDayTypeSummaryAsync(badge.Key))" />
+                                    }
+                                </Items>
+                            </DxButtonGroup>
+                        </div>
+                        <div>
+                            <span>Trạng thái</span>
+                            <DxButtonGroup RenderStyle="ButtonRenderStyle.Secondary"
+                                           RenderStyleMode="ButtonRenderStyleMode.Outline"
+                                           SelectionMode="ButtonGroupSelectionMode.Single"
+                                           Enabled="@(!IsLoading)">
+                                <Items>
+                                    @foreach(var badge in StatusSummaryBadges)
+                                    {
+                                        <DxButtonGroupItem Text="@($"{badge.ShortLabel} {badge.Count:N0}")"
+                                                           Tooltip="@badge.Label"
+                                                           Selected="@(badge.Key == SelectedStatusSummaryKey)"
+                                                           Click="@(() => SelectStatusSummaryAsync(badge.Key))" />
+                                    }
+                                </Items>
+                            </DxButtonGroup>
+                        </div>
+                    </section>
+
+                    <div class="deduction-summary-monthly-work-grid-host">
+                        <div class="deduction-summary-monthly-work-grid-tools">
+                            <DxSearchBox CssClass="deduction-summary-monthly-work-search"
+                                         NullText="Tìm ngày, loại ngày, ca, trạng thái"
+                                         BindValueMode="BindValueMode.OnDelayedInput"
+                                         InputDelay="300"
+                                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                         @bind-Text="SearchText" />
+                        </div>
+                        <DxGrid Data="@FilteredRows"
+                                KeyFieldName="@nameof(MonthlyWorkdayPopupRow.Id)"
+                                CssClass="deduction-summary-monthly-work-grid"
+                                Height="100%"
+                                PageSize="100"
+                                PagerVisible="false"
+                                SearchText="@SearchText"
+                                TextWrapEnabled="false"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                ShowFilterRow="true"
+                                HighlightRowOnHover="true">
+                            <Columns>
+                                <DxGridDataColumn Caption="STT" Width="4.25rem" MinWidth="64" TextAlignment="GridTextAlignment.Center" AllowSort="false">
+                                    <CellDisplayTemplate>@(context.VisibleIndex + 1)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(MonthlyWorkdayPopupRow.WorkDate)" Caption="Ngày" Width="4.75rem" MinWidth="72" TextAlignment="GridTextAlignment.Center">
+                                    <CellDisplayTemplate>@(( (MonthlyWorkdayPopupRow)context.DataItem).WorkDate.ToString("dd/MM"))</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Thứ" Width="6.25rem" MinWidth="90" TextAlignment="GridTextAlignment.Center" AllowSort="false">
+                                    <CellDisplayTemplate>@GetWeekdayDisplay(((MonthlyWorkdayPopupRow)context.DataItem).WorkDate)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(MonthlyWorkdayPopupRow.DayType)" Caption="Loại ngày" Width="7.5rem" MinWidth="112" TextAlignment="GridTextAlignment.Center" />
+                                <DxGridDataColumn FieldName="@nameof(MonthlyWorkdayPopupRow.ShiftShortName)" Caption="Ca" Width="5.25rem" MinWidth="80" TextAlignment="GridTextAlignment.Center" />
+                                <DxGridDataColumn Caption="Vào - Ra" Width="7.75rem" MinWidth="116" TextAlignment="GridTextAlignment.Center" AllowSort="false">
+                                    <CellDisplayTemplate>@GetCheckTimeDisplay((MonthlyWorkdayPopupRow)context.DataItem)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(MonthlyWorkdayPopupRow.Status)" Caption="Trạng thái" Width="7rem" MinWidth="96" TextAlignment="GridTextAlignment.Center" />
+                                <DxGridDataColumn FieldName="@nameof(MonthlyWorkdayPopupRow.OvertimeMinutes15)" Caption="OT 1.5" Width="6.25rem" MinWidth="88" TextAlignment="GridTextAlignment.Right"><CellDisplayTemplate>@FormatOptionalHours(((MonthlyWorkdayPopupRow)context.DataItem).OvertimeMinutes15)</CellDisplayTemplate></DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(MonthlyWorkdayPopupRow.OvertimeMinutes20)" Caption="OT 2.0" Width="6.25rem" MinWidth="88" TextAlignment="GridTextAlignment.Right"><CellDisplayTemplate>@FormatOptionalHours(((MonthlyWorkdayPopupRow)context.DataItem).OvertimeMinutes20)</CellDisplayTemplate></DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(MonthlyWorkdayPopupRow.OvertimeMinutes30)" Caption="OT 3.0" Width="6.25rem" MinWidth="88" TextAlignment="GridTextAlignment.Right"><CellDisplayTemplate>@FormatOptionalHours(((MonthlyWorkdayPopupRow)context.DataItem).OvertimeMinutes30)</CellDisplayTemplate></DxGridDataColumn>
+                                <DxGridDataColumn FieldName="@nameof(MonthlyWorkdayPopupRow.LateEarlyTotalMinutes)" Caption="ĐT/VS" Width="6.25rem" MinWidth="88" TextAlignment="GridTextAlignment.Right"><CellDisplayTemplate>@FormatOptionalMinutes(((MonthlyWorkdayPopupRow)context.DataItem).LateEarlyTotalMinutes)</CellDisplayTemplate></DxGridDataColumn>
+                            </Columns>
+                        </DxGrid>
+                    </div>
+                }
+            </div>
+        </HrmLoadingPanel>
+    </BodyContentTemplate>
+</DxPopup>

@@ -1,0 +1,21 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Web.Client.Models.Payroll
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapCom
+
+<div class="meal-allowance-export-source" aria-hidden="true">
+    <DxGrid @ref="grid" Data="@Records" KeyFieldName="Id" ShowAllRows="true" PagerVisible="false" TextWrapEnabled="true">
+        <Columns>
+            <DxGridDataColumn FieldName="EmployeeCode" Caption="Mã nhân viên" />
+            <DxGridDataColumn FieldName="EmployeeName" Caption="Họ tên" />
+            <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Phòng ban" />
+            <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" />
+            <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" />
+            <DxGridDataColumn FieldName="Overtime1900Days" Caption="Ngày PC Cơm" />
+            <DxGridDataColumn FieldName="MealAllowancePerQualifiedDay" Caption="Đơn giá/ngày" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="MealAllowanceAmount" Caption="Phụ cấp cơm" DisplayFormat="#,##0 'đ';-#,##0 'đ';''" />
+            <DxGridDataColumn FieldName="IsLocked" Caption="Trạng thái khóa"><CellDisplayTemplate>@(((MealAllowanceRecord)context.DataItem).IsLocked ? "Đã khóa" : "Đang mở")</CellDisplayTemplate></DxGridDataColumn>
+            <DxGridDataColumn FieldName="UpdatedAtDisplay" Caption="Cập nhật lúc" />
+            <DxGridDataColumn FieldName="Note" Caption="Ghi chú" />
+        </Columns>
+    </DxGrid>
+</div>

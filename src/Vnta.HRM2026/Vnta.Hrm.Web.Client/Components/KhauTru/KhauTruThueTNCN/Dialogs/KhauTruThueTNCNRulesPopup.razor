@@ -1,0 +1,83 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="@OnVisibleChanged"
+         HeaderText="Quy tắc thuế TNCN"
+         Width="min(48rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         ShowFooter="true"
+         CloseOnEscape="true"
+         CloseOnOutsideClick="false"
+         FooterCssClass="personal-income-tax-popup-footer"
+         CssClass="personal-income-tax-rules-popup">
+    <BodyContentTemplate Context="popupBody">
+        <div class="personal-income-tax-rules-content">
+            <div class="personal-income-tax-rules-subtitle">
+                Màn hình Thuế TNCN là giao diện đang vận hành cho luồng <strong>Khấu trừ &gt; Thuế TNCN</strong>.
+                Thông tin bên dưới mô tả phạm vi kỹ thuật hiện tại; các quy tắc thuế nghiệp vụ vẫn chờ xác nhận chính thức.
+            </div>
+
+            <section class="personal-income-tax-rule-card personal-income-tax-rule-card-accent">
+                <div class="personal-income-tax-rule-card-title">Phạm vi dữ liệu mục tiêu</div>
+                <div class="personal-income-tax-rule-card-body">
+                    Kế hoạch dữ liệu đích dự kiến dùng bảng
+                    <span class="personal-income-tax-inline-code">payroll_decuction_thue_tncn_records</span>,
+                    liên kết <strong>1-1</strong> với
+                    <span class="personal-income-tax-inline-code">payroll_decuction_summary_records</span>.
+                </div>
+            </section>
+
+            <section class="personal-income-tax-rule-list">
+                <div class="personal-income-tax-rule-item">
+                <div class="personal-income-tax-rule-item-label">Bảng tính</div>
+                    <div class="personal-income-tax-rule-item-value">
+                        Tổng thu nhập, Khấu trừ BHXH/YT, Số NPT, Tổng giảm trừ, TN tính thuế, Thuế tính ra,
+                        Thuế đang khấu trừ và Chênh lệch.
+                    </div>
+                </div>
+                <div class="personal-income-tax-rule-item">
+                <div class="personal-income-tax-rule-item-label">Đồng bộ tổng hợp</div>
+                    <div class="personal-income-tax-rule-item-value">
+                        Giá trị
+                        <span class="personal-income-tax-inline-code">WithheldTaxAmount</span>
+                        dự kiến đồng bộ xuống
+                        <span class="personal-income-tax-inline-code">ThueTncnAmount</span>
+                        của bảng tổng hợp khấu trừ lương.
+                    </div>
+                </div>
+                <div class="personal-income-tax-rule-item">
+                <div class="personal-income-tax-rule-item-label">Nguồn đối chiếu</div>
+                    <div class="personal-income-tax-rule-item-value">
+                        Khoản BHXH/YT được dùng làm đầu vào trước thuế và cần đối chiếu với dữ liệu tổng hợp để phát hiện lệch nguồn.
+                    </div>
+                </div>
+            </section>
+
+            <section class="personal-income-tax-rule-card">
+                <div class="personal-income-tax-rule-card-title">Trường nên do máy chủ tính</div>
+                <div class="personal-income-tax-rule-card-body">
+                    Theo kế hoạch dữ liệu hiện có,
+                    <span class="personal-income-tax-inline-code">TaxableIncomeAmount</span>
+                    và
+                    <span class="personal-income-tax-inline-code">DifferenceAmount</span>
+                    nên do máy chủ tính để ổn định xuất dữ liệu, sắp xếp và dấu vết kiểm toán.
+                </div>
+            </section>
+
+            <section class="personal-income-tax-rule-card personal-income-tax-rule-card-warning">
+                <div class="personal-income-tax-rule-card-title">Nội dung còn chờ nghiệp vụ chốt</div>
+                <div class="personal-income-tax-rule-card-body">
+                    Công thức thuế, mức giảm trừ, luồng quyết toán và quy trình khóa hoặc mở khóa dữ liệu
+                    vẫn chưa được chốt chính thức. Màn hình hiện tại vẫn đang kế thừa pipeline khấu trừ cũ
+                    cho tới các lượt refactor nghiệp vụ tiếp theo.
+                </div>
+            </section>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <DxButton Text="Đóng"
+                  Click="@CloseAsync"
+                  IconUrl="@VntaDevExpressIcons.Cancel"
+                  CssClass="personal-income-tax-popup-action"
+                  RenderStyle="ButtonRenderStyle.Secondary"
+                  RenderStyleMode="ButtonRenderStyleMode.Outline" />
+    </FooterContentTemplate>
+</DxPopup>

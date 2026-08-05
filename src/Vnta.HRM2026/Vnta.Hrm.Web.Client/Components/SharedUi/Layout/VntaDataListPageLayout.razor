@@ -1,0 +1,14 @@
+<div class="@RootCssClass">
+    @if (ToolbarContent is not null)
+    {
+        <div class="@ToolbarCssClass">
+            @ToolbarContent
+        </div>
+    }
+
+    <div class="@ContentCssClass">
+        <div class="@ContentCardCssClass">
+            @ChildContent
+        </div>
+    </div>
+</div>

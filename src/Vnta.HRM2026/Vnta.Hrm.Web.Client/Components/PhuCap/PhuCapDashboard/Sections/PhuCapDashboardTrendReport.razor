@@ -1,0 +1,39 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Application.PhuCap.PhuCapTongHop
+
+<div class="dashboard-report">
+    <div class="dashboard-section-header">
+        <div>
+            <div class="dashboard-section-title">Xu hướng tổng phụ cấp</div>
+            <div class="dashboard-subtitle">Tổng phụ cấp từ tháng 01 đến @PeriodLabel</div>
+        </div>
+        <DxButton IconUrl="@VntaDevExpressIcons.Refresh" Click="RefreshRequested" Enabled="@(!IsRefreshing)" Tooltip="Tải lại dashboard phụ cấp" CssClass="dashboard-report-refresh" />
+    </div>
+    @if(Trend.Count == 0)
+    {
+        <div class="dashboard-report-message">Chưa có dữ liệu xu hướng phụ cấp cho kỳ đã chọn.</div>
+    }
+    else
+    {
+        <DxChart Data="@Trend" CssClass="allowance-chart">
+            <DxChartLineSeries T="PayrollAllowanceDashboardTrendPointDto"
+            TArgument="string"
+            TValue="double"
+            ArgumentField="point => FormatPeriod(point.PayrollMonth, point.PayrollYear)"
+            ValueField="point => (double)point.TotalAllowanceAmount"
+                Name="Tổng phụ cấp" HoverMode="ChartContinuousSeriesHoverMode.None">
+                <DxChartSeriesPoint Visible="true" Size="9" />
+                <DxChartSeriesLabel Visible="true"
+                                    FormatPattern="{valueText} đ"
+                                    ValueFormat="MoneyLabelFormat" />
+            </DxChartLineSeries>
+            <DxChartLegend Visible="false" />
+            <DxChartTooltip Enabled="true">
+                @context.Point.Render((seriesPoint) => @<div class="dashboard-trend-tooltip">
+                    <div class="dashboard-trend-tooltip-period">@seriesPoint.Argument</div>
+                    <div class="dashboard-trend-tooltip-value">@FormatMoney(Convert.ToDouble(seriesPoint.Value))</div>
+                </div>)
+            </DxChartTooltip>
+        </DxChart>
+    }
+</div>

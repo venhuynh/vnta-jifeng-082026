@@ -1,0 +1,38 @@
+.other-deduction-popup-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.other-deduction-popup-action {
+    min-width: 7rem;
+}
+
+.rules-popup-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem 0;
+}
+
+.rules-popup-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.rules-popup-title {
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.rules-popup-text {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    line-height: 1.5;
+}
+
+.rules-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--dxds-color-content-neutral-default-rest);
+}

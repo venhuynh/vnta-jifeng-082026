@@ -1,0 +1,362 @@
+@page "/payroll/union-fee-deductions"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models.Payroll
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Khấu trừ phí công đoàn</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Khấu trừ phí công đoàn"
+                   CssClass="toolbar"
+                   ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-filter-item"
+                           Tooltip="Chọn năm kỳ lương">
+                <Template>
+                    <div class="custom-item toolbar-filter-editor">
+                        <span class="toolbar-filter-label">Năm</span>
+                        <DxSpinEdit T="int"
+                                    Value="@ToolbarYear"
+                                    ValueChanged="OnSelectedYearChangedAsync"
+                                    MinValue="@MinimumSupportedYear"
+                                    MaxValue="@MaximumSupportedYear"
+                                    Increment="1"
+                                    ShowSpinButtons="true"
+                                    Enabled="@CanChangeFilters"
+                                    CssClass="toolbar-filter-year" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-filter-item"
+                           Tooltip="Chọn tháng kỳ lương">
+                <Template>
+                    <div class="custom-item toolbar-filter-editor">
+                        <span class="toolbar-filter-label">Tháng</span>
+                        <DxComboBox TData="MonthOption"
+                                    TValue="int"
+                                    @key="ToolbarYear"
+                                    Data="@AvailableMonthOptions"
+                                    Value="@ToolbarMonth"
+                                    ValueChanged="OnSelectedMonthChangedAsync"
+                                    ValueFieldName="@nameof(MonthOption.Value)"
+                                    TextFieldName="@nameof(MonthOption.Text)"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                    Enabled="@CanChangeFilters"
+                                    CssClass="toolbar-filter-month" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Xem"
+                           Click="OnViewRequestedAsync"
+                           Enabled="@CanView"
+                           Alignment="ToolbarItemAlignment.Right"
+                            Tooltip="Chuẩn bị và tải dữ liệu khấu trừ phí công đoàn theo kỳ lương đã chọn"
+                           IconUrl="@VntaDevExpressIcons.FolderOpenArrowImport" />
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Nhóm các thao tác khóa và mở khóa dữ liệu khấu trừ phí công đoàn đã chọn">
+                <Template>
+                    <div class="custom-item">
+                        <DxDropDownButton Text="Hành động"
+                                          IconUrl="@VntaDevExpressIcons.TaskList"
+                                          RenderStyle="ButtonRenderStyle.Secondary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Outline"
+                                          Enabled="@CanOperateOnCurrentDataset"
+                                          CssClass="toolbar-action-dropdown">
+                            <Items>
+                                <DxDropDownButtonItem Text="Tính lại"
+                                                      IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                                                      Click="OnRecalculateClickAsync"
+                                                      Enabled="@CanRecalculate" />
+                                <DxDropDownButtonItem Text="Khóa"
+                                                      IconUrl="@VntaDevExpressIcons.Lock"
+                                                      Click="OnLockSelectedAsync"
+                                                      Enabled="@CanOpenLockAction"
+                                                      BeginGroup="true" />
+                                <DxDropDownButtonItem Text="Mở khóa"
+                                                      IconUrl="@VntaDevExpressIcons.Unlock"
+                                                      Click="OnUnlockSelectedAsync"
+                                                      Enabled="@CanOpenUnlockAction" />
+                            </Items>
+                        </DxDropDownButton>
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Quy tắc"
+                           Click="OpenRulesPopup"
+                           Enabled="@CanInteract"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xem quy tắc áp dụng khấu trừ phí công đoàn"
+                           IconUrl="@VntaDevExpressIcons.TextBoxDescription" />
+            <DxToolbarItem Text="Xuất file"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất toàn bộ dữ liệu khấu trừ phí công đoàn của kỳ lương đang chọn"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel"
+                                   Click="ExportAllDataToExcelAsync"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ dữ liệu khấu trừ phí công đoàn của kỳ lương đang chọn ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF"
+                                   Click="ExportAllDataToPdfAsync"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ dữ liệu khấu trừ phí công đoàn của kỳ lương đang chọn ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong danh sách khấu trừ phí công đoàn"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanOperateOnCurrentDataset"
+                           Click="OnColumnChooserRequested"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+        </DxToolbar>
+    </div>
+
+    <div class="union-fee-deduction-root">
+        @if (HasLoadError)
+        {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải dữ liệu khấu trừ phí công đoàn</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="OnRetryAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+            <div class="card union-fee-deduction-grid-card">
+                <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="@LoadingText"
+                                 CssClass="union-fee-deduction-loading-panel">
+                    <div class="union-fee-deduction-grid-content">
+                        <div class="union-fee-deduction-grid-header">
+                            <DxButtonGroup CssClass="union-fee-deduction-total-button-group"
+                                           RenderStyle="ButtonRenderStyle.Primary"
+                                           RenderStyleMode="ButtonRenderStyleMode.Outline">
+                                <Items>
+                                    <DxButtonGroupItem Text="@($"Tổng trang: {FormatCurrency(CurrentPageDeductionTotal)}")"
+                                                       CssClass="union-fee-deduction-total-button" />
+                                    <DxButtonGroupItem Text="@($"Bản ghi: {CurrentPageStartRecord:N0}-{CurrentPageEndRecord:N0}/{TotalRecordCount:N0}")"
+                                                       CssClass="union-fee-deduction-count-button" />
+                                </Items>
+                            </DxButtonGroup>
+                            <div class="union-fee-deduction-grid-search">
+                                <DxSearchBox CssClass="union-fee-deduction-grid-searchbox"
+                                             NullText="Tìm mã nhân viên, họ tên, phòng ban, chức vụ"
+                                             BindValueMode="BindValueMode.OnDelayedInput"
+                                             InputDelay="400"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             Text="@SearchText"
+                                             TextChanged="OnSearchTextChangedAsync"
+                                             Enabled="@CanChangeFilters" />
+                            </div>
+                        </div>
+
+                        <DxGrid @ref="Grid"
+                                Data="@Records"
+                                KeyFieldName="Id"
+                                CssClass="union-fee-deduction-grid"
+                                ShowSearchBox="false"
+                                PagerVisible="false"
+                                ShowAllRows="true"
+                                SkeletonRowsEnabled="true"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                TextWrapEnabled="false"
+                                FocusedRowEnabled="true"
+                                HighlightRowOnHover="true"
+                                AllowSelectRowByClick="true"
+                                SelectionMode="GridSelectionMode.Multiple"
+                                SelectedDataItems="@SelectedDataItems"
+                                SelectedDataItemsChanged="OnSelectedDataItemsChanged">
+                            <Columns>
+                                <DxGridSelectionColumn Width="3rem" />
+                                <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                    <CellDisplayTemplate>
+                                        @(CurrentPageStartRecord + context.VisibleIndex)
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Tác vụ"
+                                                  MinWidth="96"
+                                                  Width="6rem"
+                                                  AllowSort="false"
+                                                  TextAlignment="GridTextAlignment.Center"
+                                                  ShowInColumnChooser="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollUnionFeeDeductionRecord)context.DataItem;
+                                        }
+                                        <div class="union-fee-deduction-row-menu-host"
+                                             @onclick:stopPropagation="true"
+                                             @onmousedown:stopPropagation="true">
+                                            <DxDropDownButton CssClass="union-fee-deduction-row-menu-btn"
+                                                              IconCssClass="icon more-icon medium-icon"
+                                                              RenderStyle="ButtonRenderStyle.Link"
+                                                              DropDownToggleVisible="false"
+                                                              Enabled="@CanOperateOnCurrentDataset"
+                                                              Tooltip="Tác vụ dòng khấu trừ phí công đoàn">
+                                                <Items>
+                                                    <DxDropDownButtonItem Text="Điều chỉnh"
+                                                                          IconUrl="@VntaDevExpressIcons.Edit"
+                                                                          Click="@(() => OpenEditPopup(row))"
+                                                                          Enabled="@CanEditRow(row)" />
+                                                    <DxDropDownButtonItem Text="@row.LockActionText"
+                                                                          IconUrl="@(row.IsLocked ? VntaDevExpressIcons.Unlock : VntaDevExpressIcons.Lock)"
+                                                                          Click="@(() => ToggleLockStateAsync(row))"
+                                                                          Enabled="@CanToggleLock(row)"
+                                                                          Tooltip="@GetLockActionTooltip(row)"
+                                                                          BeginGroup="true" />
+                                                    <DxDropDownButtonItem Text="Bảng công tháng"
+                                                                          IconUrl="@VntaDevExpressIcons.TaskList"
+                                                                          Click="@(() => OpenMonthlyWorkPopupAsync(row))"
+                                                                          Enabled="@CanViewMonthlyWork(row)"
+                                                                          BeginGroup="true"
+                                                                          Tooltip="Xem bảng công tháng của nhân viên ở chế độ chỉ đọc" />
+                                                </Items>
+                                            </DxDropDownButton>
+                                        </div>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="EmployeeDisplay" Caption="Nhân viên" MinWidth="240">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollUnionFeeDeductionRecord)context.DataItem;
+                                        }
+                                        <span class="union-fee-deduction-employee-text" title="@row.EmployeeDisplay">@row.EmployeeDisplay</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Phòng ban" MinWidth="180" />
+                                <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" MinWidth="160" />
+                                <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" MinWidth="110" />
+                                <DxGridDataColumn FieldName="DeductionAmount"
+                                                  Caption="Phí công đoàn"
+                                                  MinWidth="150"
+                                                  TextAlignment="GridTextAlignment.Right">
+                                    <CellDisplayTemplate>
+                                        <span class="hrm-grid-amount hrm-grid-amount--total">@FormatCurrency(((PayrollUnionFeeDeductionRecord)context.DataItem).DeductionAmount)</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="IsLocked" Caption="Trạng thái khóa" MinWidth="130">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (PayrollUnionFeeDeductionRecord)context.DataItem;
+                                        }
+                                        <span class="@GetLockStatusCssClass(row)">@row.LockStatusText</span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" MinWidth="260" />
+                            </Columns>
+
+                            <EmptyDataAreaTemplate>
+                                <div class="empty-state">
+                                    <div class="state-title">@EmptyStateTitle</div>
+                                    <div class="state-message">@EmptyStateMessage</div>
+                                    <DxButton Text="@EmptyStateActionText"
+                                              Click="OnEmptyStateActionClickAsync"
+                                              Enabled="@CanInteract"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                </div>
+                            </EmptyDataAreaTemplate>
+                        </DxGrid>
+
+                        <div class="union-fee-deduction-pager">
+                            <span class="union-fee-deduction-pager-summary">@PagerSummaryText</span>
+                            <div class="union-fee-deduction-pager-actions">
+                                <DxButton Text="Trang trước"
+                                          Click="PreviousPageAsync"
+                                          Enabled="@CanGoToPreviousPage"
+                                          RenderStyle="ButtonRenderStyle.Secondary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                                <DxButton Text="Trang sau"
+                                          Click="NextPageAsync"
+                                          Enabled="@CanGoToNextPage"
+                                          RenderStyle="ButtonRenderStyle.Secondary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Outline" />
+                            </div>
+                        </div>
+                    </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+
+    <div class="union-fee-deduction-export-source" aria-hidden="true">
+        <DxGrid @ref="ExportGrid"
+                Data="@ExportRecords"
+                KeyFieldName="Id"
+                ShowAllRows="true"
+                PagerVisible="false"
+                TextWrapEnabled="true">
+            <Columns>
+                <DxGridDataColumn FieldName="EmployeeDisplay" Caption="Nhân viên" />
+                <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Phòng ban" />
+                <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" />
+                <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" />
+                <DxGridDataColumn FieldName="DeductionAmount" Caption="Phí công đoàn">
+                    <CellDisplayTemplate>
+                        @FormatCurrency(((PayrollUnionFeeDeductionRecord)context.DataItem).DeductionAmount)
+                    </CellDisplayTemplate>
+                </DxGridDataColumn>
+                <DxGridDataColumn FieldName="LockStatusText" Caption="Trạng thái khóa" />
+            </Columns>
+        </DxGrid>
+    </div>
+</div>
+
+<KhauTruPhiCongDoanMonthlyWorkPopup Visible="@IsMonthlyWorkPopupVisible"
+                                    VisibleChanged="@(_ => CloseMonthlyWorkPopup())"
+                                    IsLoading="@IsMonthlyWorkPopupLoading"
+                                    Title="@MonthlyWorkPopupTitle"
+                                    Context="@MonthlyWorkPopupContext"
+                                    ErrorMessage="@MonthlyWorkPopupErrorMessage"
+                                    Rows="@MonthlyWorkRows"
+                                    RefreshRequested="RefreshMonthlyWorkPopupAsync" />
+
+<KhauTruPhiCongDoanRulesPopup @bind-Visible="IsRulesPopupVisible"
+                               PeriodLabel="@AppliedPeriodLabel" />
+
+<KhauTruPhiCongDoanLockActionPopup Visible="@IsLockActionPopupVisible"
+                                    VisibleChanged="@(_ => CloseLockActionPopup())"
+                                    IsRefreshing="@IsRefreshing"
+                                    Title="@LockActionPopupTitle"
+                                    PromptText="@LockActionPromptText"
+                                    ContextText="@LockActionScopeContextText"
+                                    SelectedScope="@SelectedLockActionScope"
+                                    SelectedRowsScope="@LockScopeSelectedRows"
+                                    WholePeriodScope="@LockScopeWholePeriod"
+                                    SelectedRowsDescription="@SelectedRowsScopeDescription"
+                                    WholePeriodDescription="@WholePeriodScopeDescription"
+                                    WholePeriodLabel="@AppliedPeriodLabel"
+                                    CanChooseSelectedRowsScope="@CanChooseSelectedRowsScope"
+                                    CanConfirm="@CanConfirmLockAction"
+                                    ShouldLock="@PendingLockActionState"
+                                    ScopeSelected="SelectLockActionScope"
+                                    ConfirmRequested="ConfirmLockActionAsync" />
+
+<KhauTruPhiCongDoanEditPopup Visible="@IsEditPopupVisible"
+                               VisibleChanged="@(_ => CloseEditPopup())"
+                               IsSaving="@IsSavingEdit"
+                               Title="@EditPopupTitle"
+                               Model="@EditModel"
+                               CanEditFields="@CanEditFields"
+                               CanSave="@CanSaveEdit"
+                               SaveRequested="SaveEditAsync" />
+
+<KhauTruPhiCongDoanRecalculateConfirmPopup Visible="@IsRecalculateConfirmPopupVisible"
+                                            VisibleChanged="@(_ => CloseRecalculateConfirmPopup())"
+                                            IsRefreshing="@IsRefreshing"
+                                            PeriodLabel="@AppliedPeriodLabel"
+                                            ConfirmRequested="ConfirmRecalculateAsync" />

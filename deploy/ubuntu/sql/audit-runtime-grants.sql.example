@@ -1,0 +1,16 @@
+-- Run this only after the AddAuditTrail migration has completed successfully.
+-- Execute as the database owner / migration role, never as the application runtime role.
+-- Copy this file, replace __HRM_RUNTIME_ROLE__ with the login role used by hrm-web,
+-- and have the DBA review it before execution.
+
+REVOKE ALL PRIVILEGES ON SCHEMA audit FROM PUBLIC;
+REVOKE ALL PRIVILEGES ON TABLE audit.events, audit.property_changes FROM PUBLIC;
+
+GRANT USAGE ON SCHEMA audit TO __HRM_RUNTIME_ROLE__;
+GRANT SELECT, INSERT ON TABLE audit.events, audit.property_changes TO __HRM_RUNTIME_ROLE__;
+
+-- Defense in depth: the migration's trigger already rejects UPDATE/DELETE. Keep the
+-- runtime role unable to issue them even if a trigger is accidentally replaced later.
+REVOKE UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER
+ON TABLE audit.events, audit.property_changes
+FROM __HRM_RUNTIME_ROLE__;

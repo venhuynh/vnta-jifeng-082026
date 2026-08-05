@@ -1,0 +1,18 @@
+.leave-holiday-edit-form {
+    padding: 0.25rem 0;
+}
+
+.validation-summary,
+.edit-error-message {
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+    color: var(--dxds-color-content-danger-default-rest);
+}
+
+::deep .leave-holiday-edit-readonly .dxbl-text-editor-input {
+    font-weight: 600;
+}
+
+::deep .leave-holiday-edit-calculated .dxbl-text-editor-input {
+    color: var(--allowance-color-success);
+}

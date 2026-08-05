@@ -1,0 +1,44 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+@if(Model is not null && EditFormContext is not null) {
+    <CascadingValue Value="EditFormContext.EditContext">
+        <DataAnnotationsValidator />
+
+        <DxFormLayout CssClass="chuc-vu-edit-form" CaptionPosition="CaptionPosition.Vertical">
+            <DxFormLayoutGroup Caption="@FormGroupCaption" ColSpanMd="12">
+                <DxFormLayoutItem Caption="Mã chức vụ" ColSpanMd="12">
+                    <DxTextBox @bind-Text="Model.Code"
+                               CssClass="w-100"
+                               NullText="Nhập mã chức vụ"
+                               ShowValidationIcon="true"
+                               ShowValidationSuccessState="true" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Tên chức vụ" ColSpanMd="12">
+                    <DxTextBox @bind-Text="Model.Name"
+                               CssClass="w-100"
+                               NullText="Nhập tên chức vụ"
+                               ShowValidationIcon="true"
+                               ShowValidationSuccessState="true" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Mô tả" ColSpanMd="12">
+                    <DxMemo @bind-Text="Model.Description"
+                            CssClass="w-100"
+                            NullText="Nhập mô tả nếu có"
+                            Rows="4"
+                            ShowValidationIcon="true" />
+                </DxFormLayoutItem>
+                @if(CanShowEmployeeCount) {
+                    <DxFormLayoutItem Caption="Số nhân viên" ColSpanMd="12">
+                        <div class="chuc-vu-readonly-value">@Model.EmployeeCount</div>
+                    </DxFormLayoutItem>
+                }
+            </DxFormLayoutGroup>
+        </DxFormLayout>
+
+        <ValidationSummary class="validation-summary" />
+
+        @if(!string.IsNullOrWhiteSpace(ErrorMessage)) {
+            <div class="edit-error-message">@ErrorMessage</div>
+        }
+    </CascadingValue>
+}

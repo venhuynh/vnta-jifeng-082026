@@ -1,0 +1,107 @@
+<DxPopup Visible="@State.Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="@State.Title"
+         Width="520px"
+         ShowCloseButton="@(!State.IsSaving)"
+         ShowFooter="true"
+         CloseOnEscape="@(!State.IsSaving)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="other-allowance-popup-footer"
+         CssClass="other-allowance-edit-popup">
+    <BodyContentTemplate Context="editPopupBody">
+        <div class="other-allowance-edit-form">
+            @if (!string.IsNullOrWhiteSpace(State.ErrorMessage))
+            {
+                <div class="other-allowance-edit-error" role="alert">@State.ErrorMessage</div>
+            }
+            <DxFormLayout CaptionPosition="@CaptionPosition.Vertical">
+                <DxFormLayoutItem Caption="Nhân viên" ColSpanMd="12">
+                    @if (State.IsCreateMode)
+                    {
+                        <DxComboBox TData="PhuCapKhacEmployeeOption"
+                                    TValue="Guid"
+                                    Data="@State.EmployeeOptions"
+                                    Value="@Draft.PayrollAllowanceSummaryRecordId"
+                                    ValueChanged="OnEmployeeChangedAsync"
+                                    ValueFieldName="@nameof(PhuCapKhacEmployeeOption.PayrollAllowanceSummaryRecordId)"
+                                    TextFieldName="@nameof(PhuCapKhacEmployeeOption.EmployeeDisplay)"
+                                    SearchMode="ListSearchMode.AutoSearch"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                    NullText="Chọn nhân viên"
+                                    Enabled="@State.CanEditFields" />
+                    }
+                    else
+                    {
+                        <DxTextBox Text="@Draft.EmployeeDisplay"
+                                   ReadOnly="true"
+                                   CssClass="other-allowance-edit-readonly" />
+                    }
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Kỳ lương" ColSpanMd="6">
+                    <DxTextBox Text="@Draft.PayrollPeriodDisplay"
+                               ReadOnly="true"
+                               CssClass="other-allowance-edit-readonly" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Trạng thái" ColSpanMd="6">
+                    <DxTextBox Text="@(Draft.IsLocked ? "Đã khóa" : "Đang mở")"
+                               ReadOnly="true"
+                               CssClass="other-allowance-edit-readonly" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Tên phụ cấp" ColSpanMd="12">
+                    <DxTextBox Text="@Draft.AllowanceName"
+                               TextChanged="OnAllowanceNameChangedAsync"
+                               NullText="Nhập tên phụ cấp"
+                               MaxLength="256"
+                               Enabled="@State.CanEditFields" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Loại áp dụng" ColSpanMd="12">
+                    <DxCheckBox Checked="@Draft.IsFixedAmount"
+                                CheckedChanged="@((bool value) => OnIsFixedAmountChangedAsync(value))"
+                                CheckType="CheckType.Switch"
+                                Enabled="@State.CanEditFields">
+                        @(Draft.IsFixedAmount ? "Cố định" : "Không cố định")
+                    </DxCheckBox>
+                    @if (!Draft.IsFixedAmount)
+                    {
+                        <div class="other-allowance-edit-hint">Loại không cố định sẽ lưu số tiền bằng 0 theo quy tắc hiện hành.</div>
+                    }
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Số tiền" ColSpanMd="12">
+                    <DxMaskedInput T="decimal"
+                                   Value="@Draft.AllowanceAmount"
+                                   ValueChanged="OnAllowanceAmountChangedAsync"
+                                   Mask="n0"
+                                   MaskMode="MaskMode.Numeric"
+                                   Enabled="@(State.CanEditFields && Draft.IsFixedAmount)">
+                        <DxNumericMaskProperties Culture="@DisplayCulture" />
+                    </DxMaskedInput>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Ghi chú" ColSpanMd="12">
+                    <DxMemo Text="@Draft.Note"
+                            TextChanged="OnNoteChangedAsync"
+                            NullText="Nhập ghi chú điều chỉnh"
+                            Rows="4"
+                            Enabled="@State.CanEditFields" />
+                </DxFormLayoutItem>
+            </DxFormLayout>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="other-allowance-edit-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="other-allowance-popup-action"
+                      Enabled="@(!State.IsSaving)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Lưu"
+                      Click="SaveAsync"
+                      IconUrl="@VntaDevExpressIcons.Save"
+                      CssClass="other-allowance-popup-action"
+                      Enabled="@State.CanSave"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

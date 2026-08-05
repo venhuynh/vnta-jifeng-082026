@@ -1,0 +1,401 @@
+@page "/approval/overtime-registrations"
+
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Application.DangKyPheDuyet.DangKyTangCa
+
+@attribute [Authorize(Policy = InternalAccountPolicies.AttendanceAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Đăng ký tăng ca</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Đăng ký tăng ca" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="dang-ky-tang-ca-toolbar-date-item"
+                           Tooltip="Lọc phiếu theo ngày tăng ca">
+                <Template>
+                    <div class="custom-item toolbar-filter">
+                        <span class="toolbar-field-caption">Ngày tăng ca</span>
+                        <DxDateEdit @bind-Date="ToolbarDate"
+                                    NullText="Tất cả ngày"
+                                    DisplayFormat="dd/MM/yyyy"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                    Enabled="@CanChangeFilters"
+                                    CssClass="dang-ky-tang-ca-date-editor" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="dang-ky-tang-ca-toolbar-filter-item"
+                           Tooltip="Lọc theo loại ngày">
+                <Template>
+                    <div class="custom-item toolbar-filter">
+                        <span class="toolbar-field-caption">Loại ngày</span>
+                        <DxComboBox TData="RequestDayTypeFilterOption"
+                                    TValue="OvertimeRequestDayTypeFilter"
+                                    Data="@DayTypeFilterOptions"
+                                    TextFieldName="@nameof(RequestDayTypeFilterOption.Text)"
+                                    ValueFieldName="@nameof(RequestDayTypeFilterOption.Value)"
+                                    Value="@SelectedDayTypeFilter"
+                                    ValueChanged="@(value => OnDayTypeFilterChanged(value))"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                    Enabled="@CanChangeFilters"
+                                    CssClass="dang-ky-tang-ca-filter-combobox" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="dang-ky-tang-ca-toolbar-filter-item"
+                           Tooltip="Lọc theo trạng thái xử lý">
+                <Template>
+                    <div class="custom-item toolbar-filter">
+                        <span class="toolbar-field-caption">Trạng thái</span>
+                        <DxComboBox TData="RequestStatusFilterOption"
+                                    TValue="OvertimeRequestStatusFilter"
+                                    Data="@StatusFilterOptions"
+                                    TextFieldName="@nameof(RequestStatusFilterOption.Text)"
+                                    ValueFieldName="@nameof(RequestStatusFilterOption.Value)"
+                                    Value="@SelectedStatusFilter"
+                                    ValueChanged="@(value => OnStatusFilterChanged(value))"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                    Enabled="@CanChangeFilters"
+                                    CssClass="dang-ky-tang-ca-filter-combobox" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Xem"
+                           Click="ReloadAsync"
+                           Enabled="@CanReload"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Áp dụng bộ lọc hiện tại và tải lại danh sách phiếu"
+                           IconUrl="@VntaDevExpressIcons.View" />
+            <DxToolbarItem Text="Thêm"
+                           Click="OpenCreatePopupAsync"
+                           Enabled="@CanCreate"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Khởi tạo phiếu đăng ký tăng ca mới"
+                           IconUrl="@VntaDevExpressIcons.Add" />
+            <DxToolbarItem Text="Điều chỉnh"
+                           Click="OpenEditPopupAsync"
+                           Enabled="@CanEditSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Điều chỉnh phiếu đang ở trạng thái nháp hoặc trả lại"
+                           IconUrl="@VntaDevExpressIcons.Edit" />
+            <DxToolbarItem Text="Gửi phê duyệt"
+                           Click="SubmitSelectedAsync"
+                           Enabled="@CanSubmitSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Gửi các phiếu nháp hoặc trả lại sang chờ phê duyệt"
+                           IconUrl="@VntaDevExpressIcons.Upload" />
+            <DxToolbarItem Text="Duyệt"
+                           Click="ApproveSelectedAsync"
+                           Enabled="@CanApproveSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Phê duyệt các phiếu đang chờ duyệt"
+                           IconUrl="@VntaDevExpressIcons.TaskList" />
+            <DxToolbarItem Text="Trả lại"
+                           Click="ReturnSelectedAsync"
+                           Enabled="@CanReturnSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Trả lại phiếu cho xưởng trưởng chỉnh sửa"
+                           IconUrl="@VntaDevExpressIcons.Reset" />
+            <DxToolbarItem Text="Từ chối"
+                           Click="RejectSelectedAsync"
+                           Enabled="@CanRejectSelected"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Từ chối các phiếu đang chờ duyệt"
+                           IconUrl="@VntaDevExpressIcons.Cancel" />
+            <DxToolbarItem Tooltip="Làm mới lưới đăng ký tăng ca"
+                           Click="RefreshAsync"
+                           Enabled="@CanRefresh"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Text="Xuất dữ liệu"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất danh sách đăng ký tăng ca"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel"
+                                   Click="ExportAllDataToExcel"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ dữ liệu đang hiển thị ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF"
+                                   Click="ExportAllDataToPdf"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ dữ liệu đang hiển thị ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra Excel"
+                                   Click="ExportSelectedRowsToExcel"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các phiếu đang chọn ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra PDF"
+                                   Click="ExportSelectedRowsToPdf"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các phiếu đang chọn ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong lưới đăng ký tăng ca"
+                           Click="ShowColumnChooserAsync"
+                           Enabled="@CanInteract"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+        </DxToolbar>
+    </div>
+
+    <div class="dang-ky-tang-ca-root">
+        @if (HasLoadError)
+        {
+            <div class="card error-state">
+                <div class="state-title">Không thể tải dữ liệu đăng ký tăng ca</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="OnRetryAsync"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+        <div class="card dang-ky-tang-ca-grid-card">
+            <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             Text="@LoadingPanelText"
+                             CssClass="dang-ky-tang-ca-loading-panel">
+                    <div class="dang-ky-tang-ca-grid-content">
+                        <div class="dang-ky-tang-ca-grid-header">
+                            <div class="overtime-summary-strip" aria-label="Tổng quan đăng ký tăng ca">
+                                <section class="overtime-summary-item overtime-summary-total">
+                                    <span class="overtime-summary-label">Phiếu hiển thị</span>
+                                    <strong class="overtime-summary-value">@TotalRequestCount</strong>
+                                    <span class="overtime-summary-caption">@CurrentFilterSummary</span>
+                                </section>
+                                <section class="overtime-summary-item overtime-summary-pending">
+                                    <span class="overtime-summary-label">Chờ phê duyệt</span>
+                                    <strong class="overtime-summary-value">@PendingApprovalCount</strong>
+                                    <span class="overtime-summary-caption">Cần Giám đốc sản xuất xử lý</span>
+                                </section>
+                                <section class="overtime-summary-item overtime-summary-approved">
+                                    <span class="overtime-summary-label">Đã phê duyệt</span>
+                                    <strong class="overtime-summary-value">@ApprovedCount</strong>
+                                    <span class="overtime-summary-caption">Sẵn sàng chuyển xuống chấm công</span>
+                                </section>
+                                <section class="overtime-summary-item overtime-summary-registered">
+                                    <span class="overtime-summary-label">Nhân viên đăng ký</span>
+                                    <strong class="overtime-summary-value">@RegisteredEmployeeCount</strong>
+                                    <span class="overtime-summary-caption">Tổng nhân sự đăng ký tăng ca</span>
+                                </section>
+                            </div>
+                        <div class="dang-ky-tang-ca-grid-search">
+                            <DxSearchBox CssClass="dang-ky-tang-ca-grid-searchbox"
+                                         NullText="Tìm kiếm ngày tăng ca, xưởng, tổ, người đăng ký hoặc ghi chú"
+                                         BindValueMode="BindValueMode.OnDelayedInput"
+                                         InputDelay="250"
+                                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                         Text="@SearchText"
+                                         TextChanged="OnSearchTextChanged"
+                                         Enabled="@CanChangeFilters" />
+                        </div>
+                    </div>
+
+                    <DxGrid @ref="Grid"
+                            Data="@PagedRequests"
+                            KeyFieldName="Id"
+                            CssClass="dang-ky-tang-ca-grid"
+                            PagerVisible="false"
+                            ShowAllRows="true"
+                            SkeletonRowsEnabled="true"
+                            ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                            FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                            TextWrapEnabled="false"
+                            FocusedRowEnabled="true"
+                            HighlightRowOnHover="true"
+                            AllowSelectRowByClick="true"
+                            SelectionMode="GridSelectionMode.Multiple"
+                            SelectedDataItems="@SelectedDataItems"
+                            SelectedDataItemsChanged="@OnSelectedDataItemsChanged">
+                        <Columns>
+                            <DxGridSelectionColumn Width="3rem" />
+                            <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                <CellDisplayTemplate>
+                                    @(CurrentPageIndex * PageSize + context.VisibleIndex + 1)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn Caption="Tác vụ"
+                                              MinWidth="96"
+                                              Width="6rem"
+                                              AllowSort="false"
+                                              TextAlignment="GridTextAlignment.Center"
+                                              ShowInColumnChooser="false">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var request = (OvertimeRequestRecord)context.DataItem;
+                                    }
+                                    <div class="dang-ky-tang-ca-row-menu-host"
+                                         @onclick:stopPropagation="true"
+                                         @onmousedown:stopPropagation="true">
+                                        <DxDropDownButton CssClass="dang-ky-tang-ca-row-menu-btn"
+                                                          IconCssClass="icon more-icon medium-icon"
+                                                          RenderStyle="ButtonRenderStyle.Link"
+                                                          DropDownToggleVisible="false"
+                                                          Enabled="@CanOperateOnRequest(request)"
+                                                          Tooltip="Tác vụ cho phiếu đăng ký tăng ca">
+                                            <Items>
+                                                <DxDropDownButtonItem Text="Điều chỉnh"
+                                                                      IconUrl="@VntaDevExpressIcons.Edit"
+                                                                      Click="@(() => OpenEditPopupAsync(request))"
+                                                                      Enabled="@CanEditRequest(request)" />
+                                                <DxDropDownButtonItem Text="Gửi phê duyệt"
+                                                                      IconUrl="@VntaDevExpressIcons.Upload"
+                                                                      Click="@(() => SubmitRequestAsync(request))"
+                                                                      Enabled="@CanSubmitRequest(request)"
+                                                                      BeginGroup="true" />
+                                                <DxDropDownButtonItem Text="Duyệt"
+                                                                      IconUrl="@VntaDevExpressIcons.TaskList"
+                                                                      Click="@(() => ApproveRequestAsync(request))"
+                                                                      Enabled="@CanApproveRequest(request)" />
+                                                <DxDropDownButtonItem Text="Trả lại"
+                                                                      IconUrl="@VntaDevExpressIcons.Reset"
+                                                                      Click="@(() => ReturnRequestAsync(request))"
+                                                                      Enabled="@CanReturnRequest(request)" />
+                                                <DxDropDownButtonItem Text="Từ chối"
+                                                                      IconUrl="@VntaDevExpressIcons.Cancel"
+                                                                      Click="@(() => RejectRequestAsync(request))"
+                                                                      Enabled="@CanRejectRequest(request)" />
+                                            </Items>
+                                        </DxDropDownButton>
+                                    </div>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="WorkDate" Caption="Ngày tăng ca" MinWidth="126">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var request = (OvertimeRequestRecord)context.DataItem;
+                                    }
+                                    @FormatDate(request.WorkDate)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="DayTypeDisplay" Caption="Loại ngày" MinWidth="130">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var request = (OvertimeRequestRecord)context.DataItem;
+                                    }
+                                    <span class="@GetDayTypeBadgeCssClass(request.DayType)">@request.DayTypeDisplay</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="WorkshopName" Caption="Xưởng" MinWidth="180" />
+                            <DxGridDataColumn FieldName="TeamSummary" Caption="Tổ" MinWidth="180" />
+                            <DxGridDataColumn FieldName="RequestedBy" Caption="Người đăng ký" MinWidth="180" />
+                            <DxGridDataColumn FieldName="RegistrationModeDisplay" Caption="Khung đăng ký" MinWidth="160" />
+                            <DxGridDataColumn FieldName="RegisteredEmployeeCount" Caption="Số lượng đăng ký" MinWidth="130">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var request = (OvertimeRequestRecord)context.DataItem;
+                                    }
+                                    @($"{request.RegisteredEmployeeCount}/{request.TotalEmployeeCount}")
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="ApprovalCutoffDisplay" Caption="Hạn duyệt" MinWidth="150" />
+                            <DxGridDataColumn FieldName="StatusDisplay" Caption="Trạng thái" MinWidth="150">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var request = (OvertimeRequestRecord)context.DataItem;
+                                    }
+                                    <span class="@GetStatusBadgeCssClass(request.Status)">@request.StatusDisplay</span>
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="Note" Caption="Ghi chú" MinWidth="220" />
+                            <DxGridDataColumn FieldName="LastActionAt" Caption="Cập nhật lúc" Visible="false" MinWidth="150">
+                                <CellDisplayTemplate>
+                                    @{
+                                        var request = (OvertimeRequestRecord)context.DataItem;
+                                    }
+                                    @FormatDateTime(request.LastActionAt)
+                                </CellDisplayTemplate>
+                            </DxGridDataColumn>
+                            <DxGridDataColumn FieldName="ApprovedBy" Caption="Người duyệt" Visible="false" MinWidth="180" />
+                            <DxGridDataColumn FieldName="Id" Caption="ID" Visible="false" MinWidth="260" />
+                        </Columns>
+
+                        <EmptyDataAreaTemplate>
+                            <div class="empty-state">
+                                <div class="state-title">@EmptyStateTitle</div>
+                                <div class="state-message">@EmptyStateMessage</div>
+                                <DxButton Text="@EmptyStateActionText"
+                                          Click="OnEmptyStateActionClick"
+                                          Enabled="@CanEmptyStateAction"
+                                          RenderStyle="ButtonRenderStyle.Primary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                            </div>
+                        </EmptyDataAreaTemplate>
+                        </DxGrid>
+
+                        <div class="dang-ky-tang-ca-pager" aria-label="Điều hướng trang đăng ký tăng ca">
+                            <div class="dang-ky-tang-ca-pager-summary">@PagerSummaryText</div>
+                            @if (CanBrowsePages)
+                            {
+                                <DxPager PageCount="@TotalPageCount"
+                                         ActivePageIndex="@CurrentPageIndex"
+                                         ActivePageIndexChanged="OnActivePageIndexChangedAsync"
+                                         NavigationMode="PagerNavigationMode.NumericButtons"
+                                         VisibleNumericButtonCount="7" />
+                            }
+                            <div class="dang-ky-tang-ca-page-size">
+                                <span>Hiển thị</span>
+                                <DxComboBox TData="int"
+                                            TValue="int"
+                                            Data="@PageSizeOptions"
+                                            Value="@PageSize"
+                                            ValueChanged="OnPageSizeChanged"
+                                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                            Enabled="@CanChangeFilters"
+                                            CssClass="dang-ky-tang-ca-page-size-editor" />
+                                <span>dòng/trang</span>
+                            </div>
+                        </div>
+                    </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+
+    <div class="dang-ky-tang-ca-export-source" aria-hidden="true">
+        <DxGrid @ref="ExportGrid"
+                Data="@ExportRequests"
+                KeyFieldName="Id"
+                ShowAllRows="true"
+                PagerVisible="false"
+                TextWrapEnabled="true">
+            <Columns>
+                <DxGridDataColumn FieldName="WorkDate" Caption="Ngày tăng ca" DisplayFormat="dd/MM/yyyy" />
+                <DxGridDataColumn FieldName="DayTypeDisplay" Caption="Loại ngày" />
+                <DxGridDataColumn FieldName="WorkshopName" Caption="Xưởng" />
+                <DxGridDataColumn FieldName="TeamSummary" Caption="Tổ" />
+                <DxGridDataColumn FieldName="RequestedBy" Caption="Người đăng ký" />
+                <DxGridDataColumn FieldName="RegistrationModeDisplay" Caption="Khung đăng ký" />
+                <DxGridDataColumn FieldName="RegisteredEmployeeCount" Caption="Số lượng đăng ký" />
+                <DxGridDataColumn FieldName="ApprovalCutoffDisplay" Caption="Hạn duyệt" />
+                <DxGridDataColumn FieldName="StatusDisplay" Caption="Trạng thái" />
+                <DxGridDataColumn FieldName="Note" Caption="Ghi chú" />
+            </Columns>
+        </DxGrid>
+    </div>
+</div>
+
+<DangKyTangCaEditPopup Visible="@IsEditPopupVisible"
+                   VisibleChanged="OnEditPopupVisibleChangedAsync"
+                   EditRequest="@EditRequest"
+                   IsCreatingNewRequest="@IsCreatingNewRequest"
+                   IsSaving="@IsSavingPopup"
+                   LoadingText="@PopupLoadingText"
+                   ValidationMessage="@PopupValidationMessage"
+                   SaveDraftRequested="SaveDraftAsync"
+                   SaveAndSubmitRequested="SaveAndSubmitAsync" />

@@ -1,0 +1,35 @@
+@using Vnta.Hrm.Application.PhuCap.PhuCapTrachNhiem
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemGanNhanVien.Sections
+
+<DxGrid @ref="grid" Data="@Records" KeyFieldName="@nameof(PayrollResponsibilityAllowanceEmployeeAssignmentDto.Id)" CssClass="employee-grade-list-grid" ShowSearchBox="false" PagerVisible="false" PageSize="@PageSize" SkeletonRowsEnabled="true" ColumnResizeMode="GridColumnResizeMode.NextColumn" FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always" TextWrapEnabled="false" FocusedRowEnabled="true" HighlightRowOnHover="true" AllowSelectRowByClick="true" SelectionMode="GridSelectionMode.Multiple" SelectedDataItems="@SelectedDataItems" SelectedDataItemsChanged="SelectedDataItemsChanged">
+    <Columns>
+        <DxGridSelectionColumn Width="3rem" />
+        <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false"><CellDisplayTemplate>@(CurrentPageIndex * PageSize + context.VisibleIndex + 1)</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn Caption="Tác vụ" Width="6rem" MinWidth="96" AllowSort="false" TextAlignment="GridTextAlignment.Center" ShowInColumnChooser="false">
+            <CellDisplayTemplate>
+                @{ var row = (PayrollResponsibilityAllowanceEmployeeAssignmentDto)context.DataItem; }
+                <div class="employee-grade-list-row-menu-host" @onclick:stopPropagation="true" @onmousedown:stopPropagation="true">
+                    <DxDropDownButton CssClass="employee-grade-list-row-menu-btn" IconCssClass="icon more-icon medium-icon" RenderStyle="ButtonRenderStyle.Link" DropDownToggleVisible="false" Enabled="@CanManageAssignments" Tooltip="Tác vụ dòng cấp bậc nhân viên">
+                        <Items><DxDropDownButtonItem Text="Điều chỉnh" IconUrl="@VntaDevExpressIcons.Edit" Click="@(() => EditRequested.InvokeAsync(row))" Enabled="@CanManageAssignments" /></Items>
+                    </DxDropDownButton>
+                </div>
+            </CellDisplayTemplate>
+        </DxGridDataColumn>
+        <DxGridDataColumn Caption="Nhân viên" MinWidth="240"><CellDisplayTemplate>@{ var row = (PayrollResponsibilityAllowanceEmployeeAssignmentDto)context.DataItem; var employeeDisplay = GetEmployeeDisplay(row); }<span class="employee-grade-list-employee-text" title="@employeeDisplay">@employeeDisplay</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceEmployeeAssignmentDto.PositionName)" Caption="Chức vụ" MinWidth="180" />
+        <DxGridDataColumn Caption="Cấp bậc" MinWidth="200"><CellDisplayTemplate>@{ var row = (PayrollResponsibilityAllowanceEmployeeAssignmentDto)context.DataItem; var label = GetGradeLabel(row); } @if (!string.IsNullOrWhiteSpace(label)) { <span class="@GetGradeLabelCssClass(row.GradeId)">@label</span> }</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceEmployeeAssignmentDto.StandardResponsibilityAllowanceAmount)" Caption="Tiền chuẩn" MinWidth="140" TextAlignment="GridTextAlignment.Right">
+            <CellDisplayTemplate>
+                @{ var row = (PayrollResponsibilityAllowanceEmployeeAssignmentDto)context.DataItem; }
+                @if (row.StandardResponsibilityAllowanceAmount != 0m)
+                {
+                    <span class="hrm-grid-amount hrm-grid-amount--total">@FormatMoney(row.StandardResponsibilityAllowanceAmount)</span>
+                }
+            </CellDisplayTemplate>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="@nameof(PayrollResponsibilityAllowanceEmployeeAssignmentDto.Note)" Caption="Ghi chú" MinWidth="220" />
+    </Columns>
+    <EmptyDataAreaTemplate>
+        <div class="empty-state"><div class="state-title">@EmptyStateTitle</div><div class="state-message">@EmptyStateMessage</div><DxButton Text="@EmptyStateActionText" Click="EmptyStateActionRequested" RenderStyle="ButtonRenderStyle.Primary" /></div>
+    </EmptyDataAreaTemplate>
+</DxGrid>

@@ -1,0 +1,180 @@
+@using Vnta.Hrm.Web.Client.Models
+@using Vnta.Hrm.Web.Client.Models.Employees
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChanged"
+         HeaderText="@HeaderText"
+         Width="min(58rem, calc(100vw - 2rem))"
+         ShowCloseButton="@CanClosePopup"
+         ShowFooter="true"
+          FooterCssClass="employee-create-popup-footer"
+         CloseOnOutsideClick="false"
+          CssClass="employees-create-popup">
+    <BodyContentTemplate Context="popupBody">
+        @if(CreateModel is { } createModel) {
+            <EditForm EditContext="@CreateEditContext" OnValidSubmit="OnValidSubmitAsync" Context="createFormContext">
+                <DataAnnotationsValidator />
+                <HrmLoadingPanel Visible="@IsCreateActionBusy"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="@CreateLoadingText"
+                                 CssClass="employee-create-loading-panel">
+                    <DxFormLayout CssClass="employee-create-form" CaptionPosition="CaptionPosition.Vertical">
+                        <DxFormLayoutGroup Caption="Thông tin khởi tạo" ColSpanMd="12">
+                            <DxFormLayoutItem Caption="Mã nhân viên" ColSpanMd="6">
+                                <DxTextBox @bind-Text="createModel.EmployeeCode"
+                                           BindValueMode="BindValueMode.OnInput"
+                                           ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                           NullText="Nhập đúng 5 ký tự"
+                                           Enabled="@(!IsEditMode && CanEditCreateFields)" />
+                                <ValidationMessage For="@(() => createModel.EmployeeCode)" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Họ tên" ColSpanMd="6">
+                                <DxTextBox @bind-Text="createModel.FullName"
+                                           BindValueMode="BindValueMode.OnInput"
+                                           ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                           NullText="Nhập họ tên nhân viên"
+                                           Enabled="@CanEditCreateFields" />
+                                <ValidationMessage For="@(() => createModel.FullName)" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Phòng ban" ColSpanMd="6">
+                                <DxDropDownBox Value="@createModel.DepartmentId"
+                                               ValueChanged="@OnDepartmentValueChanged"
+                                               ValueExpression="@(() => createModel.DepartmentId)"
+                                               QueryDisplayText="GetDepartmentDisplayText"
+                                               NullText="Chọn phòng ban"
+                                               ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                               DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+                                               DropDownBodyCssClass="employee-lookup-dropdown"
+                                               DropDownVisible="@DepartmentDropDownVisible"
+                                               DropDownVisibleChanged="@OnDepartmentDropDownVisibleChanged"
+                                               Enabled="@CanEditCreateFields">
+                                    <DropDownBodyTemplate Context="dropDownContext">
+                                        <div class="employee-lookup">
+                                            <DxSearchBox CssClass="employee-lookup-search"
+                                                         NullText="Tìm phòng ban"
+                                                         BindValueMode="BindValueMode.OnInput"
+                                                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                                         @bind-Text="DepartmentSearchText" />
+                                            <DxGrid Data="@FilteredDepartments"
+                                                    KeyFieldName="Id"
+                                                    CssClass="employee-lookup-grid"
+                                                    PageSize="@LookupPageSize"
+                                                    PageIndex="@DepartmentLookupPageIndex"
+                                                    PageIndexChanged="OnDepartmentLookupPageIndexChanged"
+                                                    PagerVisible="true"
+                                                    PagerPosition="GridPagerPosition.Bottom"
+                                                    PagerSummaryVisible="true"
+                                                    PageSizeSelectorVisible="true"
+                                                    PageSizeSelectorItems="@LookupPageSizeSelectorItems"
+                                                    FocusedRowEnabled="true"
+                                                    HighlightRowOnHover="true"
+                                                    TextWrapEnabled="true"
+                                                    RowClick="OnDepartmentLookupRowClick">
+                                                <Columns>
+                                                    <DxGridDataColumn FieldName="FullPath" Caption="Phòng ban" />
+                                                </Columns>
+                                            </DxGrid>
+                                        </div>
+                                    </DropDownBodyTemplate>
+                                </DxDropDownBox>
+                                <ValidationMessage For="@(() => createModel.DepartmentId)" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Chức vụ" ColSpanMd="6">
+                                <DxDropDownBox Value="@createModel.PositionId"
+                                               ValueChanged="@OnPositionValueChanged"
+                                               ValueExpression="@(() => createModel.PositionId)"
+                                               QueryDisplayText="GetPositionDisplayText"
+                                               NullText="Chọn chức vụ"
+                                               ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                               DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+                                               DropDownBodyCssClass="employee-lookup-dropdown"
+                                               DropDownVisible="@PositionDropDownVisible"
+                                               DropDownVisibleChanged="@OnPositionDropDownVisibleChanged"
+                                               Enabled="@CanEditCreateFields">
+                                    <DropDownBodyTemplate Context="dropDownContext">
+                                        <div class="employee-lookup">
+                                            <DxSearchBox CssClass="employee-lookup-search"
+                                                         NullText="Tìm chức vụ"
+                                                         BindValueMode="BindValueMode.OnInput"
+                                                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                                         @bind-Text="PositionSearchText" />
+                                            <DxGrid Data="@FilteredPositions"
+                                                    KeyFieldName="Id"
+                                                    CssClass="employee-lookup-grid"
+                                                    PageSize="@LookupPageSize"
+                                                    PageIndex="@PositionLookupPageIndex"
+                                                    PageIndexChanged="OnPositionLookupPageIndexChanged"
+                                                    PagerVisible="true"
+                                                    PagerPosition="GridPagerPosition.Bottom"
+                                                    PagerSummaryVisible="true"
+                                                    PageSizeSelectorVisible="true"
+                                                    PageSizeSelectorItems="@LookupPageSizeSelectorItems"
+                                                    FocusedRowEnabled="true"
+                                                    HighlightRowOnHover="true"
+                                                    TextWrapEnabled="true"
+                                                    RowClick="OnPositionLookupRowClick">
+                                                <Columns>
+                                                    <DxGridDataColumn FieldName="Name" Caption="Chức vụ" />
+                                                </Columns>
+                                            </DxGrid>
+                                        </div>
+                                    </DropDownBodyTemplate>
+                                </DxDropDownBox>
+                                <ValidationMessage For="@(() => createModel.PositionId)" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Tình trạng" ColSpanMd="6">
+                                <DxComboBox TData="EmployeeStatusOption"
+                                            TValue="EmployeeEmploymentStatus"
+                                            Data="@StatusOptions"
+                                            TextFieldName="@nameof(EmployeeStatusOption.Text)"
+                                            ValueFieldName="@nameof(EmployeeStatusOption.Value)"
+                                            Value="@createModel.Status"
+                                            ValueChanged="@OnStatusValueChanged"
+                                            ValueExpression="@(() => createModel.Status)"
+                                            CssClass="employee-status-combobox"
+                                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                            Enabled="@(!IsEditMode && CanEditCreateFields)">
+                                    <ItemDisplayTemplate Context="statusContext">
+                                        <span class="@GetStatusOptionCssClass(statusContext.DataItem)">@statusContext.DataItem.Text</span>
+                                    </ItemDisplayTemplate>
+                                    <EditBoxDisplayTemplate Context="statusContext">
+                                        <span class="@GetStatusOptionCssClass(statusContext.DataItem)">@statusContext.DataItem.Text</span>
+                                    </EditBoxDisplayTemplate>
+                                </DxComboBox>
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem Caption="Ngày vào làm" ColSpanMd="6">
+                                <DxDateEdit @bind-Date="createModel.HireDate" Enabled="@CanEditCreateFields" />
+                            </DxFormLayoutItem>
+                        </DxFormLayoutGroup>
+                    </DxFormLayout>
+                    <div class="employee-create-form-messages">
+                        <ValidationSummary class="validation-summary" />
+                        @if(!string.IsNullOrWhiteSpace(LookupErrorMessage)) {
+                            <div class="form-error-message">@LookupErrorMessage</div>
+                        }
+                        @if(!string.IsNullOrWhiteSpace(EditErrorMessage)) {
+                            <div class="form-error-message">@EditErrorMessage</div>
+                        }
+                    </div>
+                </HrmLoadingPanel>
+            </EditForm>
+        }
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <div class="employee-create-popup-actions">
+            <DxButton Text="@SaveButtonText"
+                      Click="OnSaveClickAsync"
+                      Enabled="@CanSave"
+                      IconUrl="@VntaDevExpressIcons.Save"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            <DxButton Text="Hủy"
+                      Click="OnCancelClickAsync"
+                      Enabled="@CanClosePopup"
+                      IconUrl="@VntaDevExpressIcons.Cancel" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

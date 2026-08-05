@@ -1,0 +1,59 @@
+@using DevExpress.Blazor
+@using Vnta.Hrm.Application.KhauTru.KhauTruTongHop
+
+<div class="dashboard-comparison-grid-host" style="@ComparisonGridHostStyle">
+    <DxTreeList Data="@Comparison"
+                KeyFieldName="@nameof(PayrollDeductionDashboardDepartmentTreeNodeDto.Id)"
+                ParentKeyFieldName="@nameof(PayrollDeductionDashboardDepartmentTreeNodeDto.ParentId)"
+                CssClass="dashboard-departments-treelist"
+                AutoExpandAllNodes="true"
+                FilterTreeMode="TreeListFilterTreeMode.ParentBranch"
+                ShowAllRows="true"
+                PagerVisible="false"
+                SkeletonRowsEnabled="true"
+                ColumnResizeMode="TreeListColumnResizeMode.NextColumn"
+                FilterMenuButtonDisplayMode="TreeListFilterMenuButtonDisplayMode.Always"
+                TextWrapEnabled="false"
+                HighlightRowOnHover="true"
+                UnboundColumnData="GetDepartmentUnboundColumnData">
+        <Columns>
+            <DxTreeListDataColumn FieldName="@nameof(PayrollDeductionDashboardDepartmentTreeNodeDto.DepartmentName)" Caption="Đơn vị" Width="20rem" MinWidth="280">
+                <CellDisplayTemplate Context="cell">
+                    @{ var node = (PayrollDeductionDashboardDepartmentTreeNodeDto)cell.DataItem; }
+                    <span class="@GetDepartmentNameCssClass(node)">@node.DepartmentName</span>
+                </CellDisplayTemplate>
+            </DxTreeListDataColumn>
+            @foreach(var month in ComparisonMonths)
+            {
+                <DxTreeListBandColumn Caption="@month.Caption" Name="@month.BandName">
+                    <HeaderCaptionTemplate>
+                        <div class="dashboard-department-month-band-header">
+                            <span>@month.Caption</span>
+                            <span class="dashboard-department-month-band-total">Tổng: @FormatMoney(month.TotalAmount)</span>
+                        </div>
+                    </HeaderCaptionTemplate>
+                    <Columns>
+                        <DxTreeListDataColumn FieldName="@GetAmountFieldName(month.Value)" Name="@($"{month.BandName}-amount")" Caption="Số tiền" Width="10rem" MinWidth="150" AllowSort="false" UnboundType="TreeListUnboundColumnType.Decimal">
+                            <CellDisplayTemplate Context="cell">
+                                @{ var amount = GetAmount((PayrollDeductionDashboardDepartmentTreeNodeDto)cell.DataItem, month.Value); }
+                                @if(amount != 0m)
+                                {
+                                    @FormatMoney(amount)
+                                }
+                            </CellDisplayTemplate>
+                        </DxTreeListDataColumn>
+                        <DxTreeListDataColumn FieldName="@GetChangeFieldName(month.Value)" Name="@($"{month.BandName}-change")" Caption="Tăng giảm" Width="10rem" MinWidth="150" AllowSort="false" UnboundType="TreeListUnboundColumnType.Decimal">
+                            <CellDisplayTemplate Context="cell">
+                                @{ var change = GetChange((PayrollDeductionDashboardDepartmentTreeNodeDto)cell.DataItem, month.Value); }
+                                @if(change != 0m)
+                                {
+                                    <span class="@GetChangeCssClass(change)">@FormatChange(change)</span>
+                                }
+                            </CellDisplayTemplate>
+                        </DxTreeListDataColumn>
+                    </Columns>
+                </DxTreeListBandColumn>
+            }
+        </Columns>
+    </DxTreeList>
+</div>

@@ -1,0 +1,33 @@
+::deep .responsibility-confirm-popup-footer,
+.responsibility-confirm-popup-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.responsibility-confirm-popup-actions ::deep .dxbl-btn {
+    min-width: 7rem;
+}
+
+.responsibility-confirm-popup-content {
+    padding: 0.5rem 0 0.25rem;
+}
+
+.responsibility-confirm-popup-message {
+    color: var(--dxds-color-content-neutral-default-rest);
+    line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+    ::deep .responsibility-confirm-popup-footer,
+    .responsibility-confirm-popup-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    ::deep .responsibility-confirm-popup-footer .dxbl-btn,
+    .responsibility-confirm-popup-actions ::deep .dxbl-btn {
+        width: 100%;
+    }
+}

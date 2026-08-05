@@ -1,0 +1,44 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiem
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Xác nhận tính lại"
+         Width="min(34rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsRefreshing)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="responsibility-recalculate-popup-footer"
+         CssClass="responsibility-recalculate-confirm-popup">
+    <BodyContentTemplate>
+        <div class="responsibility-recalculate-confirm-content">
+            <div class="responsibility-recalculate-confirm-icon" aria-hidden="true">
+                <DxButton IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Text"
+                          Attributes="@DecorativeIconButtonAttributes" />
+            </div>
+            <div class="responsibility-recalculate-confirm-message">
+                Sẽ làm mới snapshot phụ cấp trách nhiệm của kỳ <strong>@PeriodLabel</strong> từ dữ liệu công và bậc trách nhiệm. Xếp loại ABC và số tiền phụ cấp hiện có được giữ nguyên; hãy dùng <strong>Tính ABC</strong> nếu cần tính lại các giá trị này. Thưởng hiệu suất và lựa chọn không áp dụng thưởng hiệu suất được giữ nguyên. Những dòng đã khóa sẽ không bị thay đổi; nhân viên chưa có bậc trách nhiệm phù hợp sẽ được bỏ qua.
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="responsibility-recalculate-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="responsibility-recalculate-popup-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Tính lại"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                      CssClass="responsibility-recalculate-popup-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

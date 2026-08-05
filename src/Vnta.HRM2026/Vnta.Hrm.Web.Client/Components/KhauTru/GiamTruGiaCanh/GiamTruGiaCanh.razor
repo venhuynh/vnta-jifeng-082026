@@ -1,0 +1,210 @@
+@page "/payroll/family-deductions"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Application.KhauTru.GiamTruGiaCanh
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Giảm trừ gia cảnh</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Giảm trừ gia cảnh"
+                   CssClass="toolbar"
+                   ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Thêm người phụ thuộc"
+                           Click="OpenCreatePopup"
+                           Enabled="@CanCreate"
+                           Tooltip="Thêm hồ sơ người phụ thuộc"
+                           IconUrl="@VntaDevExpressIcons.Add" />
+            <DxToolbarItem Text="Tải lại"
+                           Click="ReloadAsync"
+                           Enabled="@CanReload"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Tải lại danh sách người phụ thuộc"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+        </DxToolbar>
+    </div>
+
+    <div class="family-deduction-root" aria-live="polite">
+        @if (!string.IsNullOrWhiteSpace(LoadErrorMessage))
+        {
+            <div class="card error-state" role="alert">
+                <div class="state-title">Không thể tải danh sách người phụ thuộc</div>
+                <div class="state-message">@LoadErrorMessage</div>
+                <DxButton Text="Thử lại"
+                          Click="ReloadAsync"
+                          Enabled="@CanReload"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+            </div>
+        }
+        else
+        {
+            <div class="card family-deduction-grid-card">
+                <HrmLoadingPanel Visible="@IsLoading"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="Đang tải danh sách người phụ thuộc..."
+                                 CssClass="family-deduction-loading-panel">
+                    <div class="family-deduction-grid-content"
+                         role="region"
+                         aria-label="Danh sách người phụ thuộc">
+                        <div class="family-deduction-grid-header">
+                            <div class="family-deduction-summary">@PagerSummaryText</div>
+                            <div class="family-deduction-grid-search">
+                                <DxSearchBox CssClass="family-deduction-searchbox"
+                                             NullText="Tìm kiếm theo nhân viên, người phụ thuộc, mã số thuế hoặc CCCD"
+                                             BindValueMode="BindValueMode.OnDelayedInput"
+                                             InputDelay="500"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             Text="@SearchText"
+                                             TextChanged="OnSearchTextChanged"
+                                             Enabled="@CanChangeFilters" />
+                            </div>
+                        </div>
+
+                        <DxGrid Data="@Records"
+                                KeyFieldName="Id"
+                                CssClass="family-deduction-grid"
+                                ShowAllRows="true"
+                                PagerVisible="false"
+                                SkeletonRowsEnabled="true"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                TextWrapEnabled="false"
+                                FocusedRowEnabled="true"
+                                HighlightRowOnHover="true">
+                            <Columns>
+                                <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                                    <CellDisplayTemplate>@(CurrentPageIndex * PageSize + context.VisibleIndex + 1)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Tác vụ"
+                                                  MinWidth="96"
+                                                  Width="6rem"
+                                                  AllowSort="false"
+                                                  TextAlignment="GridTextAlignment.Center"
+                                                  ShowInColumnChooser="false">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var row = (GiamTruGiaCanhRecord)context.DataItem;
+                                        }
+                                        <div class="family-deduction-row-menu-host"
+                                             @onclick:stopPropagation="true"
+                                             @onmousedown:stopPropagation="true">
+                                            <DxDropDownButton CssClass="family-deduction-row-menu-btn"
+                                                              IconCssClass="icon more-icon medium-icon"
+                                                              RenderStyle="ButtonRenderStyle.Link"
+                                                              DropDownToggleVisible="false"
+                                                              Enabled="@CanEditRows"
+                                                              Tooltip="Tác vụ hồ sơ người phụ thuộc">
+                                                <Items>
+                                                    <DxDropDownButtonItem Text="Điều chỉnh"
+                                                                          IconUrl="@VntaDevExpressIcons.Edit"
+                                                                          Tooltip="Điều chỉnh hồ sơ người phụ thuộc"
+                                                                          Click="@(() => OpenEditPopup(row))"
+                                                                          Enabled="@CanEditRows" />
+                                                    <DxDropDownButtonItem Text="Tải lại dữ liệu hiển thị"
+                                                                          IconUrl="@VntaDevExpressIcons.Refresh"
+                                                                          Tooltip="Tải lại trang dữ liệu hiện tại từ máy chủ; không tính lại hồ sơ người phụ thuộc"
+                                                                          BeginGroup="true"
+                                                                          Click="ReloadAsync"
+                                                                          Enabled="@CanReload" />
+                                                </Items>
+                                            </DxDropDownButton>
+                                        </div>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Mã nhân viên" MinWidth="130">
+                                    <CellDisplayTemplate>@(((GiamTruGiaCanhRecord)context.DataItem).EmployeeCode)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Nhân viên" MinWidth="210">
+                                    <CellDisplayTemplate>@(((GiamTruGiaCanhRecord)context.DataItem).EmployeeName)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Người phụ thuộc" MinWidth="220">
+                                    <CellDisplayTemplate>@(((GiamTruGiaCanhRecord)context.DataItem).DependentFullName)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Quan hệ" MinWidth="140">
+                                    <CellDisplayTemplate>@(((GiamTruGiaCanhRecord)context.DataItem).RelationshipToEmployee)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Mã số thuế người phụ thuộc" MinWidth="160">
+                                    <CellDisplayTemplate>@(((GiamTruGiaCanhRecord)context.DataItem).DependentTaxCode)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="CCCD/CMND" MinWidth="150">
+                                    <CellDisplayTemplate>@(((GiamTruGiaCanhRecord)context.DataItem).DependentIdentityNumber)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Hiệu lực từ" MinWidth="120">
+                                    <CellDisplayTemplate>@FormatMonth(((GiamTruGiaCanhRecord)context.DataItem).DeductionFromMonth)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Hiệu lực đến" MinWidth="120">
+                                    <CellDisplayTemplate>@FormatMonth(((GiamTruGiaCanhRecord)context.DataItem).DeductionToMonth)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Trạng thái" MinWidth="150">
+                                    <CellDisplayTemplate>
+                                        @{
+                                            var registered = ((GiamTruGiaCanhRecord)context.DataItem).IsFamilyDeductionRegistered;
+                                        }
+                                        <span class="@(registered ? "yes-no-status yes-no-status-yes hrm-grid-status" : "yes-no-status yes-no-status-neutral hrm-grid-status")">
+                                            @(registered ? "Đã đăng ký giảm trừ" : "Chưa đăng ký giảm trừ")
+                                        </span>
+                                    </CellDisplayTemplate>
+                                </DxGridDataColumn>
+                                <DxGridDataColumn Caption="Ghi chú" MinWidth="220">
+                                    <CellDisplayTemplate>@(((GiamTruGiaCanhRecord)context.DataItem).GhiChu)</CellDisplayTemplate>
+                                </DxGridDataColumn>
+                            </Columns>
+                            <EmptyDataAreaTemplate>
+                                <div class="empty-state" role="status">
+                                    <div class="state-title">@EmptyStateTitle</div>
+                                    <div class="state-message">@EmptyStateMessage</div>
+                                    <DxButton Text="@EmptyStateActionText"
+                                              Click="OnEmptyStateActionAsync"
+                                              Enabled="@CanEmptyStateAction"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                </div>
+                            </EmptyDataAreaTemplate>
+                        </DxGrid>
+
+                        <div class="family-deduction-pager" aria-label="Điều hướng danh sách giảm trừ gia cảnh">
+                            <div class="family-deduction-pager-summary">@PagerSummaryText</div>
+                            @if (TotalPageCount > 1)
+                            {
+                                <DxPager PageCount="@TotalPageCount"
+                                         ActivePageIndex="@CurrentPageIndex"
+                                         ActivePageIndexChanged="OnActivePageIndexChangedAsync"
+                                         NavigationMode="PagerNavigationMode.NumericButtons"
+                                         VisibleNumericButtonCount="7" />
+                            }
+                            <div class="family-deduction-page-size">
+                                <span>Hiển thị</span>
+                                <DxComboBox TData="int"
+                                            TValue="int"
+                                            Data="@PageSizeOptions"
+                                            Value="@PageSize"
+                                            ValueChanged="OnPageSizeChangedAsync"
+                                            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                            Enabled="@CanChangeFilters"
+                                            CssClass="family-deduction-page-size-editor" />
+                                <span>dòng/trang</span>
+                            </div>
+                        </div>
+                    </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+</div>
+
+<GiamTruGiaCanhEditPopup Visible="@IsEditPopupVisible"
+                          VisibleChanged="SetEditPopupVisibleAsync"
+                          IsSaving="@IsSavingEdit"
+                          Title="@EditPopupTitle"
+                          Model="@EditModel"
+                          Employees="@Employees"
+                          GenderOptions="@GenderOptions"
+                          ErrorMessage="@EditErrorMessage"
+                          SaveRequested="SaveAsync" />

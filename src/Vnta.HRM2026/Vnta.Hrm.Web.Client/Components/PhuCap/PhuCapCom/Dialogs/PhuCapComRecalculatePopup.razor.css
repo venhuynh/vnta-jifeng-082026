@@ -1,0 +1,30 @@
+::deep .meal-allowance-confirm-popup {
+    max-width: min(96vw, 520px);
+}
+
+.meal-allowance-confirm-content {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+}
+
+.meal-allowance-confirm-message,
+.meal-allowance-confirm-note {
+    margin: 0;
+}
+
+.meal-allowance-confirm-note {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.875rem;
+    line-height: 1.45;
+}
+
+.meal-allowance-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.meal-allowance-popup-action {
+    min-width: 7rem;
+}

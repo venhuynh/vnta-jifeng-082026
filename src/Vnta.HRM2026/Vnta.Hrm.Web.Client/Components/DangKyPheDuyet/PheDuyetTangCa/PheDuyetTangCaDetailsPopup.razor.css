@@ -1,0 +1,61 @@
+.overtime-approval-details-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    font-weight: 700;
+}
+
+.overtime-approval-details-header-actions {
+    display: flex;
+    gap: .5rem;
+}
+
+.overtime-approval-details-body {
+    display: grid;
+    gap: 1rem;
+    min-height: 22rem;
+}
+
+.overtime-approval-details-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .75rem;
+}
+
+.overtime-approval-details-summary > div,
+.overtime-approval-details-note {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    padding: .8rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: .5rem;
+}
+
+.overtime-approval-details-summary span,
+.overtime-approval-details-note span {
+    color: var(--dxds-color-content-neutral-secondary-rest);
+    font-size: .8rem;
+}
+
+.overtime-approval-details-note {
+    background: var(--dxds-color-surface-neutral-default-rest);
+}
+
+.overtime-approval-popup-state {
+    min-height: 22rem;
+}
+
+@media (max-width: 720px) {
+    .overtime-approval-details-header,
+    .overtime-approval-details-header-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .overtime-approval-details-summary {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

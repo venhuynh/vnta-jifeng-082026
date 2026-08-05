@@ -1,0 +1,38 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Xác nhận tính lại"
+         Width="min(32rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsRefreshing)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="union-fee-confirm-popup-footer"
+         CssClass="union-fee-confirm-popup">
+    <BodyContentTemplate>
+        <div class="union-fee-confirm-content">
+            <div class="union-fee-confirm-message">
+                Sẽ tính lại toàn bộ dữ liệu khấu trừ phí công đoàn của kỳ @PeriodLabel theo dữ liệu nguồn hiện tại.
+                Giá trị của các dòng đang mở có thể bị cập nhật lại; các dòng đã khóa sẽ được giữ nguyên.
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="union-fee-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="union-fee-confirm-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Tính lại"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                      CssClass="union-fee-confirm-action"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>
+@namespace Vnta.Hrm.Web.Client.Components.KhauTru.KhauTruPhiCongDoan

@@ -1,0 +1,73 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe
+@using System.Globalization
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe.Models
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components.Forms
+
+@if (Model is not null && EditContext is not null)
+{
+    <CascadingValue Value="EditContext">
+        <div class="leave-holiday-edit-form">
+            <DxFormLayout CaptionPosition="CaptionPosition.Vertical">
+                <DxFormLayoutItem Caption="Nhân viên" ColSpanMd="12">
+                    <DxTextBox Text="@Model.EmployeeDisplay"
+                               ReadOnly="true"
+                               ValidationEnabled="false"
+                               CssClass="leave-holiday-edit-readonly" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Kỳ lương" ColSpanMd="12">
+                    <DxTextBox Text="@Model.PayrollPeriodDisplay"
+                               ReadOnly="true"
+                               ValidationEnabled="false"
+                               CssClass="leave-holiday-edit-readonly" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Lương theo ngày" ColSpanMd="12">
+                    <DxTextBox Text="@FormatMoney(Model.DailyWageAmount)"
+                               ReadOnly="true"
+                               ValidationEnabled="false"
+                               CssClass="leave-holiday-edit-readonly" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Công HC (từ mã kết quả tính công)" ColSpanMd="6">
+                    <DxTextBox Text="@FormatQuantity(Model.LeaveDayCount)"
+                               ReadOnly="true"
+                               ValidationEnabled="false"
+                               CssClass="leave-holiday-edit-readonly" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Số ngày Lễ (nhập tay)" ColSpanMd="6">
+                    <DxSpinEdit TValue="decimal"
+                                @bind-Value="Model.HolidayDayCount"
+                                MinValue="0m"
+                                Increment="0.5m"
+                                DisplayFormat="N2"
+                                ShowSpinButtons="true"
+                                Enabled="@(!IsSaving)"
+                                ShowValidationIcon="true"
+                                ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.HolidayDayCount)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Tổng Phép/Lễ tạm tính" ColSpanMd="12">
+                    <DxTextBox Text="@FormatMoney(Model.LeaveHolidayAllowanceAmount)"
+                               ReadOnly="true"
+                               ValidationEnabled="false"
+                               CssClass="leave-holiday-edit-readonly leave-holiday-edit-calculated" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Ghi chú" ColSpanMd="12">
+                    <DxMemo @bind-Text="Model.Note"
+                            NullText="Nhập ghi chú điều chỉnh ngày Lễ"
+                            Rows="4"
+                            Enabled="@(!IsSaving)"
+                            ShowValidationIcon="true"
+                            ShowValidationSuccessState="true" />
+                    <ValidationMessage For="@(() => Model.Note)" />
+                </DxFormLayoutItem>
+            </DxFormLayout>
+
+            <ValidationSummary class="validation-summary" />
+
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="edit-error-message">@ErrorMessage</div>
+            }
+        </div>
+    </CascadingValue>
+}

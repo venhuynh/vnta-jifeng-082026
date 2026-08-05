@@ -1,0 +1,62 @@
+﻿@page "/Account/ConfirmEmailChange"
+
+@using System.Text
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using Vnta.Hrm.Infrastructure.Identity
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>VNTA HRM 2026 - Xác nhận thay đổi email</PageTitle>
+
+<div class="main-content">
+    <div class="block-content card">
+        <div class="title">
+            <div class="title-header-text">Xác nhận thay đổi email</div>
+            <div class="title-content-text">@message</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string? message;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromQuery]
+    private string? UserId { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? Email { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? Code { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        if(UserId is null || Email is null || Code is null) {
+            RedirectManager.RedirectToWithStatus(
+                "Account/Login", "Lỗi: Liên kết xác nhận thay đổi email không hợp lệ.", HttpContext);
+        }
+
+        var user = await UserManager.FindByIdAsync(UserId);
+        if(user is null) {
+            message = "Lỗi: Không tìm thấy tài khoản cần thay đổi email.";
+            return;
+        }
+
+        var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
+        var result = await UserManager.ChangeEmailAsync(user, Email, code);
+        if(!result.Succeeded) {
+            message = "Lỗi: Không thể thay đổi email.";
+            return;
+        }
+
+        await SignInManager.RefreshSignInAsync(user);
+        message = "Email liên hệ đã được cập nhật thành công.";
+    }
+}
+
+

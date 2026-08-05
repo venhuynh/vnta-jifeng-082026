@@ -1,0 +1,437 @@
+@page "/attendance/workday-summaries"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Models
+
+@attribute [Authorize(Policy = InternalAccountPolicies.AttendanceAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Bảng công ngày</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Bảng công ngày" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="bang-cong-ngay-toolbar-date-item"
+                           Tooltip="Chọn ngày công cần xem hoặc tính lại dữ liệu">
+                <Template>
+                    <div class="custom-item toolbar-filter">
+                        <span class="toolbar-field-caption">Ngày công</span>
+                        <DxDateEdit Date="@ToolbarDate"
+                                    DateChanged="@((DateTime? value) => OnToolbarDateChanged(value))"
+                                    NullText="Chọn ngày"
+                                    DisplayFormat="dd/MM/yyyy"
+                                    Enabled="@CanChangeFilters"
+                                    CssClass="bang-cong-ngay-date-editor" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Xem"
+                           Tooltip="Tải lại bảng công ngày theo bộ lọc hiện tại"
+                           Enabled="@CanRefreshData"
+                           Click="ReloadAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.View" />
+            <DxToolbarItem Text="Tính công"
+                           Tooltip="Tính lại kết quả chấm công theo ngày dữ liệu đang hiển thị"
+                           Enabled="@CanRebuildWorkdaySummaries"
+                           Click="OnRebuildWorkdaySummaryClickAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.CalculatorCoins" />
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Khóa hoặc mở khóa dữ liệu bảng công ngày">
+                <Template>
+                    <div class="custom-item">
+                        <DxDropDownButton Text="Hành động"
+                                          IconUrl="@VntaDevExpressIcons.TaskList"
+                                          RenderStyle="ButtonRenderStyle.Secondary"
+                                          RenderStyleMode="ButtonRenderStyleMode.Outline"
+                                          Enabled="@CanChangeLockState"
+                                          CssClass="toolbar-action-dropdown">
+                            <Items>
+                                <DxDropDownButtonItem Text="Khóa"
+                                                      IconUrl="@VntaDevExpressIcons.Lock"
+                                                      Click="@(() => SetDisplayedLockStateAsync(true))"
+                                                      Enabled="@CanLockDisplayedSummaries" />
+                                <DxDropDownButtonItem Text="Mở khóa"
+                                                      IconUrl="@VntaDevExpressIcons.Unlock"
+                                                      Click="@(() => SetDisplayedLockStateAsync(false))"
+                                                      Enabled="@CanUnlockDisplayedSummaries" />
+                            </Items>
+                        </DxDropDownButton>
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Text="Xuất dữ liệu"
+                           Enabled="@CanExport"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Xuất bảng công ngày"
+                           IconUrl="@VntaDevExpressIcons.Export">
+                <Items>
+                    <DxToolbarItem Text="Xuất Excel"
+                                   Click="ExportAllDataToExcel"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ bảng công ngày ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất PDF"
+                                   Click="ExportAllDataToPdf"
+                                   Enabled="@CanExport"
+                                   Tooltip="Xuất toàn bộ bảng công ngày ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra Excel"
+                                   Click="ExportSelectedRowsToExcel"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các dòng đang chọn ra Excel"
+                                   IconUrl="@VntaDevExpressIcons.Excel" />
+                    <DxToolbarItem Text="Xuất dòng đã chọn ra PDF"
+                                   Click="ExportSelectedRowsToPdf"
+                                   Enabled="@CanExportSelected"
+                                   Tooltip="Xuất các dòng đang chọn ra PDF"
+                                   IconUrl="@VntaDevExpressIcons.Pdf" />
+                </Items>
+            </DxToolbarItem>
+            <DxToolbarItem Tooltip="Chọn cột hiển thị trong bảng công ngày"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Enabled="@CanInteract"
+                           Click="OnColumnChooserItemClick"
+                           IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+        </DxToolbar>
+    </div>
+
+    <div class="bang-cong-ngay-root">
+        <div class="card bang-cong-ngay-grid-card">
+            <HrmLoadingPanel Visible="@ShowLoadingPanel"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             CssClass="bang-cong-ngay-loading-panel"
+                             Text="@LoadingPanelText">
+                <div class="bang-cong-ngay-grid-content">
+                    <div class="bang-cong-ngay-grid-header">
+                        <div class="bang-cong-ngay-summary-strip">
+                            <DxButtonGroup CssClass="bang-cong-ngay-summary-button-group"
+                                           RenderStyle="ButtonRenderStyle.Secondary"
+                                           RenderStyleMode="ButtonRenderStyleMode.Outline"
+                                           SelectionMode="ButtonGroupSelectionMode.Single"
+                                           Enabled="@CanChangeFilters">
+                                <Items>
+                                    @foreach (var badge in SummaryBadges)
+                                    {
+                                        <DxButtonGroupItem Text="@($"{badge.Label} {badge.Count:N0}")"
+                                                           Tooltip="@badge.Tooltip"
+                                                           CssClass="@GetSummaryButtonCssClass(badge.Key)"
+                                                           Selected="@(badge.Key == ActiveSummaryBadgeKey)"
+                                                           Click="@(() => SelectSummaryAsync(badge.Key))" />
+                                    }
+                                </Items>
+                            </DxButtonGroup>
+                            <DxButtonGroup CssClass="bang-cong-ngay-total-button-group"
+                                           RenderStyle="ButtonRenderStyle.Primary"
+                                           RenderStyleMode="ButtonRenderStyleMode.Outline">
+                                <Items>
+                                    <DxButtonGroupItem Text="@($"Tổng số giờ tăng ca: {FormatHours(TotalOvertimeMinutes)}")"
+                                                       Tooltip="Tổng số giờ tăng ca của toàn bộ dữ liệu đã tải, không áp dụng nhóm lọc"
+                                                       CssClass="bang-cong-ngay-total-button bang-cong-ngay-total-button--overtime" />
+                                    <DxButtonGroupItem Text="@($"Tổng số phút đi trễ về sớm: {TotalLateEarlyMinutes:N0}")"
+                                                       Tooltip="Tổng số phút đi trễ về sớm của toàn bộ dữ liệu đã tải, không áp dụng nhóm lọc"
+                                                       CssClass="bang-cong-ngay-total-button bang-cong-ngay-total-button--late-early" />
+                                </Items>
+                            </DxButtonGroup>
+                        </div>
+                        <div class="bang-cong-ngay-grid-search">
+                            <DxSearchBox CssClass="bang-cong-ngay-grid-searchbox"
+                                         NullText="Tìm kiếm nhân viên, phòng ban, chức vụ"
+                                         BindValueMode="BindValueMode.OnDelayedInput"
+                                         InputDelay="500"
+                                         ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                         Text="@SearchText"
+                                         TextChanged="OnSearchTextChanged"
+                                         Enabled="@CanInteract" />
+                        </div>
+                    </div>
+
+                    @if(HasLoadError)
+                    {
+                        <div class="bang-cong-ngay-grid-state error-state">
+                            <div class="state-title">Không thể tải bảng công ngày</div>
+                            <div class="state-message">@LoadErrorMessage</div>
+                            <DxButton Text="Thử lại"
+                                      Click="ReloadAsync"
+                                      Enabled="@CanRefreshData"
+                                      RenderStyle="ButtonRenderStyle.Primary"
+                                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                        </div>
+                    }
+                    else
+                    {
+                        <DxGrid @ref="Grid"
+                                Data="@VisibleSummaries"
+                                KeyFieldName="Id"
+                                CssClass="bang-cong-ngay-grid"
+                                ShowSearchBox="false"
+                                PagerVisible="true"
+                                PageSize="@PageSize"
+                                PageSizeChanged="OnPageSizeChanged"
+                                PagerPosition="GridPagerPosition.Bottom"
+                                PagerSummaryVisible="true"
+                                PageSizeSelectorVisible="true"
+                                PageSizeSelectorItems="@(new int[] { 50, 100, 200 })"
+                                PageSizeSelectorAllRowsItemVisible="false"
+                                SkeletonRowsEnabled="true"
+                                ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                                TextWrapEnabled="false"
+                                FocusedRowEnabled="true"
+                                HighlightRowOnHover="true"
+                                AllowSelectRowByClick="true"
+                                SelectionMode="GridSelectionMode.Multiple"
+                                SelectedDataItems="@SelectedDataItems"
+                                SelectedDataItemsChanged="@OnSelectedDataItemsChanged">
+                                <Columns>
+                                    <DxGridDataColumn Caption="Thao tác"
+                                                      MinWidth="96"
+                                                      Width="6rem"
+                                                      AllowSort="false"
+                                                      TextAlignment="GridTextAlignment.Center"
+                                                      ShowInColumnChooser="false">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var summary = (AttendanceWorkdaySummaryRecord)context.DataItem;
+                                            }
+                                            <div class="bang-cong-ngay-row-menu-host"
+                                                 @onclick:stopPropagation="true"
+                                                 @onmousedown:stopPropagation="true">
+                                                <DxDropDownButton CssClass="bang-cong-ngay-row-menu-btn"
+                                                                  IconCssClass="icon more-icon medium-icon"
+                                                                  RenderStyle="ButtonRenderStyle.Link"
+                                                                  DropDownToggleVisible="false"
+                                                                  Enabled="@CanInteract"
+                                                                  Tooltip="Tác vụ dòng công">
+                                                    <Items>
+                                                        <DxDropDownButtonItem Text="@GetEditActionLabel()"
+                                                                              IconUrl="@VntaDevExpressIcons.Edit"
+                                                                              Click="@(() => OpenDetailPopupAsync(summary))"
+                                                                              Enabled="@CanUseRowAction(summary)" />
+                                                        <DxDropDownButtonItem Text="@GetLockActionLabel(summary)"
+                                                                              IconUrl="@GetLockActionIconUrl(summary)"
+                                                                              Click="@(() => ToggleSummaryLockStateAsync(summary))"
+                                                                              Enabled="@CanUseRowAction(summary)"
+                                                                              BeginGroup="true" />
+                                                        <DxDropDownButtonItem Text="@GetDeleteActionLabel(summary)"
+                                                                              IconUrl="@VntaDevExpressIcons.Delete"
+                                                                              Click="@(() => DeleteSummaryAsync(summary))"
+                                                                              Enabled="@CanDeleteSummary(summary)" />
+                                                    </Items>
+                                                </DxDropDownButton>
+                                            </div>
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <DxGridSelectionColumn Width="3rem" />
+
+                                    <DxGridDataColumn Caption="STT" Width="4.5ch" AllowSort="false">
+                                        <CellDisplayTemplate>
+                                            @(context.VisibleIndex + 1)
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <DxGridDataColumn FieldName="EmployeeDisplay" Name="EmployeeDisplayColumn" Caption="Nhân viên" MinWidth="260">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var summary = (AttendanceWorkdaySummaryRecord)context.DataItem;
+                                            }
+                                            <div class="bang-cong-ngay-employee-cell">
+                                                <div class="bang-cong-ngay-employee-primary hrm-grid-emphasis">
+                                                    @if(!string.IsNullOrWhiteSpace(summary.EmployeeCode))
+                                                    {
+                                                        @HighlightSearchText(summary.EmployeeCode)
+                                                    }
+                                                    @if(!string.IsNullOrWhiteSpace(summary.EmployeeCode) && !string.IsNullOrWhiteSpace(summary.EmployeeName))
+                                                    {
+                                                        <span class="bang-cong-ngay-employee-separator hrm-grid-emphasis"> - </span>
+                                                    }
+                                                    @if(!string.IsNullOrWhiteSpace(summary.EmployeeName))
+                                                    {
+                                                        @HighlightSearchText(summary.EmployeeName)
+                                                    }
+                                                    @if(string.IsNullOrWhiteSpace(summary.EmployeeCode) && string.IsNullOrWhiteSpace(summary.EmployeeName))
+                                                    {
+                                                        <span>--</span>
+                                                    }
+                                                </div>
+                                                <div class="bang-cong-ngay-employee-secondary hrm-grid-emphasis">
+                                                    @HighlightSearchText(summary.PositionName)
+                                                </div>
+                                            </div>
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <DxGridDataColumn FieldName="DepartmentName" Caption="Phòng ban">
+                                        <CellDisplayTemplate>
+                                            @HighlightSearchText(context.DisplayText)
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <DxGridDataColumn FieldName="WorkDate" Caption="Ngày công">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var summary = (AttendanceWorkdaySummaryRecord)context.DataItem;
+                                            }
+                                            @FormatDate(summary.WorkDate)
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <DxGridDataColumn FieldName="ShiftShortDisplay" Caption="Ca">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var summary = (AttendanceWorkdaySummaryRecord)context.DataItem;
+                                            }
+                                            <span class="@GetShiftBadgeCssClass(summary)"
+                                                  style="@GetShiftBadgeStyle(summary)"
+                                                  title="@summary.ShiftDisplay">
+                                                @summary.ShiftShortDisplay
+                                            </span>
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <DxGridDataColumn FieldName="DayTypeDisplay" Caption="Loại ngày">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var summary = (AttendanceWorkdaySummaryRecord)context.DataItem;
+                                            }
+                                            @HighlightSearchText(summary.DayTypeDisplay)
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <DxGridDataColumn FieldName="CheckInOutDisplay" Caption="Giờ vào/ra">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var summary = (AttendanceWorkdaySummaryRecord)context.DataItem;
+                                                var checkInAt = summary.CheckInDisplay;
+                                                var checkOutAt = summary.CheckOutDisplay;
+                                            }
+                                            @if(string.IsNullOrWhiteSpace(checkInAt) && string.IsNullOrWhiteSpace(checkOutAt))
+                                            {
+                                                <span>--</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="check-time-cell">
+                                                    @if(!string.IsNullOrWhiteSpace(checkInAt))
+                                                    {
+                                                        <span class="check-time-in hrm-grid-status">@checkInAt</span>
+                                                    }
+                                                    @if(!string.IsNullOrWhiteSpace(checkInAt) && !string.IsNullOrWhiteSpace(checkOutAt))
+                                                    {
+                                                        <span class="check-time-separator hrm-grid-status">-</span>
+                                                    }
+                                                    @if(!string.IsNullOrWhiteSpace(checkOutAt))
+                                                    {
+                                                        <span class="check-time-out hrm-grid-status">@checkOutAt</span>
+                                                    }
+                                                </span>
+                                            }
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <DxGridDataColumn FieldName="LateEarlyTotalMinutes" Caption="ĐTVS">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var summary = (AttendanceWorkdaySummaryRecord)context.DataItem;
+                                            }
+                                            @FormatOptionalMinutes(summary.LateEarlyTotalMinutes)
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <DxGridDataColumn FieldName="OvertimeMinutes" Caption="OT">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var summary = (AttendanceWorkdaySummaryRecord)context.DataItem;
+                                            }
+                                            @FormatOptionalMinutes(summary.OvertimeMinutes)
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <DxGridDataColumn FieldName="IsRegisterForOT" Caption="ĐKTC" Width="5rem">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var summary = (AttendanceWorkdaySummaryRecord)context.DataItem;
+                                            }
+                                            <div class="checkbox-cell">
+                                                <input type="checkbox"
+                                                       checked="@summary.IsRegisterForOT"
+                                                       disabled />
+                                            </div>
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <DxGridDataColumn FieldName="RequireDocument" Caption="Hồ sơ" Width="5rem">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var summary = (AttendanceWorkdaySummaryRecord)context.DataItem;
+                                            }
+                                            <div class="checkbox-cell">
+                                                <input type="checkbox"
+                                                       checked="@summary.RequireDocument"
+                                                       disabled />
+                                            </div>
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <DxGridDataColumn FieldName="IsLocked" Caption="Khóa" Width="5rem">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var summary = (AttendanceWorkdaySummaryRecord)context.DataItem;
+                                            }
+                                            <div class="checkbox-cell">
+                                                <input type="checkbox"
+                                                       checked="@summary.IsLocked"
+                                                       disabled />
+                                            </div>
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+
+                                    <DxGridDataColumn FieldName="Status" Caption="Kết quả">
+                                        <CellDisplayTemplate>
+                                            @{
+                                                var summary = (AttendanceWorkdaySummaryRecord)context.DataItem;
+                                            }
+                                            <span class="@GetResultTextCssClass(summary.Status)">
+                                                @HighlightSearchText(GetDisplayValue(summary.Status))
+                                            </span>
+                                        </CellDisplayTemplate>
+                                    </DxGridDataColumn>
+                                </Columns>
+
+                                <EmptyDataAreaTemplate>
+                                    <div class="empty-state">
+                                        <div class="state-title">@EmptyStateTitle</div>
+                                        <div class="state-message">@EmptyStateMessage</div>
+                                        <DxButton Text="@EmptyStateActionText"
+                                                  Click="OnEmptyStateActionClick"
+                                                  RenderStyle="ButtonRenderStyle.Primary"
+                                                  RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                    </div>
+                                </EmptyDataAreaTemplate>
+                            </DxGrid>
+                    }
+                </div>
+            </HrmLoadingPanel>
+        </div>
+    </div>
+</div>
+
+<Vnta.Hrm.Web.Client.Components.Shared.Feedback.HrmComponentErrorBoundary
+    Title="Không thể mở chi tiết bảng công"
+    Message="Dữ liệu bảng công chưa bị thay đổi. Hãy thử mở lại chi tiết.">
+    <BangCongNgayDetailCard Summary="@DetailSummary"
+                            SummarySaved="OnDetailSummarySaved"
+                            @bind-Visible="IsDetailPopupVisible" />
+</Vnta.Hrm.Web.Client.Components.Shared.Feedback.HrmComponentErrorBoundary>
+
+<BangCongNgayRecalculateConfirmPopup Visible="@IsRebuildConfirmPopupVisible"
+                                       VisibleChanged="OnRebuildConfirmPopupVisibleChangedAsync"
+                                       IsRebuilding="@IsRebuildingWorkdaySummaries"
+                                       WorkDateLabel="@AppliedWorkDateLabel"
+                                       ConfirmRequested="ConfirmRebuildWorkdaySummaryAsync" />

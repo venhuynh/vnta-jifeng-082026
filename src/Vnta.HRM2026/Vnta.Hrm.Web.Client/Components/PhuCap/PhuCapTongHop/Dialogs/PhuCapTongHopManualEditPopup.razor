@@ -1,0 +1,164 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTongHop
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Điều chỉnh tổng hợp phụ cấp"
+         Width="min(32.5rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsSaving)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsSaving)"
+         CloseOnOutsideClick="false"
+         FooterCssClass="allowance-summary-manual-popup-footer"
+         CssClass="allowance-summary-manual-popup">
+    <HeaderContentTemplate>
+        <div class="allowance-summary-popup-header">
+            <DxButton IconUrl="@VntaDevExpressIcons.Edit"
+                      Attributes="@HeaderIconAttributes"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Text"
+                      CssClass="allowance-summary-popup-header-icon" />
+            <span class="allowance-summary-popup-header-title">Điều chỉnh tổng hợp phụ cấp</span>
+        </div>
+    </HeaderContentTemplate>
+    <BodyContentTemplate Context="popupBody">
+        <EditForm EditContext="@editContext" Context="manualEditContext" class="allowance-summary-manual-edit-form">
+            <DataAnnotationsValidator />
+            <div class="allowance-summary-manual-edit-target">
+                <div class="allowance-summary-manual-edit-employee">@Model.EmployeeDisplay</div>
+                <div class="allowance-summary-manual-edit-meta">@Model.DepartmentDisplay · @Model.PositionDisplay</div>
+                <div class="allowance-summary-manual-edit-meta">Kỳ @Model.PayrollPeriodDisplay · Trạng thái hiện tại: @Model.CurrentLockStatusText</div>
+            </div>
+
+            <DxFormLayout CssClass="allowance-summary-manual-edit-fields" CaptionPosition="CaptionPosition.Vertical">
+                <DxFormLayoutItem Caption="Trách nhiệm" ColSpanMd="6">
+                    <DxMaskedInput T="decimal"
+                                   @bind-Value="Model.ResponsibilityAllowanceAmount"
+                                   Mask="n0"
+                                   MaskMode="MaskMode.Numeric"
+                                   Enabled="@(!IsSaving)"
+                                   CssClass="w-100">
+                        <DxNumericMaskProperties Culture="@DisplayCulture" />
+                    </DxMaskedInput>
+                    <ValidationMessage For="@(() => Model.ResponsibilityAllowanceAmount)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Trách nhiệm khác" ColSpanMd="6">
+                    <DxMaskedInput T="decimal"
+                                   @bind-Value="Model.ResponsibilityOtherAllowanceAmount"
+                                   Mask="n0"
+                                   MaskMode="MaskMode.Numeric"
+                                   Enabled="@(!IsSaving)"
+                                   CssClass="w-100">
+                        <DxNumericMaskProperties Culture="@DisplayCulture" />
+                    </DxMaskedInput>
+                    <ValidationMessage For="@(() => Model.ResponsibilityOtherAllowanceAmount)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Thâm niên" ColSpanMd="6">
+                    <DxMaskedInput T="decimal"
+                                   @bind-Value="Model.SeniorityAllowanceAmount"
+                                   Mask="n0"
+                                   MaskMode="MaskMode.Numeric"
+                                   Enabled="@(!IsSaving)"
+                                   CssClass="w-100">
+                        <DxNumericMaskProperties Culture="@DisplayCulture" />
+                    </DxMaskedInput>
+                    <ValidationMessage For="@(() => Model.SeniorityAllowanceAmount)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Chuyên cần" ColSpanMd="6">
+                    <DxMaskedInput T="decimal"
+                                   @bind-Value="Model.AttendanceAllowanceAmount"
+                                   Mask="n0"
+                                   MaskMode="MaskMode.Numeric"
+                                   Enabled="@(!IsSaving)"
+                                   CssClass="w-100">
+                        <DxNumericMaskProperties Culture="@DisplayCulture" />
+                    </DxMaskedInput>
+                    <ValidationMessage For="@(() => Model.AttendanceAllowanceAmount)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Cơm (từ Phụ cấp cơm)" ColSpanMd="6">
+                    <DxMaskedInput T="decimal"
+                                   @bind-Value="Model.MealAllowanceAmount"
+                                   Mask="n0"
+                                   MaskMode="MaskMode.Numeric"
+                                   Enabled="@(!IsSaving)"
+                                   CssClass="w-100">
+                        <DxNumericMaskProperties Culture="@DisplayCulture" />
+                    </DxMaskedInput>
+                    <ValidationMessage For="@(() => Model.MealAllowanceAmount)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Độc hại" ColSpanMd="6">
+                    <DxMaskedInput T="decimal"
+                                   @bind-Value="Model.HazardAllowanceAmount"
+                                   Mask="n0"
+                                   MaskMode="MaskMode.Numeric"
+                                   Enabled="@(!IsSaving)"
+                                   CssClass="w-100">
+                        <DxNumericMaskProperties Culture="@DisplayCulture" />
+                    </DxMaskedInput>
+                    <ValidationMessage For="@(() => Model.HazardAllowanceAmount)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Khác" ColSpanMd="6">
+                    <DxMaskedInput T="decimal"
+                                   @bind-Value="Model.OtherAllowanceAmount"
+                                   Mask="n0"
+                                   MaskMode="MaskMode.Numeric"
+                                   Enabled="@(!IsSaving)"
+                                   CssClass="w-100">
+                        <DxNumericMaskProperties Culture="@DisplayCulture" />
+                    </DxMaskedInput>
+                    <ValidationMessage For="@(() => Model.OtherAllowanceAmount)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Phép/Lễ" ColSpanMd="6">
+                    <DxMaskedInput T="decimal"
+                                   @bind-Value="Model.LeaveHolidayAllowanceAmount"
+                                   Mask="n0"
+                                   MaskMode="MaskMode.Numeric"
+                                   Enabled="@(!IsSaving)"
+                                   CssClass="w-100">
+                        <DxNumericMaskProperties Culture="@DisplayCulture" />
+                    </DxMaskedInput>
+                    <ValidationMessage For="@(() => Model.LeaveHolidayAllowanceAmount)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Tổng phụ cấp" ColSpanMd="12">
+                    <div class="allowance-summary-manual-edit-total">@FormatMoney(Model.TotalAllowanceAmount)</div>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Ghi chú" ColSpanMd="12">
+                    <DxMemo @bind-Text="Model.Note"
+                            Rows="4"
+                            NullText="Nhập ghi chú nếu có"
+                            Enabled="@(!IsSaving)"
+                            CssClass="w-100" />
+                    <ValidationMessage For="@(() => Model.Note)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Trạng thái sau khi lưu" ColSpanMd="12">
+                    <DxCheckBox @bind-Checked="Model.IsLocked"
+                                Enabled="@(!IsSaving)">
+                        Khóa dòng sau khi lưu (@Model.LockStatusAfterSaveText)
+                    </DxCheckBox>
+                </DxFormLayoutItem>
+            </DxFormLayout>
+
+            @if(!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="allowance-summary-manual-edit-error">@ErrorMessage</div>
+            }
+        </EditForm>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="allowance-summary-manual-edit-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="allowance-summary-manual-popup-action"
+                      Enabled="@(!IsSaving)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="@(IsSaving ? "Đang lưu..." : "Lưu điều chỉnh")"
+                      Click="SaveAsync"
+                      IconUrl="@VntaDevExpressIcons.Save"
+                      CssClass="allowance-summary-manual-popup-action"
+                      Enabled="@CanSave"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

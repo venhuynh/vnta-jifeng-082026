@@ -1,0 +1,91 @@
+.allowance-summary-lock-action-popup-footer,
+.allowance-summary-lock-action-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.allowance-summary-lock-action-actions {
+    gap: 0.5rem;
+}
+
+.allowance-summary-lock-action-button {
+    min-width: 7rem;
+}
+
+.allowance-summary-popup-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.allowance-summary-popup-header-icon {
+    pointer-events: none;
+}
+
+.allowance-summary-popup-header-title {
+    font-weight: 600;
+}
+
+.allowance-summary-lock-action-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem 0 0.25rem;
+}
+
+.allowance-summary-lock-action-message,
+.allowance-summary-lock-action-context,
+.allowance-summary-lock-action-description {
+    line-height: 1.45;
+}
+
+.allowance-summary-lock-action-context,
+.allowance-summary-lock-action-description {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+}
+
+.allowance-summary-lock-action-options {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.allowance-summary-lock-action-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.75rem;
+    background: var(--dxds-color-surface-neutral-default-rest);
+    color: inherit;
+    text-align: left;
+}
+
+.allowance-summary-lock-action-option:not(:disabled) {
+    cursor: pointer;
+}
+
+.allowance-summary-lock-action-option:not(:disabled):hover,
+.allowance-summary-lock-action-option.is-active {
+    border-color: var(--dxds-color-border-primary-default-rest);
+    background: var(--dxds-color-surface-primary-subtle-rest);
+}
+
+.allowance-summary-lock-action-option:focus-visible {
+    outline: 2px solid var(--dxds-color-border-primary-default-rest);
+    outline-offset: 2px;
+}
+
+.allowance-summary-lock-action-option.is-disabled,
+.allowance-summary-lock-action-option:disabled {
+    opacity: 0.68;
+    cursor: not-allowed;
+}
+
+.allowance-summary-lock-action-title {
+    font-weight: 700;
+    color: var(--dxds-color-content-neutral-default-rest);
+}

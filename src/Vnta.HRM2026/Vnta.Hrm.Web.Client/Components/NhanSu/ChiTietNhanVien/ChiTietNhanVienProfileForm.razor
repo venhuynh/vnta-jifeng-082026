@@ -1,0 +1,236 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Web.Client.Models
+@using Vnta.Hrm.Web.Client.Models.NhanSu.ChiTietNhanVien
+
+<section class="card employee-profile-card" aria-label="Hồ sơ nhân viên">
+    <DxToolbar CssClass="employee-profile-toolbar"
+                   Title="Hồ sơ nhân viên"
+                   ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            @if (!IsEditMode)
+            {
+                <DxToolbarItem Text="Điều chỉnh"
+                               Click="BeginEditAsync"
+                               Enabled="@CanEdit"
+                               Alignment="ToolbarItemAlignment.Right"
+                               IconUrl="@VntaDevExpressIcons.Edit" />
+            }
+            else
+            {
+                <DxToolbarItem Text="Lưu"
+                               Click="SaveAsync"
+                               Enabled="@CanSave"
+                               Alignment="ToolbarItemAlignment.Right"
+                               IconUrl="@VntaDevExpressIcons.Save" />
+                <DxToolbarItem Text="Hủy"
+                               Click="CancelEditAsync"
+                               Enabled="@(!IsBusy)"
+                               Alignment="ToolbarItemAlignment.Right"
+                               IconUrl="@VntaDevExpressIcons.Cancel" />
+            }
+    </DxToolbar>
+
+        @if (IsEditMode && EditModel is { } model && EditContext is { } editContext)
+        {
+            <EditForm EditContext="@editContext" Context="employeeProfileEditFormContext">
+                <DataAnnotationsValidator />
+            <DxFormLayout CaptionPosition="CaptionPosition.Vertical" CssClass="employee-profile-edit-form">
+                <DxFormLayoutItem CssClass="employee-profile-avatar-item" ColSpanSm="6" ColSpanXs="12">
+                    <div class="employee-avatar-container">
+                        @if (!string.IsNullOrWhiteSpace(AvatarSource))
+                        {
+                            <img class="employee-avatar-image" src="@AvatarSource" alt="Ảnh đại diện @Employee.FullName" />
+                        }
+                        else
+                        {
+                            <div class="employee-avatar" aria-hidden="true">@EmployeeInitials</div>
+                        }
+                    </div>
+                </DxFormLayoutItem>
+                <DxFormLayoutGroup Decoration="FormLayoutGroupDecoration.None" ColSpanSm="6" ColSpanXs="12">
+                <DxFormLayoutItem Caption="Mã nhân viên" ColSpanXs="12">
+                    <DxTextBox @bind-Text="model.EmployeeCode"
+                               BindValueMode="BindValueMode.OnInput"
+                               ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                               Enabled="false" />
+                    <ValidationMessage For="@(() => model.EmployeeCode)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Họ tên" ColSpanXs="12">
+                    <DxTextBox @bind-Text="model.FullName"
+                               BindValueMode="BindValueMode.OnInput"
+                               ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                               Enabled="@CanEdit" />
+                    <ValidationMessage For="@(() => model.FullName)" />
+                </DxFormLayoutItem>
+                </DxFormLayoutGroup>
+                <DxFormLayoutGroup Decoration="FormLayoutGroupDecoration.None" ColSpanXs="12">
+                <DxFormLayoutItem BeginRow="true" Caption="Phòng ban" ColSpanSm="6" ColSpanXs="12">
+                    <DxDropDownBox Value="@model.DepartmentId"
+                                   ValueChanged="OnDepartmentValueChangedAsync"
+                                   ValueExpression="@(() => model.DepartmentId)"
+                                   QueryDisplayText="GetDepartmentDisplayText"
+                                   NullText="Chọn phòng ban"
+                                   ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                   DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+                                   DropDownBodyCssClass="employee-profile-lookup-dropdown"
+                                   DropDownVisible="@DepartmentDropDownVisible"
+                                   DropDownVisibleChanged="OnDepartmentDropDownVisibleChangedAsync"
+                                   Enabled="@CanEdit">
+                        <DropDownBodyTemplate Context="departmentDropDownContext">
+                            <div class="employee-profile-lookup">
+                                <DxSearchBox CssClass="employee-profile-lookup-search"
+                                             NullText="Tìm phòng ban"
+                                             BindValueMode="BindValueMode.OnInput"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             @bind-Text="DepartmentSearchText" />
+                                <DxGrid Data="@FilteredDepartments"
+                                        KeyFieldName="@nameof(AttendanceDepartmentRecord.Id)"
+                                        CssClass="employee-profile-lookup-grid"
+                                        PageSize="@LookupPageSize"
+                                        PageIndex="@DepartmentLookupPageIndex"
+                                        PageIndexChanged="OnDepartmentLookupPageIndexChangedAsync"
+                                        PagerVisible="true"
+                                        PagerPosition="GridPagerPosition.Bottom"
+                                        PagerSummaryVisible="true"
+                                        PageSizeSelectorVisible="true"
+                                        PageSizeSelectorItems="@LookupPageSizeSelectorItems"
+                                        FocusedRowEnabled="true"
+                                        HighlightRowOnHover="true"
+                                        TextWrapEnabled="true"
+                                        RowClick="OnDepartmentLookupRowClickAsync">
+                                    <Columns>
+                                        <DxGridDataColumn FieldName="@nameof(AttendanceDepartmentRecord.FullPath)" Caption="Phòng ban" />
+                                    </Columns>
+                                </DxGrid>
+                            </div>
+                        </DropDownBodyTemplate>
+                    </DxDropDownBox>
+                    <ValidationMessage For="@(() => model.DepartmentId)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Chức vụ" ColSpanSm="6" ColSpanXs="12">
+                    <DxDropDownBox Value="@model.PositionId"
+                                   ValueChanged="OnPositionValueChangedAsync"
+                                   ValueExpression="@(() => model.PositionId)"
+                                   QueryDisplayText="GetPositionDisplayText"
+                                   NullText="Chọn chức vụ"
+                                   ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                   DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+                                   DropDownBodyCssClass="employee-profile-lookup-dropdown"
+                                   DropDownVisible="@PositionDropDownVisible"
+                                   DropDownVisibleChanged="OnPositionDropDownVisibleChangedAsync"
+                                   Enabled="@CanEdit">
+                        <DropDownBodyTemplate Context="positionDropDownContext">
+                            <div class="employee-profile-lookup">
+                                <DxSearchBox CssClass="employee-profile-lookup-search"
+                                             NullText="Tìm chức vụ"
+                                             BindValueMode="BindValueMode.OnInput"
+                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                             @bind-Text="PositionSearchText" />
+                                <DxGrid Data="@FilteredPositions"
+                                        KeyFieldName="@nameof(AttendancePositionRecord.Id)"
+                                        CssClass="employee-profile-lookup-grid"
+                                        PageSize="@LookupPageSize"
+                                        PageIndex="@PositionLookupPageIndex"
+                                        PageIndexChanged="OnPositionLookupPageIndexChangedAsync"
+                                        PagerVisible="true"
+                                        PagerPosition="GridPagerPosition.Bottom"
+                                        PagerSummaryVisible="true"
+                                        PageSizeSelectorVisible="true"
+                                        PageSizeSelectorItems="@LookupPageSizeSelectorItems"
+                                        FocusedRowEnabled="true"
+                                        HighlightRowOnHover="true"
+                                        TextWrapEnabled="true"
+                                        RowClick="OnPositionLookupRowClickAsync">
+                                    <Columns>
+                                        <DxGridDataColumn FieldName="@nameof(AttendancePositionRecord.Name)" Caption="Chức vụ" />
+                                    </Columns>
+                                </DxGrid>
+                            </div>
+                        </DropDownBodyTemplate>
+                    </DxDropDownBox>
+                    <ValidationMessage For="@(() => model.PositionId)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem BeginRow="true" Caption="Tình trạng" ColSpanSm="6" ColSpanXs="12">
+                    <DxComboBox TData="ChiTietNhanVienStatusOption"
+                                TValue="ChiTietNhanVienEmploymentStatus"
+                                Data="@StatusOptions"
+                                @bind-Value="model.Status"
+                                ValueFieldName="@nameof(ChiTietNhanVienStatusOption.Value)"
+                                TextFieldName="@nameof(ChiTietNhanVienStatusOption.Text)"
+                                ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                Enabled="@CanEdit" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Ngày vào làm" ColSpanSm="6" ColSpanXs="12">
+                    <DxDateEdit @bind-Date="model.HireDate" Enabled="@CanEdit" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem BeginRow="true" Caption="Ngày bắt đầu tính thâm niên" ColSpanSm="6" ColSpanXs="12">
+                    <DxDateEdit @bind-Date="model.SeniorityStartDate"
+                                NullText="Chỉ áp dụng khi chính thức"
+                                Enabled="@(CanEdit && model.Status == ChiTietNhanVienEmploymentStatus.Official)" />
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Ngày nghỉ việc" ColSpanSm="6" ColSpanXs="12">
+                    <DxDateEdit @bind-Date="model.ResignedDate"
+                                NullText="Chỉ áp dụng khi nghỉ việc"
+                                Enabled="@(CanEdit && model.Status == ChiTietNhanVienEmploymentStatus.Resigned)" />
+                </DxFormLayoutItem>
+                </DxFormLayoutGroup>
+            </DxFormLayout>
+
+            <ValidationSummary class="validation-summary" />
+            @if (!string.IsNullOrWhiteSpace(LookupErrorMessage))
+            {
+                <div class="form-error-message">@LookupErrorMessage</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="form-error-message">@ErrorMessage</div>
+            }
+            </EditForm>
+        }
+        else
+        {
+            <div class="employee-profile-identity">
+                <div class="employee-avatar-container">
+                    @if (!string.IsNullOrWhiteSpace(AvatarSource))
+                    {
+                        <img class="employee-avatar-image" src="@AvatarSource" alt="Ảnh đại diện @Employee.FullName" />
+                    }
+                    else
+                    {
+                        <div class="employee-avatar" aria-hidden="true">@EmployeeInitials</div>
+                    }
+                </div>
+                <div class="employee-profile-title">
+                    <h1 class="employee-profile-name">@Employee.FullName</h1>
+                    <div class="employee-profile-code">@Employee.EmployeeCode</div>
+                </div>
+            </div>
+
+            <div class="employee-status-row">
+                <span class="employee-status-text">@Employee.StatusText</span>
+            </div>
+
+            <div class="profile-section employee-employment-section">
+                <h2 class="profile-section-title">Thông tin làm việc</h2>
+                <div class="employee-summary-list">
+                    <div class="summary-item"><span class="summary-label">Tình trạng</span><span class="summary-value">@Employee.StatusText</span></div>
+                    <div class="summary-item"><span class="summary-label">Ngày vào làm</span><span class="summary-value">@Employee.HireDate.ToString("dd/MM/yyyy")</span></div>
+                    <div class="summary-item"><span class="summary-label">Ngày bắt đầu tính thâm niên</span><span class="summary-value">@DisplayDate(Employee.SeniorityStartDate)</span></div>
+                    <div class="summary-item"><span class="summary-label">Ngày nghỉ việc</span><span class="summary-value">@DisplayDate(Employee.ResignedDate)</span></div>
+                </div>
+            </div>
+
+            <div class="employee-summary-list">
+                <div class="summary-item"><span class="summary-label">Phòng ban</span><span class="summary-value">@DisplayOptional(Employee.DepartmentName)</span></div>
+                <div class="summary-item"><span class="summary-label">Chức vụ</span><span class="summary-value">@DisplayOptional(Employee.PositionName)</span></div>
+                <div class="summary-item"><span class="summary-label">Cơ cấu tổ chức</span><span class="summary-value">@DisplayOptional(Employee.DepartmentPath)</span></div>
+            </div>
+
+            <div class="profile-section">
+                <h2 class="profile-section-title">Liên hệ</h2>
+                <div class="contact-list">
+                    <div class="contact-item"><span class="summary-label">Email</span><span class="summary-value">@DisplayOptional(Employee.Email)</span></div>
+                    <div class="contact-item"><span class="summary-label">Điện thoại</span><span class="summary-value">@DisplayOptional(Employee.PhoneNumber)</span></div>
+                </div>
+            </div>
+        }
+</section>

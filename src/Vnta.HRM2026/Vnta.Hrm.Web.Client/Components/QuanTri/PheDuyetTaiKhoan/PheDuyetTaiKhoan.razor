@@ -1,0 +1,175 @@
+@page "/admin/account-approvals"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Application.Common.Security
+@using Vnta.Hrm.Web.Client.Models.Security
+
+@attribute [Authorize(Policy = InternalAccountPolicies.EmployeeAccountApproval)]
+@rendermode InteractiveServer
+
+<PageTitle>Phê duyệt tài khoản</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <DxToolbar Title="Phê duyệt tài khoản"
+                   ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+            <DxToolbarItem Text="Duyệt"
+                           Click="OnApproveClick"
+                           Enabled="@CanApprove"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Phê duyệt tài khoản nhân viên đã chọn"
+                           IconUrl="@VntaDevExpressIcons.Save" />
+            <DxToolbarItem Text="Từ chối"
+                           Click="OnRejectClick"
+                           Enabled="@CanReject"
+                           Alignment="ToolbarItemAlignment.Right"
+                           Tooltip="Từ chối tài khoản nhân viên đã chọn"
+                           IconUrl="@VntaDevExpressIcons.Delete" />
+            <DxToolbarItem Tooltip="Làm mới danh sách phê duyệt tài khoản"
+                           Enabled="@CanReload"
+                           Click="ReloadAsync"
+                           Alignment="ToolbarItemAlignment.Right"
+                           IconUrl="@VntaDevExpressIcons.Refresh" />
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="toolbar-month-item">
+                <Template>
+                    <div class="custom-item toolbar-inline-field toolbar-month">
+                        <span class="toolbar-inline-label">Trạng thái</span>
+                        <DxComboBox TData="StatusFilterOption"
+                                    TValue="string"
+                                    Data="@StatusFilterOptions"
+                                    @bind-Value="StatusFilter"
+                                    ValueFieldName="@nameof(StatusFilterOption.Value)"
+                                    TextFieldName="@nameof(StatusFilterOption.Text)"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                                    Enabled="@CanReload" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+            <DxToolbarItem Alignment="ToolbarItemAlignment.Right"
+                           CssClass="search-textbox-item"
+                           Tooltip="Tìm kiếm tài khoản cần phê duyệt">
+                <Template>
+                    <div class="custom-item">
+                        <DxSearchBox CssClass="search-textbox"
+                                     NullText="Tìm mã nhân viên, họ tên, tài khoản"
+                                     BindValueMode="BindValueMode.OnInput"
+                                     ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                     @bind-Text="SearchText" />
+                    </div>
+                </Template>
+            </DxToolbarItem>
+        </DxToolbar>
+    </div>
+
+    <div class="account-approval-root">
+    @if(HasLoadError)
+    {
+        <div class="card error-state">
+            <div class="state-title">Không thể tải danh sách phê duyệt tài khoản</div>
+            <div class="state-message">@LoadErrorMessage</div>
+            <DxButton Text="Thử lại"
+                      Click="ReloadAsync"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    }
+    else
+    {
+        <div class="card account-approval-grid-card">
+            <HrmLoadingPanel Visible="@IsLoading"
+                             IsContentBlocked="true"
+                             IsContentVisible="true"
+                             IndicatorVisible="true"
+                             IndicatorAreaVisible="true"
+                             Text="@LoadingText">
+                <DxGrid @ref="Grid"
+                        Data="@FilteredRecords"
+                        KeyFieldName="EmployeeId"
+                        CssClass="account-approval-grid"
+                        SearchText="@SearchText"
+                        PageSize="50"
+                        PagerPosition="GridPagerPosition.Bottom"
+                        PagerSummaryVisible="true"
+                        PageSizeSelectorVisible="true"
+                        PageSizeSelectorItems="@(new int[] { 25, 50, 100 })"
+                        SkeletonRowsEnabled="true"
+                        ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                        FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+                        TextWrapEnabled="false"
+                        FocusedRowEnabled="true"
+                        HighlightRowOnHover="true"
+                        AllowSelectRowByClick="true"
+                        SelectionMode="GridSelectionMode.Multiple"
+                        SelectedDataItems="@SelectedDataItems"
+                        SelectedDataItemsChanged="@OnSelectedDataItemsChanged">
+                    <Columns>
+                        <DxGridSelectionColumn Width="3rem" />
+                        <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72" AllowSort="false">
+                            <CellDisplayTemplate>
+                                @(context.VisibleIndex + 1)
+                            </CellDisplayTemplate>
+                        </DxGridDataColumn>
+                        <DxGridDataColumn FieldName="EmployeeCode" Caption="Mã nhân viên" Width="130" MinWidth="130" />
+                        <DxGridDataColumn FieldName="FullName" Caption="Họ tên" MinWidth="180" />
+                        <DxGridDataColumn FieldName="UserName" Caption="Tài khoản" MinWidth="150" />
+                        <DxGridDataColumn FieldName="RoleNamesText" Caption="Vai trò" MinWidth="170" />
+                        <DxGridDataColumn FieldName="ApprovalStatusText" Caption="Phê duyệt" MinWidth="130" />
+                        <DxGridDataColumn FieldName="AccountStateText" Caption="Kích hoạt" MinWidth="130" />
+                        <DxGridDataColumn FieldName="DepartmentPath" Caption="Phòng ban" MinWidth="220" />
+                    </Columns>
+                    <EmptyDataAreaTemplate>
+                        <div class="empty-state">
+                            <div class="state-title">Không có tài khoản phù hợp</div>
+                            <div class="state-message">Hãy thay đổi bộ lọc trạng thái hoặc mở thêm tài khoản nhân viên để phê duyệt.</div>
+                        </div>
+                    </EmptyDataAreaTemplate>
+                </DxGrid>
+            </HrmLoadingPanel>
+        </div>
+    }
+    </div>
+</div>
+
+<DxPopup Visible="@IsRejectPopupVisible"
+         VisibleChanged="OnRejectPopupVisibleChanged"
+         HeaderText="Từ chối tài khoản nhân viên"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsSaving)"
+         ShowFooter="true"
+         CloseOnOutsideClick="false">
+    <BodyContentTemplate Context="popupBody">
+        <EditForm EditContext="@RejectEditContext" Context="rejectForm">
+            <DataAnnotationsValidator />
+            <DxFormLayout CaptionPosition="CaptionPosition.Vertical">
+                <DxFormLayoutItem Caption="Nhân viên" ColSpanMd="12">
+                    <div>@RejectEmployeeDisplay</div>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Lý do từ chối" ColSpanMd="12">
+                    <DxMemo @bind-Text="RejectReason"
+                            Rows="4"
+                            ShowValidationIcon="true"
+                            NullText="Nhập lý do từ chối"
+                            Enabled="@(!IsSaving)" />
+                    <ValidationMessage For="@(() => RejectFormModel.RejectionReason)" />
+                </DxFormLayoutItem>
+            </DxFormLayout>
+            <ValidationSummary class="validation-summary" />
+            @if(!string.IsNullOrWhiteSpace(EditErrorMessage))
+            {
+                <div class="form-error-message">@EditErrorMessage</div>
+            }
+        </EditForm>
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <DxButton Text="Xác nhận từ chối"
+                  Click="OnConfirmRejectClickAsync"
+                  Enabled="@CanSubmitReject"
+                  RenderStyle="ButtonRenderStyle.Danger"
+                  RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        <DxButton Text="Hủy"
+                  Click="OnCancelRejectClickAsync"
+                  Enabled="@(!IsSaving)" />
+    </FooterContentTemplate>
+</DxPopup>

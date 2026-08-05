@@ -1,0 +1,36 @@
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Tính lại phụ cấp chuyên cần"
+         Width="min(36rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsRefreshing)"
+         ShowFooter="true"
+         CloseOnEscape="@(!IsRefreshing)"
+         CloseOnOutsideClick="false"
+         CssClass="attendance-allowance-recalculate-confirm-popup">
+    <BodyContentTemplate>
+        <div class="attendance-allowance-recalculate-confirm-content">
+            <div class="attendance-allowance-recalculate-confirm-message">
+                Sẽ tính lại tỷ lệ chuyên cần và phụ cấp thực tế cho kỳ @PeriodLabel từ dữ liệu chấm công hiện có. Các dòng đã khóa sẽ được giữ nguyên.
+            </div>
+            <div class="attendance-allowance-recalculate-confirm-note">
+                Hệ thống chỉ tính lại dữ liệu cho các dòng đang mở trong kỳ đang chọn. Công chuẩn và công thực tế đã điều chỉnh thủ công sẽ bị ghi đè bằng dữ liệu chấm công và lương cơ bản hiện có.
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <div class="attendance-allowance-recalculate-confirm-actions">
+            <DxButton Text="Hủy"
+                      Click="CloseAsync"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Tính lại"
+                      Click="ConfirmAsync"
+                      IconUrl="@VntaDevExpressIcons.CalculatorCoins"
+                      Enabled="@(!IsRefreshing)"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>

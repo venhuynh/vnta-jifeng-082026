@@ -1,0 +1,55 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapCom
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChangedAsync"
+         HeaderText="Quy tắc phụ cấp cơm"
+         Width="min(56rem, calc(100vw - 2rem))"
+         ShowCloseButton="true"
+         CloseOnOutsideClick="false"
+         CssClass="meal-rules-popup">
+    <BodyContentTemplate Context="popupBody">
+        <div class="meal-rules-content">
+            <div class="meal-rules-section">
+                <div class="meal-rules-title">Nguồn dữ liệu</div>
+                <ul class="meal-rules-list">
+                    <li>Dữ liệu phụ cấp cơm được tính từ bảng <span class="meal-inline-code">attendance_workday_summaries</span> theo kỳ lương đang xem.</li>
+                    <li>Dữ liệu chi tiết được lưu tại <span class="meal-inline-code">payroll_allowance_meal_records</span> và liên kết 1-1 với bảng tổng hợp qua <span class="meal-inline-code">PayrollAllowanceSummaryRecordId</span>.</li>
+                </ul>
+            </div>
+
+            <div class="meal-rules-section">
+                <div class="meal-rules-title">Điều kiện tính theo rule</div>
+                <ul class="meal-rules-list">
+                    <li>Chỉ lấy <strong>ngày thường</strong>.</li>
+                    <li>Chỉ lấy <strong>ca sản xuất</strong>.</li>
+                    <li>OT 1.5 phải nằm trong khoảng <strong>120 đến 150 phút</strong>.</li>
+                </ul>
+            </div>
+
+            <div class="meal-rules-section">
+                <div class="meal-rules-title">Công thức tính phụ cấp</div>
+                <ul class="meal-rules-list">
+                    <li>Mỗi ngày khớp rule cộng <strong>1</strong> vào <strong>Ngày đủ điều kiện</strong>.</li>
+                    <li>Mỗi ngày khớp rule cộng <strong>1</strong> vào <strong>Ngày tăng ca 19:00</strong>.</li>
+                    <li>Đơn giá mặc định là <strong>18.000</strong> mỗi ngày đủ điều kiện.</li>
+                    <li>Tiền phụ cấp = <strong>Ngày đủ điều kiện x Đơn giá / ngày</strong>.</li>
+                </ul>
+            </div>
+
+            <div class="meal-rules-section">
+                <div class="meal-rules-title">Ghi chú vận hành</div>
+                <ul class="meal-rules-list">
+                    <li>Dòng đã khóa sẽ được giữ nguyên khi tính lại dữ liệu hoặc lấy dữ liệu từ tháng trước.</li>
+                    <li>Điều chỉnh thủ công chỉ sửa <strong>Ngày đủ điều kiện</strong>; hệ thống tính lại tiền trên server theo ngày này và đơn giá snapshot.</li>
+                </ul>
+            </div>
+        </div>
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <DxButton Text="Đóng"
+                  IconUrl="@VntaDevExpressIcons.Cancel"
+                  RenderStyle="ButtonRenderStyle.Secondary"
+                  RenderStyleMode="ButtonRenderStyleMode.Outline"
+                  Click="CloseAsync" />
+    </FooterContentTemplate>
+</DxPopup>

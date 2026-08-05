@@ -1,0 +1,41 @@
+@using Microsoft.AspNetCore.Components
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapChuyenCan.Models
+
+<div class="attendance-allowance-pager" aria-label="Điều hướng trang phụ cấp chuyên cần">
+    <div class="attendance-allowance-pager-summary">@SummaryText</div>
+    @if (CanBrowsePages)
+    {
+        <DxPager PageCount="@TotalPageCount"
+                 ActivePageIndex="@CurrentPageIndex"
+                 ActivePageIndexChanged="PageChanged"
+                 NavigationMode="PagerNavigationMode.NumericButtons"
+                 VisibleNumericButtonCount="7" />
+    }
+    <div class="attendance-allowance-page-size">
+        <span>Hiển thị</span>
+        <DxComboBox TData="PageSizeOption"
+                    TValue="int"
+                    Data="@PageSizeOptions"
+                    Value="@PageSize"
+                    ValueChanged="PageSizeChanged"
+                    ValueFieldName="@nameof(PageSizeOption.Value)"
+                    TextFieldName="@nameof(PageSizeOption.Text)"
+                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                    Enabled="@CanChangeFilters"
+                    CssClass="attendance-allowance-page-size-editor" />
+        <span>@PageSizeDescription</span>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string SummaryText { get; set; } = string.Empty;
+    [Parameter] public bool CanBrowsePages { get; set; }
+    [Parameter] public int TotalPageCount { get; set; }
+    [Parameter] public int CurrentPageIndex { get; set; }
+    [Parameter] public EventCallback<int> PageChanged { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<PageSizeOption> PageSizeOptions { get; set; } = [];
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public EventCallback<int> PageSizeChanged { get; set; }
+    [Parameter] public bool CanChangeFilters { get; set; }
+    [Parameter, EditorRequired] public string PageSizeDescription { get; set; } = string.Empty;
+}

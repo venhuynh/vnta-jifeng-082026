@@ -1,0 +1,45 @@
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTongHop.Models
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTongHop
+
+<div class="card toolbar">
+    <DxToolbar Title="Tổng hợp phụ cấp" CssClass="toolbar" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right" CssClass="toolbar-filter-item" Tooltip="Chọn năm kỳ lương tổng hợp phụ cấp">
+            <Template>
+                <div class="custom-item toolbar-filter-editor">
+                    <span class="toolbar-filter-label">Năm</span>
+                    <DxSpinEdit T="int" Value="@Year" ValueChanged="YearChanged" MinValue="@MinimumYear" MaxValue="@MaximumYear" Increment="1" ShowSpinButtons="true" Enabled="@CanChangeFilters" CssClass="toolbar-filter-year" />
+                </div>
+            </Template>
+        </DxToolbarItem>
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right" CssClass="toolbar-filter-item" Tooltip="Chọn tháng kỳ lương tổng hợp phụ cấp">
+            <Template>
+                <div class="custom-item toolbar-filter-editor">
+                    <span class="toolbar-filter-label">Tháng</span>
+                    <DxComboBox TData="MonthOption" TValue="int" @key="Year" Data="@AvailableMonths" Value="@Month" ValueChanged="MonthChanged" ValueFieldName="@nameof(MonthOption.Value)" TextFieldName="@nameof(MonthOption.Text)" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never" Enabled="@CanChangeFilters" CssClass="toolbar-filter-month" />
+                </div>
+            </Template>
+        </DxToolbarItem>
+        <DxToolbarItem Text="Xem" Click="ViewRequested" Enabled="@CanView" Alignment="ToolbarItemAlignment.Right" Tooltip="Tải danh sách tổng hợp phụ cấp theo kỳ lương đang chọn" IconUrl="@VntaDevExpressIcons.FolderOpenArrowImport" />
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right" Tooltip="Nhóm thao tác trên dữ liệu tổng hợp phụ cấp của kỳ đã nạp">
+            <Template>
+                <div class="custom-item">
+                    <DxDropDownButton Text="Hành động" IconUrl="@VntaDevExpressIcons.TaskList" RenderStyle="ButtonRenderStyle.Secondary" RenderStyleMode="ButtonRenderStyleMode.Outline" Enabled="@CanOperate" CssClass="toolbar-action-dropdown">
+                        <Items>
+                            <DxDropDownButtonItem Text="Lấy từ tháng trước" IconUrl="@VntaDevExpressIcons.Refresh" Click="SyncRequested" Enabled="@CanSync" />
+                            <DxDropDownButtonItem Text="Làm mới phụ cấp" IconUrl="@VntaDevExpressIcons.CalculatorCoins" Click="RefreshRequested" Enabled="@CanRefresh" />
+                            <DxDropDownButtonItem Text="Khóa" IconUrl="@VntaDevExpressIcons.Lock" Click="LockRequested" Enabled="@CanLock" BeginGroup="true" />
+                            <DxDropDownButtonItem Text="Mở khóa" IconUrl="@VntaDevExpressIcons.Unlock" Click="UnlockRequested" Enabled="@CanUnlock" />
+                        </Items>
+                    </DxDropDownButton>
+                </div>
+            </Template>
+        </DxToolbarItem>
+        <DxToolbarItem Text="Xuất dữ liệu" Enabled="@CanExport" Alignment="ToolbarItemAlignment.Right" Tooltip="@ExportTooltip" IconUrl="@VntaDevExpressIcons.Export">
+            <Items>
+                <DxToolbarItem Text="Xuất Excel" Click="ExportExcelRequested" Enabled="@CanExport" Tooltip="@ExportExcelTooltip" IconUrl="@VntaDevExpressIcons.Excel" />
+                <DxToolbarItem Text="Xuất PDF" Click="ExportPdfRequested" Enabled="@CanExport" Tooltip="@ExportPdfTooltip" IconUrl="@VntaDevExpressIcons.Pdf" />
+            </Items>
+        </DxToolbarItem>
+        <DxToolbarItem Tooltip="Chọn các cột cần hiển thị trên lưới tổng hợp phụ cấp" Alignment="ToolbarItemAlignment.Right" Enabled="@CanOperate" Click="ColumnChooserRequested" IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+    </DxToolbar>
+</div>

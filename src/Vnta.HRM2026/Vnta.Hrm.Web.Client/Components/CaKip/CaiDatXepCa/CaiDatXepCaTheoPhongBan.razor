@@ -1,0 +1,416 @@
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Web.Client.Models
+@using Vnta.Hrm.Web.Client.Services.DataProviders
+@implements IDisposable
+
+@if (Model is not null && EditFormContext is not null)
+{
+    <CascadingValue Value="EditFormContext.EditContext">
+        <div class="shift-scheduling-form-scroll">
+            <DataAnnotationsValidator />
+
+            <DxFormLayout CssClass="shift-scheduling-setting-form" CaptionPosition="CaptionPosition.Vertical">
+                <DxFormLayoutGroup Caption="@FormGroupCaption" ColSpanMd="12">
+                    <DxFormLayoutItem Caption="Ca làm việc" ColSpanMd="12">
+                        <DxComboBox Data="@Shifts"
+                                    TextFieldName="@nameof(AttendanceShiftRecord.ShiftLookupText)"
+                                    ValueFieldName="@nameof(AttendanceShiftRecord.Id)"
+                                    @bind-Value="Model.ShiftId"
+                                    CssClass="w-100"
+                                    NullText="Chọn ca làm việc"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                    ShowValidationIcon="true" />
+                        <ValidationMessage For="@(() => Model.ShiftId)" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Phòng ban" ColSpanMd="12">
+                        <DxDropDownBox Value="@Model.Value"
+                                       ValueChanged="OnDepartmentValueChanged"
+                                       ValueExpression="@(() => (object?)Model.Value)"
+                                       QueryDisplayText="GetDepartmentDropDownDisplayText"
+                                       CssClass="department-search-lookup-editor w-100"
+                                       DropDownCssClass="department-search-lookup-dropdown"
+                                       DropDownBodyCssClass="department-search-lookup-body"
+                                       ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                       NullText="Chọn phòng ban"
+                                       ShowValidationIcon="true">
+                            <EditBoxDisplayTemplate Context="displayContext">
+                                @{
+                                    var displayText = displayContext.DropDownBox.GetDisplayText();
+                                    var hasDisplayText = !string.IsNullOrWhiteSpace(displayText);
+                                }
+                                <div class="department-search-lookup-selected-text @(hasDisplayText ? null : "department-search-lookup-placeholder")"
+                                     title="@displayText">
+                                    @(hasDisplayText ? displayText : "Chọn phòng ban")
+                                </div>
+                            </EditBoxDisplayTemplate>
+                            <DropDownBodyTemplate Context="dropDownContext">
+                                <div class="department-search-lookup">
+                                    <DxSearchBox CssClass="department-search-lookup-search"
+                                                 NullText="Tìm kiếm"
+                                                 BindValueMode="BindValueMode.OnInput"
+                                                 ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                                 @bind-Text="DepartmentSearchText" />
+                                    <DxTreeList Data="@DepartmentTreeNodes"
+                                                KeyFieldName="@nameof(DepartmentLookupNode.Id)"
+                                                ParentKeyFieldName="@nameof(DepartmentLookupNode.ParentId)"
+                                                CssClass="department-search-lookup-treelist"
+                                                SearchText="@DepartmentSearchText"
+                                                AutoExpandAllNodes="true"
+                                                PageSize="8"
+                                                PagerPosition="TreeListPagerPosition.Bottom"
+                                                PageSizeSelectorVisible="true"
+                                                PageSizeSelectorItems="@DepartmentPageSizeItems"
+                                                TextWrapEnabled="true"
+                                                ColumnResizeMode="TreeListColumnResizeMode.NextColumn"
+                                                FocusedRowEnabled="true"
+                                                HighlightRowOnHover="true"
+                                                AllowSelectRowByClick="true"
+                                                SelectionMode="TreeListSelectionMode.Single"
+                                                SelectedDataItems="@SelectedDepartmentNodeItems"
+                                                SelectedDataItemsChanged="@((IReadOnlyList<object> items) => OnSelectedDepartmentNodesChangedAsync(items, dropDownContext.DropDownBox))">
+                                        <Columns>
+                                            <DxTreeListDataColumn FieldName="@nameof(DepartmentLookupNode.DisplayText)" Caption="Tên phòng ban" MinWidth="320">
+                                                <CellDisplayTemplate Context="departmentCellContext">
+                                                    @{
+                                                        var departmentNode = (DepartmentLookupNode)departmentCellContext.DataItem;
+                                                    }
+                                                    <span class="department-lookup-path @(departmentNode.IsDataNode ? null : "department-lookup-summary")">
+                                                        @departmentNode.DisplayText
+                                                    </span>
+                                                </CellDisplayTemplate>
+                                            </DxTreeListDataColumn>
+                                        </Columns>
+                                    </DxTreeList>
+                                </div>
+                            </DropDownBodyTemplate>
+                        </DxDropDownBox>
+                        <ValidationMessage For="@(() => Model.Value)" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Hình thức áp dụng" ColSpanMd="12">
+                        <DxComboBox Data="@AssignmentScopeModeOptions"
+                                    TextFieldName="Text"
+                                    ValueFieldName="Value"
+                                    @bind-Value="Model.AssignmentScopeMode"
+                                    CssClass="w-100" />
+                        <ValidationMessage For="@(() => Model.AssignmentScopeMode)" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Trạng thái hoạt động" ColSpanMd="12" CssClass="shift-checkbox-item">
+                        <DxCheckBox @bind-Checked="Model.IsActive" CheckType="CheckType.Switch">@Model.ActivityStatusText</DxCheckBox>
+                    </DxFormLayoutItem>
+                </DxFormLayoutGroup>
+            </DxFormLayout>
+
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="edit-error-message">@ErrorMessage</div>
+            }
+        </div>
+    </CascadingValue>
+}
+
+@code {
+    private static readonly int[] DepartmentPageSizeItems = [8, 15, 30];
+
+    private readonly CancellationTokenSource disposalTokenSource = new();
+
+    private IReadOnlyList<AttendanceDepartmentRecord> Departments { get; set; } = [];
+
+    private IReadOnlyList<DepartmentLookupNode> DepartmentTreeNodes { get; set; } = [];
+
+    private IReadOnlyList<AttendanceShiftRecord> Shifts { get; set; } = [];
+
+    private IReadOnlyList<object> SelectedDepartmentNodeItems { get; set; } = [];
+
+    private DepartmentLookupNode? SelectedDepartmentNode { get; set; }
+
+    private string? DepartmentSearchText { get; set; }
+
+    [Inject]
+    private AttendanceDepartmentDataProvider DepartmentDataProvider { get; set; } = default!;
+
+    [Inject]
+    private AttendanceShiftDataProvider ShiftDataProvider { get; set; } = default!;
+
+    [Parameter]
+    public ShiftSchedulingSettingRecord? Model { get; set; }
+
+    [Parameter]
+    public GridEditFormTemplateContext? EditFormContext { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public bool IsCreatingNewSetting { get; set; }
+
+    private string FormGroupCaption => IsCreatingNewSetting
+        ? "Thêm phòng ban"
+        : "Điều chỉnh xếp ca theo phòng ban";
+
+    private static IReadOnlyList<OptionItem<ShiftSchedulingAssignmentScopeMode>> AssignmentScopeModeOptions { get; } =
+    [
+        new(ShiftSchedulingAssignmentScopeMode.CoDinh, "Cố định"),
+        new(ShiftSchedulingAssignmentScopeMode.TheoKhoangNgay, "Theo khoảng ngày")
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDepartmentsAsync();
+        await LoadShiftsAsync();
+        await base.OnInitializedAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        SyncSelectedDepartmentNode();
+    }
+
+    private async Task LoadDepartmentsAsync()
+    {
+        try
+        {
+            Departments = await DepartmentDataProvider.GetAsync(disposalTokenSource.Token);
+            DepartmentTreeNodes = BuildDepartmentTreeNodes(Departments);
+            SyncSelectedDepartmentNode();
+        }
+        catch (OperationCanceledException)
+        {
+            if (!disposalTokenSource.IsCancellationRequested)
+            {
+                throw;
+            }
+        }
+        catch (Exception)
+        {
+            Departments = [];
+            DepartmentTreeNodes = [];
+            SelectedDepartmentNode = null;
+            SelectedDepartmentNodeItems = [];
+        }
+    }
+
+    private async Task LoadShiftsAsync()
+    {
+        try
+        {
+            Shifts = await ShiftDataProvider.GetAsync(disposalTokenSource.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            if (!disposalTokenSource.IsCancellationRequested)
+            {
+                throw;
+            }
+        }
+        catch (Exception)
+        {
+            Shifts = [];
+        }
+    }
+
+    private async Task OnSelectedDepartmentNodesChangedAsync(
+        IReadOnlyList<object> items,
+        IDropDownBox dropDownBox)
+    {
+        var selectedNode = items
+            .OfType<DepartmentLookupNode>()
+            .LastOrDefault();
+
+        if (selectedNode is null)
+        {
+            SelectedDepartmentNode = null;
+            SelectedDepartmentNodeItems = [];
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        SelectedDepartmentNode = selectedNode;
+        SelectedDepartmentNodeItems = [selectedNode];
+
+        if (Model is null)
+        {
+            return;
+        }
+
+        Model.Value = selectedNode.Value;
+        EditFormContext?.EditContext?.NotifyFieldChanged(
+            new FieldIdentifier(Model, nameof(ShiftSchedulingSettingRecord.Value)));
+        dropDownBox.HideDropDown();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnDepartmentValueChanged(object? value)
+    {
+        if (Model is null)
+        {
+            return;
+        }
+
+        Model.Value = value?.ToString();
+        SyncSelectedDepartmentNode();
+        EditFormContext?.EditContext?.NotifyFieldChanged(
+            new FieldIdentifier(Model, nameof(ShiftSchedulingSettingRecord.Value)));
+    }
+
+    private void SyncSelectedDepartmentNode()
+    {
+        if (Model is null || string.IsNullOrWhiteSpace(Model.Value))
+        {
+            SelectedDepartmentNode = null;
+            SelectedDepartmentNodeItems = [];
+            return;
+        }
+
+        SelectedDepartmentNode = DepartmentTreeNodes.FirstOrDefault(node =>
+            string.Equals(node.Value, Model.Value, StringComparison.OrdinalIgnoreCase));
+        SelectedDepartmentNodeItems = SelectedDepartmentNode is null ? [] : [SelectedDepartmentNode];
+    }
+
+    private static string GetDepartmentDisplayText(AttendanceDepartmentRecord department) =>
+        string.IsNullOrWhiteSpace(department.FullPath)
+            ? department.Name
+            : department.FullPath;
+
+    private static IReadOnlyList<DepartmentLookupNode> BuildDepartmentTreeNodes(
+        IReadOnlyList<AttendanceDepartmentRecord> departments)
+    {
+        var nodes = new List<DepartmentLookupNode>();
+        var nodeIndex = new Dictionary<string, DepartmentLookupNode>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var department in departments
+                     .OrderBy(item => GetDepartmentDisplayText(item), StringComparer.OrdinalIgnoreCase))
+        {
+            var blockName = NormalizeNullable(department.CenterName) ?? "(Chưa có khối)";
+            var departmentName = NormalizeNullable(department.DepartmentOrWorkshopName) ?? "(Chưa có phòng ban)";
+            var teamName = NormalizeNullable(department.TeamName);
+            var groupName = NormalizeNullable(department.GroupName);
+            var hasTeam = !string.IsNullOrWhiteSpace(teamName);
+            var hasGroup = !string.IsNullOrWhiteSpace(groupName);
+
+            var blockNode = GetOrCreateDepartmentNode(
+                nodes,
+                nodeIndex,
+                BuildDepartmentNodeId("block", blockName),
+                parentId: null,
+                displayText: blockName,
+                value: blockName,
+                departmentId: null);
+
+            var departmentPath = JoinDepartmentPath(blockName, departmentName);
+            var departmentNode = GetOrCreateDepartmentNode(
+                nodes,
+                nodeIndex,
+                BuildDepartmentNodeId("department", blockName, departmentName),
+                blockNode.Id,
+                departmentPath,
+                departmentPath,
+                departmentId: hasTeam || hasGroup ? null : department.Id);
+
+            var parentNode = departmentNode;
+            if (hasTeam)
+            {
+                var teamPath = JoinDepartmentPath(blockName, departmentName, teamName);
+                parentNode = GetOrCreateDepartmentNode(
+                    nodes,
+                    nodeIndex,
+                    BuildDepartmentNodeId("team", blockName, departmentName, teamName),
+                    departmentNode.Id,
+                    teamPath,
+                    teamPath,
+                    departmentId: hasGroup ? null : department.Id);
+            }
+
+            if (hasGroup)
+            {
+                var groupPath = JoinDepartmentPath(blockName, departmentName, teamName, groupName);
+                parentNode = GetOrCreateDepartmentNode(
+                    nodes,
+                    nodeIndex,
+                    BuildDepartmentNodeId("group", blockName, departmentName, teamName, groupName),
+                    parentNode.Id,
+                    groupPath,
+                    groupPath,
+                    departmentId: department.Id);
+            }
+        }
+
+        return nodes;
+    }
+
+    private static DepartmentLookupNode GetOrCreateDepartmentNode(
+        List<DepartmentLookupNode> nodes,
+        Dictionary<string, DepartmentLookupNode> nodeIndex,
+        string id,
+        string? parentId,
+        string displayText,
+        string value,
+        Guid? departmentId)
+    {
+        if (nodeIndex.TryGetValue(id, out var existingNode))
+        {
+            if (departmentId.HasValue && !existingNode.DepartmentId.HasValue)
+            {
+                existingNode.DepartmentId = departmentId;
+                existingNode.DisplayText = displayText;
+                existingNode.Value = value;
+            }
+
+            return existingNode;
+        }
+
+        var node = new DepartmentLookupNode
+        {
+            Id = id,
+            ParentId = parentId,
+            DepartmentId = departmentId,
+            DisplayText = displayText,
+            Value = value
+        };
+
+        nodes.Add(node);
+        nodeIndex[id] = node;
+        return node;
+    }
+
+    private static string BuildDepartmentNodeId(string level, params string?[] parts) =>
+        $"{level}:{string.Join("|", parts.Select(part => NormalizeNullable(part)?.ToUpperInvariant() ?? string.Empty))}";
+
+    private static string JoinDepartmentPath(params string?[] parts) =>
+        string.Join(" / ", parts.Where(part => !string.IsNullOrWhiteSpace(part)));
+
+    private static string? NormalizeNullable(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private string GetDepartmentDropDownDisplayText(DropDownBoxQueryDisplayTextContext context)
+    {
+        var value = context.Value?.ToString();
+        return string.IsNullOrWhiteSpace(value)
+            ? Model?.Value ?? string.Empty
+            : value;
+    }
+
+    public void Dispose()
+    {
+        disposalTokenSource.Cancel();
+        disposalTokenSource.Dispose();
+    }
+
+    private sealed record OptionItem<TValue>(TValue Value, string Text);
+
+    private sealed class DepartmentLookupNode
+    {
+        public string Id { get; set; } = string.Empty;
+
+        public string? ParentId { get; set; }
+
+        public Guid? DepartmentId { get; set; }
+
+        public bool IsDataNode => DepartmentId.HasValue;
+
+        public string DisplayText { get; set; } = string.Empty;
+
+        public string Value { get; set; } = string.Empty;
+    }
+}

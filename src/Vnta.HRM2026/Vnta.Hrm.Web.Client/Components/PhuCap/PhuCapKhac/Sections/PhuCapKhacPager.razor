@@ -1,0 +1,27 @@
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapKhac.Models
+
+<div class="other-allowance-pager" aria-label="Điều hướng trang phụ cấp khác">
+    <div class="other-allowance-pager-summary">@SummaryText</div>
+    @if (CanBrowsePages)
+    {
+        <DxPager PageCount="@TotalPageCount"
+                 ActivePageIndex="@CurrentPageIndex"
+                 ActivePageIndexChanged="ActivePageIndexChanged"
+                 NavigationMode="PagerNavigationMode.NumericButtons"
+                 VisibleNumericButtonCount="7" />
+    }
+    <div class="other-allowance-page-size">
+        <span>Hiển thị</span>
+        <DxComboBox TData="OtherAllowancePageSizeOption"
+                    TValue="int"
+                    Data="@PageSizeOptions"
+                    Value="@PageSize"
+                    ValueChanged="PageSizeChanged"
+                    ValueFieldName="@nameof(OtherAllowancePageSizeOption.Value)"
+                    TextFieldName="@nameof(OtherAllowancePageSizeOption.Text)"
+                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+                    Enabled="@CanChangeFilters"
+                    CssClass="other-allowance-page-size-editor" />
+        <span>@PageSizeDescription</span>
+    </div>
+</div>

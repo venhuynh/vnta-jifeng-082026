@@ -1,0 +1,40 @@
+.custom-item.toolbar-inline-field {
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    column-gap: 0.5rem;
+    margin: 0 0.5rem;
+    white-space: nowrap;
+}
+
+.toolbar-inline-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.toolbar-month {
+    min-width: 8.5rem;
+}
+
+.toolbar-year {
+    min-width: 10rem;
+}
+
+::deep .toolbar-month-item,
+::deep .toolbar-year-item {
+    min-width: max-content;
+}
+
+::deep .period-spin-edit {
+    width: 100%;
+}
+
+::deep .period-spin-edit-month {
+    width: 4.75rem;
+}
+
+::deep .period-spin-edit-year {
+    width: 6.25rem;
+}

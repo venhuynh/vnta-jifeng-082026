@@ -1,0 +1,35 @@
+.leave-holiday-allowance-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.82rem;
+}
+
+.leave-holiday-allowance-pager-summary {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.leave-holiday-allowance-page-size {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    white-space: nowrap;
+}
+
+::deep .leave-holiday-allowance-page-size-editor {
+    width: 5.75rem;
+}
+
+@media (max-width: 768px) {
+    .leave-holiday-allowance-pager {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 0.625rem 0.75rem;
+    }
+}

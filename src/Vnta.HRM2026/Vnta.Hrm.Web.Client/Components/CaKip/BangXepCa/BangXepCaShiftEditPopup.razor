@@ -1,0 +1,161 @@
+@using Vnta.Hrm.Web.Client.Services.Ui
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="OnVisibleChanged"
+         HeaderText="Đổi ca làm việc"
+         Width="min(34rem, calc(100vw - 2rem))"
+         ShowCloseButton="@(!IsBusy)"
+         ShowFooter="true"
+         FooterCssClass="shift-edit-popup-footer"
+         CloseOnOutsideClick="false"
+         CssClass="shift-edit-popup">
+    <BodyContentTemplate Context="popupBody">
+        @if(Model is not null) {
+            <div class="shift-edit-content">
+                <div class="shift-edit-context">
+                    <div class="shift-edit-context-row">
+                        <span>Nhân viên</span>
+                        <strong>@Model.EmployeeDisplay</strong>
+                    </div>
+                    <div class="shift-edit-context-row">
+                        <span>Ngày</span>
+                        <strong>@Model.WorkDateText</strong>
+                    </div>
+                    <div class="shift-edit-context-row">
+                        <span>Ca hiện tại</span>
+                        <strong>@Model.CurrentShiftText</strong>
+                    </div>
+                </div>
+
+                <HrmLoadingPanel Visible="@IsBusy"
+                                 IsContentBlocked="true"
+                                 IsContentVisible="true"
+                                 IndicatorVisible="true"
+                                 IndicatorAreaVisible="true"
+                                 Text="@LoadingText"
+                                 CssClass="shift-edit-loading-panel">
+                    @if(!string.IsNullOrWhiteSpace(ErrorMessage)) {
+                        <div class="shift-edit-message">@ErrorMessage</div>
+                    }
+
+                    <DxFormLayout CssClass="shift-edit-form" CaptionPosition="CaptionPosition.Vertical">
+                        <DxFormLayoutItem Caption="Từ ngày" ColSpanMd="6">
+                            <DxDateEdit Date="@FromDate"
+                                        DateChanged="@FromDateChanged"
+                                        DisplayFormat="dd/MM/yyyy"
+                                        ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                        Enabled="@(!IsBusy)" />
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Đến ngày" ColSpanMd="6">
+                            <DxDateEdit Date="@ToDate"
+                                        DateChanged="@ToDateChanged"
+                                        DisplayFormat="dd/MM/yyyy"
+                                        ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                        Enabled="@(!IsBusy)" />
+                        </DxFormLayoutItem>
+                        <DxFormLayoutItem Caption="Ca mới" ColSpanMd="12">
+                            <DxComboBox TData="ShiftEditOption"
+                                        TValue="Guid?"
+                                        Data="@Options"
+                                        TextFieldName="@nameof(ShiftEditOption.DisplayText)"
+                                        ValueFieldName="@nameof(ShiftEditOption.Id)"
+                                        Value="@SelectedShiftId"
+                                        ValueChanged="@SelectedShiftIdChanged"
+                                        CssClass="shift-edit-combobox"
+                                        NullText="Chọn ca làm việc"
+                                        ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                        Enabled="@(!IsBusy)">
+                                <ItemDisplayTemplate Context="shiftContext">
+                                    <span class="shift-edit-option-text">@shiftContext.DataItem.DisplayText</span>
+                                </ItemDisplayTemplate>
+                                <EditBoxDisplayTemplate Context="shiftContext">
+                                    @if(shiftContext.DataItem is not null) {
+                                        <span class="shift-edit-option-text">@shiftContext.DataItem.DisplayText</span>
+                                    }
+                                </EditBoxDisplayTemplate>
+                            </DxComboBox>
+                        </DxFormLayoutItem>
+                    </DxFormLayout>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </BodyContentTemplate>
+    <FooterContentTemplate Context="popupFooter">
+        <div class="shift-edit-popup-actions">
+            <DxButton Text="Hủy"
+                      IconUrl="@VntaDevExpressIcons.Cancel"
+                      CssClass="shift-edit-popup-action"
+                      Click="@OnCancelClick"
+                      Enabled="@(!IsBusy)"
+                      RenderStyle="ButtonRenderStyle.Secondary"
+                      RenderStyleMode="ButtonRenderStyleMode.Outline" />
+            <DxButton Text="Lưu"
+                      IconUrl="@VntaDevExpressIcons.Save"
+                      CssClass="shift-edit-popup-action"
+                      Click="@OnSaveClick"
+                      Enabled="@CanSave"
+                      RenderStyle="ButtonRenderStyle.Primary"
+                      RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </FooterContentTemplate>
+</DxPopup>
+
+@code {
+    [Parameter]
+    public bool Visible { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> VisibleChanged { get; set; }
+
+    [Parameter]
+    public bool IsBusy { get; set; }
+
+    [Parameter]
+    public bool CanSave { get; set; }
+
+    [Parameter]
+    public string LoadingText { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public ShiftEditState? Model { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<ShiftEditOption> Options { get; set; } = [];
+
+    [Parameter]
+    public Guid? SelectedShiftId { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid?> SelectedShiftIdChanged { get; set; }
+
+    [Parameter]
+    public DateTime? FromDate { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> FromDateChanged { get; set; }
+
+    [Parameter]
+    public DateTime? ToDate { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> ToDateChanged { get; set; }
+
+    [Parameter]
+    public EventCallback SaveClick { get; set; }
+
+    [Parameter]
+    public EventCallback CancelClick { get; set; }
+
+    private Task OnVisibleChanged(bool visible) => VisibleChanged.InvokeAsync(visible);
+
+    private Task OnSaveClick() => SaveClick.InvokeAsync();
+
+    private Task OnCancelClick() => CancelClick.InvokeAsync();
+
+    private Task OnFromDateChanged(DateTime? date) => FromDateChanged.InvokeAsync(date);
+
+    private Task OnToDateChanged(DateTime? date) => ToDateChanged.InvokeAsync(date);
+}

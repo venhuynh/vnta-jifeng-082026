@@ -1,0 +1,22 @@
+.other-deduction-popup-footer,
+.other-deduction-edit-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.other-deduction-popup-action {
+    min-width: 7rem;
+}
+
+.other-deduction-edit-form {
+    padding: 0.25rem 0;
+}
+
+.other-deduction-edit-actions {
+    gap: 0.5rem;
+}
+
+::deep .other-deduction-edit-readonly .dxbl-text-editor-input {
+    font-weight: 600;
+}

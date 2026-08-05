@@ -1,0 +1,42 @@
+name: Audit raw-mutation guard
+
+on:
+  pull_request:
+    paths:
+      - 'src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/**/*.cs'
+      - 'tools/audit/**'
+      - 'doc/sprints/KienTruc/sprint-024-audit-trail/write-path-inventory.md'
+  push:
+    paths:
+      - 'src/Vnta.HRM2026/Vnta.Hrm.Infrastructure/**/*.cs'
+      - 'tools/audit/**'
+
+jobs:
+  verify-raw-mutation-inventory:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: vnta_audit_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d vnta_audit_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      VNTA_AUDIT_TEST_DB: Host=localhost;Port=5432;Database=vnta_audit_test;Username=postgres;Password=postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Verify raw SQL and bulk mutation inventory
+        shell: pwsh
+        run: ./tools/audit/Test-AuditRawMutationBaseline.ps1
+      - name: Run PostgreSQL audit integration tests
+        run: dotnet test src/Vnta.HRM2026/Vnta.Hrm.Infrastructure.Tests/Vnta.Hrm.Infrastructure.Tests.csproj --configuration Release

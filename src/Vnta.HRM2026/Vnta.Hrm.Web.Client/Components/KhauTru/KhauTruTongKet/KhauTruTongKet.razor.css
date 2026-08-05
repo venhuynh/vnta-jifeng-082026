@@ -1,0 +1,361 @@
+.content-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.toolbar {
+    flex: 0 0 auto;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+::deep .toolbar .dxbl-toolbar {
+    flex-wrap: nowrap;
+    align-items: center;
+    min-width: max-content;
+}
+
+::deep .toolbar .dxbl-toolbar-title {
+    white-space: nowrap;
+}
+
+.toolbar-filter-editor {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.toolbar .custom-item {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
+}
+
+.toolbar-filter-label {
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+}
+
+::deep .toolbar-filter-year {
+    width: 6.75rem;
+}
+
+::deep .toolbar-filter-month {
+    width: 7.75rem;
+}
+
+.deduction-summary-root {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--dxds-color-surface-neutral-default-rest);
+    background-clip: border-box;
+    border: 1px solid var(--dxds-color-border-neutral-default-rest);
+    border-radius: 0.25rem;
+}
+
+.deduction-summary-grid-card {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+::deep .deduction-summary-loading-panel {
+    height: 100%;
+}
+
+.deduction-summary-grid-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.deduction-summary-grid-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem 0.625rem;
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 94%, white);
+    border-bottom: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 82%, transparent);
+}
+
+.deduction-summary-period-warning {
+    padding: 0.75rem 1rem;
+    color: var(--dxds-color-content-warning-default-rest, #854d0e);
+    background-color: color-mix(in srgb, var(--dxds-color-surface-warning-default-rest) 14%, var(--dxds-color-surface-neutral-default-rest));
+}
+
+.deduction-summary-lock-strip {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.employee-summary-strip {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    padding-bottom: 0.125rem;
+}
+
+::deep .deduction-summary-lock-button-group,
+::deep .deduction-summary-total-amount-button-group {
+    display: inline-flex;
+    min-width: max-content;
+}
+
+::deep .deduction-summary-total-amount-button-group {
+    pointer-events: none;
+}
+
+::deep .deduction-summary-total-amount-button {
+    color: var(--dxds-color-content-success-default-rest, #15803d) !important;
+    font-size: 0.82rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+::deep .deduction-summary-summary-button {
+    --summary-accent: var(--dxds-color-content-info-default-rest);
+    min-width: 5.75rem;
+    color: var(--summary-accent) !important;
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+}
+
+::deep .deduction-summary-summary-button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--summary-accent) 9%, white) !important;
+}
+
+::deep .deduction-summary-summary-button[aria-pressed="true"],
+::deep .deduction-summary-summary-button.dxbl-btn-selected,
+::deep .deduction-summary-summary-button.dxbl-btn-active {
+    border-color: var(--summary-accent) !important;
+    background: color-mix(in srgb, var(--summary-accent) 14%, white) !important;
+    box-shadow: inset 0 -0.18rem 0 var(--summary-accent);
+}
+
+::deep .deduction-summary-summary-button-all {
+    --summary-accent: var(--dxds-color-content-info-default-rest, #2563eb);
+}
+
+::deep .deduction-summary-summary-button-open {
+    --summary-accent: var(--dxds-color-content-success-default-rest, #15803d);
+}
+
+::deep .deduction-summary-summary-button-locked {
+    --summary-accent: var(--dxds-color-content-neutral-subtle-rest, #64748b);
+}
+
+.deduction-summary-grid-search {
+    flex: 0 0 auto;
+    min-width: 15rem;
+    max-width: min(100%, 20rem);
+}
+
+::deep .deduction-summary-grid-searchbox {
+    width: 100%;
+}
+
+::deep .deduction-summary-grid-searchbox .dxbl-text-editor {
+    min-height: 2.3rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 72%, transparent);
+    background: color-mix(in srgb, var(--dxds-color-surface-neutral-default-rest) 92%, white);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 80%, transparent);
+}
+
+::deep .deduction-summary-grid-searchbox .dxbl-text-editor-input {
+    min-width: 11rem;
+}
+
+::deep .deduction-summary-grid-searchbox .dxbl-btn-clear {
+    opacity: 0.68;
+}
+
+.deduction-summary-department-path {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+::deep .deduction-summary-search-highlight {
+    padding: 0 0.08rem;
+    border-radius: 0.2rem;
+    background: #fde68a;
+    color: inherit;
+}
+
+.deduction-summary-row-menu-host {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+::deep .deduction-summary-row-menu-btn.dxbl-btn {
+    min-width: 2rem;
+    min-height: 2rem;
+    padding: 0.25rem;
+    border-radius: 8px;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+::deep .deduction-summary-row-menu-btn.dxbl-btn:hover {
+    background: color-mix(in srgb, var(--dxds-color-primary-default-rest) 9%, transparent);
+}
+
+.empty-state,
+.error-state {
+    height: 100%;
+    min-height: 18rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.state-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.state-message {
+    max-width: 42rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    line-height: 1.5;
+}
+
+.yes-no-status {
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.yes-no-status::before {
+    content: " ";
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    margin-right: 0.3rem;
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+.yes-no-status-yes {
+    color: var(--dxds-color-content-success-default-rest);
+}
+
+.yes-no-status-no {
+    color: var(--dxds-color-content-danger-default-rest);
+}
+
+tr.dxbl-grid-focused-row .yes-no-status {
+    color: inherit !important;
+}
+
+.amount-total {
+    font-weight: 700;
+    color: #0f6cbd;
+}
+
+::deep .deduction-summary-grid {
+    flex: 1 1 auto;
+    max-height: 100%;
+    border-radius: 0.25rem;
+}
+
+::deep .deduction-summary-grid .dxbl-grid-table {
+    border-top: none;
+}
+
+.deduction-summary-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.625rem 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--dxds-color-border-neutral-default-rest) 78%, transparent);
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    font-size: 0.82rem;
+}
+
+.deduction-summary-pager-summary {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.deduction-summary-page-size {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    white-space: nowrap;
+}
+
+::deep .deduction-summary-page-size-editor {
+    width: 5.75rem;
+}
+
+.deduction-summary-export-source {
+    position: fixed;
+    left: -10000px;
+    top: 0;
+    width: 1200px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .deduction-summary-grid-header {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 0.75rem;
+    }
+
+    .deduction-summary-grid-search {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+    }
+
+    .employee-summary-strip {
+        flex-wrap: wrap;
+        overflow-x: visible;
+    }
+
+    .deduction-summary-pager {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 0.625rem 0.75rem;
+    }
+
+    ::deep .deduction-summary-summary-button {
+        min-width: 4.5rem;
+        font-size: 0.76rem;
+    }
+}

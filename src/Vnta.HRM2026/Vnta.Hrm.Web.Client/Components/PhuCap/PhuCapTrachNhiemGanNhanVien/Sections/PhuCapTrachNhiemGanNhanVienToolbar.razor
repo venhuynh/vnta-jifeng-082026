@@ -1,0 +1,32 @@
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemGanNhanVien.Models
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapTrachNhiemGanNhanVien.Sections
+
+<div class="card toolbar">
+    <DxToolbar Title="DS cấp bậc nhân viên" CssClass="toolbar" ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right" CssClass="toolbar-filter-item" Tooltip="Chọn năm áp dụng">
+            <Template>
+                <div class="custom-item toolbar-filter-editor">
+                    <span class="toolbar-filter-label">Năm</span>
+                    <DxSpinEdit T="int" Value="@Year" ValueChanged="YearChanged" MinValue="@MinimumYear" MaxValue="@MaximumYear" Increment="1" ShowSpinButtons="true" Enabled="@CanChangeFilters" CssClass="toolbar-filter-year" />
+                </div>
+            </Template>
+        </DxToolbarItem>
+        <DxToolbarItem Alignment="ToolbarItemAlignment.Right" CssClass="toolbar-filter-item" Tooltip="Chọn tháng áp dụng">
+            <Template>
+                <div class="custom-item toolbar-filter-editor">
+                    <span class="toolbar-filter-label">Tháng</span>
+                    <DxComboBox TData="EmployeeAssignmentMonthOption" TValue="int" @key="Year" Data="@MonthOptions" Value="@Month" ValueChanged="MonthChanged" ValueFieldName="@nameof(EmployeeAssignmentMonthOption.Value)" TextFieldName="@nameof(EmployeeAssignmentMonthOption.Text)" ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never" Enabled="@CanChangeFilters" CssClass="toolbar-filter-month" />
+                </div>
+            </Template>
+        </DxToolbarItem>
+        <DxToolbarItem Text="Xem" Click="ViewRequested" Enabled="@CanLoad" Alignment="ToolbarItemAlignment.Right" Tooltip="Hiển thị danh sách nhân viên của kỳ đang chọn" IconUrl="@VntaDevExpressIcons.FolderOpenArrowImport" />
+        <DxToolbarItem Text="Lấy từ tháng trước" Click="LoadFromPreviousMonthRequested" Enabled="@CanLoadFromPreviousMonth" Alignment="ToolbarItemAlignment.Right" Tooltip="Lấy giá trị gán cấp bậc của nhân viên từ kỳ trước sang kỳ đang chọn" IconUrl="@VntaDevExpressIcons.Refresh" />
+        <DxToolbarItem Text="Xuất dữ liệu" Enabled="@CanExport" Alignment="ToolbarItemAlignment.Right" IconUrl="@VntaDevExpressIcons.Export">
+            <Items>
+                <DxToolbarItem Text="Xuất Excel" Click="ExportExcelRequested" Enabled="@CanExport" IconUrl="@VntaDevExpressIcons.Excel" />
+                <DxToolbarItem Text="Xuất PDF" Click="ExportPdfRequested" Enabled="@CanExport" IconUrl="@VntaDevExpressIcons.Pdf" />
+            </Items>
+        </DxToolbarItem>
+        <DxToolbarItem Tooltip="Chọn cột hiển thị" Click="ColumnChooserRequested" Enabled="@CanManageAssignments" Alignment="ToolbarItemAlignment.Right" IconUrl="@VntaDevExpressIcons.ColumnChooser" />
+    </DxToolbar>
+</div>

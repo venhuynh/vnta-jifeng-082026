@@ -1,0 +1,407 @@
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Vnta.Hrm.Web.Client.Models
+@using Vnta.Hrm.Web.Client.Models.Employees
+@using Vnta.Hrm.Web.Client.Services.DataProviders
+@implements IDisposable
+
+@if (Model is not null && EditFormContext is not null)
+{
+    <CascadingValue Value="EditFormContext.EditContext">
+        <div class="shift-scheduling-form-scroll">
+            <DataAnnotationsValidator />
+
+            <DxFormLayout CssClass="shift-scheduling-setting-form" CaptionPosition="CaptionPosition.Vertical">
+                <DxFormLayoutGroup Caption="@FormGroupCaption" ColSpanMd="12">
+                    <DxFormLayoutItem Caption="Ca làm việc" ColSpanMd="12">
+                        <DxComboBox Data="@Shifts"
+                                    TextFieldName="@nameof(AttendanceShiftRecord.ShiftLookupText)"
+                                    ValueFieldName="@nameof(AttendanceShiftRecord.Id)"
+                                    @bind-Value="Model.ShiftId"
+                                    CssClass="w-100"
+                                    NullText="Chọn ca làm việc"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                    ShowValidationIcon="true" />
+                        <ValidationMessage For="@(() => Model.ShiftId)" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Nhân viên" ColSpanMd="12">
+                        @if (IsCreatingNewSetting)
+                        {
+                            <div class="employee-target-picker">
+                                <div class="employee-target-picker-row">
+                                    <DxDropDownBox Value="@SelectedEmployeeLookupValue"
+                                                   ValueChanged="OnEmployeeLookupValueChanged"
+                                                   ValueExpression="@(() => (object?)SelectedEmployeeLookupValue)"
+                                                   QueryDisplayText="GetEmployeeDropDownDisplayText"
+                                                   CssClass="employee-search-lookup-editor w-100"
+                                                   DropDownCssClass="employee-search-lookup-dropdown"
+                                                   DropDownBodyCssClass="employee-search-lookup-body"
+                                                   ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                                   NullText="Chọn nhân viên">
+                                        <EditBoxDisplayTemplate Context="displayContext">
+                                            @{
+                                                var displayText = displayContext.DropDownBox.GetDisplayText();
+                                                var hasDisplayText = !string.IsNullOrWhiteSpace(displayText);
+                                            }
+                                            <div class="employee-search-lookup-selected-text @(hasDisplayText ? null : "employee-search-lookup-placeholder")"
+                                                 title="@displayText">
+                                                @(hasDisplayText ? displayText : "Chọn nhân viên")
+                                            </div>
+                                        </EditBoxDisplayTemplate>
+                                        <DropDownBodyTemplate Context="dropDownContext">
+                                            <div class="employee-search-lookup">
+                                                <DxSearchBox CssClass="employee-search-lookup-search"
+                                                             NullText="Tìm kiếm"
+                                                             BindValueMode="BindValueMode.OnInput"
+                                                             ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+                                                             @bind-Text="EmployeeSearchText" />
+                                                <DxGrid Data="@Employees"
+                                                        KeyFieldName="@nameof(EmployeeRecord.Id)"
+                                                        CssClass="employee-search-lookup-grid"
+                                                        SearchText="@EmployeeSearchText"
+                                                        PageSize="8"
+                                                        PagerPosition="GridPagerPosition.Bottom"
+                                                        PageSizeSelectorVisible="true"
+                                                        PageSizeSelectorItems="@EmployeePageSizeItems"
+                                                        TextWrapEnabled="true"
+                                                        ColumnResizeMode="GridColumnResizeMode.NextColumn"
+                                                        FocusedRowEnabled="true"
+                                                        HighlightRowOnHover="true"
+                                                        AllowSelectRowByClick="true"
+                                                        SelectionMode="GridSelectionMode.Single"
+                                                        SelectedDataItems="@SelectedEmployeeItems"
+                                                        SelectedDataItemsChanged="@((IReadOnlyList<object> items) => OnSelectedEmployeeItemsChangedAsync(items, dropDownContext.DropDownBox))">
+                                                    <Columns>
+                                                        <DxGridDataColumn FieldName="@nameof(EmployeeRecord.EmployeeCode)" Caption="Mã nhân viên" Width="9rem" />
+                                                        <DxGridDataColumn FieldName="@nameof(EmployeeRecord.FullName)" Caption="Họ tên" MinWidth="220" />
+                                                    </Columns>
+                                                </DxGrid>
+                                            </div>
+                                        </DropDownBodyTemplate>
+                                    </DxDropDownBox>
+                                    <DxButton Text="Thêm vào"
+                                              Click="OnAddEmployeeClick"
+                                              Enabled="@CanAddSelectedEmployee"
+                                              IconUrl="@VntaDevExpressIcons.Add"
+                                              RenderStyle="ButtonRenderStyle.Primary"
+                                              RenderStyleMode="ButtonRenderStyleMode.Contained" />
+                                </div>
+                                <ValidationMessage For="@(() => Model.Value)" />
+                            </div>
+                        }
+                        else
+                        {
+                            <DxTextBox @bind-Text="Model.Value"
+                                       CssClass="w-100"
+                                       NullText="Nhập nhân viên áp dụng"
+                                       ShowValidationIcon="true"
+                                       ShowValidationSuccessState="true" />
+                            <ValidationMessage For="@(() => Model.Value)" />
+                        }
+                    </DxFormLayoutItem>
+                    @if (IsCreatingNewSetting)
+                    {
+                        <DxFormLayoutItem Caption="Danh sách nhân viên" ColSpanMd="12">
+                            <DxGrid Data="@Model.EmployeeTargets"
+                                    KeyFieldName="@nameof(ShiftSchedulingEmployeeTargetRecord.Id)"
+                                    CssClass="employee-target-grid"
+                                    PageSize="5"
+                                    PagerPosition="GridPagerPosition.Bottom"
+                                    PageSizeSelectorVisible="true"
+                                    PageSizeSelectorItems="@EmployeeTargetPageSizeItems"
+                                    TextWrapEnabled="true"
+                                    ColumnResizeMode="GridColumnResizeMode.NextColumn">
+                                <Columns>
+                                    <DxGridDataColumn FieldName="@nameof(ShiftSchedulingEmployeeTargetRecord.EmployeeCode)" Caption="Mã nhân viên" Width="9rem" />
+                                    <DxGridDataColumn FieldName="@nameof(ShiftSchedulingEmployeeTargetRecord.FullName)" Caption="Họ tên" MinWidth="180" />
+                                    <DxGridCommandColumn Width="4rem"
+                                                         NewButtonVisible="false"
+                                                         EditButtonVisible="false"
+                                                         DeleteButtonVisible="false">
+                                        <CellDisplayTemplate Context="employeeTargetCellContext">
+                                            @{
+                                                var employeeTarget = (ShiftSchedulingEmployeeTargetRecord)employeeTargetCellContext.DataItem;
+                                            }
+                                            <DxButton CssClass="employee-target-remove-button"
+                                                      RenderStyle="ButtonRenderStyle.Link"
+                                                      IconUrl="@VntaDevExpressIcons.Delete"
+                                                      aria-label="Bỏ nhân viên"
+                                                      Click="@(() => OnRemoveEmployeeTargetClick(employeeTarget))" />
+                                        </CellDisplayTemplate>
+                                    </DxGridCommandColumn>
+                                </Columns>
+                                <EmptyDataAreaTemplate Context="employeeTargetEmptyContext">
+                                    <div class="employee-target-empty">Chưa có nhân viên nào được chọn.</div>
+                                </EmptyDataAreaTemplate>
+                            </DxGrid>
+                        </DxFormLayoutItem>
+                    }
+                    <DxFormLayoutItem Caption="Hình thức áp dụng" ColSpanMd="12">
+                        <DxComboBox Data="@AssignmentScopeModeOptions"
+                                    TextFieldName="Text"
+                                    ValueFieldName="Value"
+                                    @bind-Value="Model.AssignmentScopeMode"
+                                    CssClass="w-100" />
+                        <ValidationMessage For="@(() => Model.AssignmentScopeMode)" />
+                    </DxFormLayoutItem>
+                    <DxFormLayoutItem Caption="Trạng thái hoạt động" ColSpanMd="12" CssClass="shift-checkbox-item">
+                        <DxCheckBox @bind-Checked="Model.IsActive" CheckType="CheckType.Switch">@Model.ActivityStatusText</DxCheckBox>
+                    </DxFormLayoutItem>
+                </DxFormLayoutGroup>
+            </DxFormLayout>
+
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="edit-error-message">@ErrorMessage</div>
+            }
+        </div>
+    </CascadingValue>
+}
+
+@code {
+    private static readonly int[] EmployeePageSizeItems = [8, 15, 30];
+
+    private static readonly int[] EmployeeTargetPageSizeItems = [5, 10, 20];
+
+    private readonly CancellationTokenSource disposalTokenSource = new();
+
+    private IReadOnlyList<AttendanceShiftRecord> Shifts { get; set; } = [];
+
+    private IReadOnlyList<EmployeeRecord> Employees { get; set; } = [];
+
+    private IReadOnlyList<object> SelectedEmployeeItems { get; set; } = [];
+
+    private EmployeeRecord? SelectedEmployee { get; set; }
+
+    private string? SelectedEmployeeLookupValue { get; set; }
+
+    private string? EmployeeSearchText { get; set; }
+
+    [Inject]
+    private AttendanceShiftDataProvider ShiftDataProvider { get; set; } = default!;
+
+    [Inject]
+    private EmployeeDataProvider EmployeeDataProvider { get; set; } = default!;
+
+    [Parameter]
+    public ShiftSchedulingSettingRecord? Model { get; set; }
+
+    [Parameter]
+    public GridEditFormTemplateContext? EditFormContext { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public bool IsCreatingNewSetting { get; set; }
+
+    private bool CanAddSelectedEmployee =>
+        Model is not null &&
+        SelectedEmployee is not null &&
+        Model.EmployeeTargets.All(target => target.Id != SelectedEmployee.Id);
+
+    private string FormGroupCaption => IsCreatingNewSetting
+        ? "Thêm nhân viên"
+        : "Điều chỉnh xếp ca theo nhân viên";
+
+    private static IReadOnlyList<OptionItem<ShiftSchedulingAssignmentScopeMode>> AssignmentScopeModeOptions { get; } =
+    [
+        new(ShiftSchedulingAssignmentScopeMode.CoDinh, "Cố định"),
+        new(ShiftSchedulingAssignmentScopeMode.TheoKhoangNgay, "Theo khoảng ngày")
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployeesAsync();
+        await LoadShiftsAsync();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task LoadEmployeesAsync()
+    {
+        try
+        {
+            Employees = (await EmployeeDataProvider.GetAsync(disposalTokenSource.Token))
+                .OrderBy(GetEmployeeDisplayText, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            SyncSelectedEmployeeLookup();
+        }
+        catch (OperationCanceledException)
+        {
+            if (!disposalTokenSource.IsCancellationRequested)
+            {
+                throw;
+            }
+        }
+        catch (Exception)
+        {
+            Employees = [];
+            ClearSelectedEmployeeLookup();
+        }
+    }
+
+    private async Task LoadShiftsAsync()
+    {
+        try
+        {
+            Shifts = await ShiftDataProvider.GetAsync(disposalTokenSource.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            if (!disposalTokenSource.IsCancellationRequested)
+            {
+                throw;
+            }
+        }
+        catch (Exception)
+        {
+            Shifts = [];
+        }
+    }
+
+    private async Task OnSelectedEmployeeItemsChangedAsync(
+        IReadOnlyList<object> items,
+        IDropDownBox dropDownBox)
+    {
+        SelectedEmployee = items
+            .OfType<EmployeeRecord>()
+            .LastOrDefault();
+
+        SelectedEmployeeItems = SelectedEmployee is null ? [] : [SelectedEmployee];
+        SelectedEmployeeLookupValue = SelectedEmployee?.Id.ToString("D");
+
+        dropDownBox.HideDropDown();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnEmployeeLookupValueChanged(object? value)
+    {
+        SelectedEmployeeLookupValue = value?.ToString();
+        SyncSelectedEmployeeLookup();
+    }
+
+    private void OnAddEmployeeClick()
+    {
+        if (!CanAddSelectedEmployee || Model is null || SelectedEmployee is null)
+        {
+            return;
+        }
+
+        Model.EmployeeTargets.Add(CreateEmployeeTarget(SelectedEmployee));
+        UpdateModelValueFromEmployeeTargets();
+        ClearSelectedEmployeeLookup();
+        NotifyValueFieldChanged();
+    }
+
+    private void OnRemoveEmployeeTargetClick(ShiftSchedulingEmployeeTargetRecord employeeTarget)
+    {
+        if (Model is null)
+        {
+            return;
+        }
+
+        var removed = Model.EmployeeTargets.RemoveAll(target => target.Id == employeeTarget.Id) > 0;
+        if (!removed)
+        {
+            return;
+        }
+
+        UpdateModelValueFromEmployeeTargets();
+        NotifyValueFieldChanged();
+    }
+
+    private void UpdateModelValueFromEmployeeTargets()
+    {
+        if (Model is null)
+        {
+            return;
+        }
+
+        Model.Value = Model.EmployeeTargets.Count switch
+        {
+            0 => string.Empty,
+            1 => Model.EmployeeTargets[0].Value,
+            _ => $"{Model.EmployeeTargets.Count} nhân viên đã chọn"
+        };
+    }
+
+    private void NotifyValueFieldChanged()
+    {
+        if (Model is null)
+        {
+            return;
+        }
+
+        EditFormContext?.EditContext?.NotifyFieldChanged(
+            new FieldIdentifier(Model, nameof(ShiftSchedulingSettingRecord.Value)));
+    }
+
+    private void SyncSelectedEmployeeLookup()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedEmployeeLookupValue) ||
+            !Guid.TryParse(SelectedEmployeeLookupValue, out var selectedEmployeeId))
+        {
+            ClearSelectedEmployeeLookup();
+            return;
+        }
+
+        SelectedEmployee = Employees.FirstOrDefault(employee => employee.Id == selectedEmployeeId);
+        SelectedEmployeeItems = SelectedEmployee is null ? [] : [SelectedEmployee];
+    }
+
+    private void ClearSelectedEmployeeLookup()
+    {
+        SelectedEmployee = null;
+        SelectedEmployeeItems = [];
+        SelectedEmployeeLookupValue = null;
+    }
+
+    private string GetEmployeeDropDownDisplayText(DropDownBoxQueryDisplayTextContext context)
+    {
+        if (SelectedEmployee is not null)
+        {
+            return GetEmployeeDisplayText(SelectedEmployee);
+        }
+
+        var value = context.Value?.ToString();
+        if (Guid.TryParse(value, out var employeeId))
+        {
+            var employee = Employees.FirstOrDefault(item => item.Id == employeeId);
+            return employee is null ? string.Empty : GetEmployeeDisplayText(employee);
+        }
+
+        return string.Empty;
+    }
+
+    private static ShiftSchedulingEmployeeTargetRecord CreateEmployeeTarget(EmployeeRecord employee) =>
+        new()
+        {
+            Id = employee.Id,
+            EmployeeCode = NormalizeNullable(employee.EmployeeCode) ?? string.Empty,
+            FullName = NormalizeNullable(employee.FullName) ?? NormalizeNullable(employee.EmployeeCode) ?? string.Empty,
+            DepartmentPath = NormalizeNullable(employee.DepartmentPath) ?? NormalizeNullable(employee.DepartmentName),
+            PositionName = NormalizeNullable(employee.PositionName)
+        };
+
+    private static string GetEmployeeDisplayText(EmployeeRecord employee)
+    {
+        var fullName = NormalizeNullable(employee.FullName) ?? NormalizeNullable(employee.EmployeeCode) ?? string.Empty;
+        var employeeCode = NormalizeNullable(employee.EmployeeCode);
+
+        return employeeCode is null
+            ? fullName
+            : $"{employeeCode} - {fullName}";
+    }
+
+    private static string? NormalizeNullable(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    public void Dispose()
+    {
+        disposalTokenSource.Cancel();
+        disposalTokenSource.Dispose();
+    }
+
+    private sealed record OptionItem<TValue>(TValue Value, string Text);
+}

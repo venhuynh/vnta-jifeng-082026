@@ -1,0 +1,60 @@
+@namespace Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe
+@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components
+@using Vnta.Hrm.Web.Client.Components.PhuCap.PhuCapPhepLe.Models
+
+<DxGrid @ref="grid"
+        Data="@Rows"
+        KeyFieldName="Id"
+        CssClass="leave-holiday-allowance-grid"
+        PagerVisible="false"
+        ShowAllRows="true"
+        SkeletonRowsEnabled="true"
+        ColumnResizeMode="GridColumnResizeMode.NextColumn"
+        FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
+        TextWrapEnabled="false"
+        FocusedRowEnabled="true"
+        HighlightRowOnHover="true"
+        AllowSelectRowByClick="true"
+        SelectionMode="GridSelectionMode.Multiple"
+        SelectedDataItems="@SelectedItems"
+        SelectedDataItemsChanged="SelectedItemsChanged">
+    <Columns>
+        <DxGridSelectionColumn Width="3rem" />
+        <DxGridDataColumn Caption="STT" Width="4.5rem" MinWidth="72">
+            <CellDisplayTemplate>@(PageIndex * PageSize + context.VisibleIndex + 1)</CellDisplayTemplate>
+        </DxGridDataColumn>
+        <DxGridDataColumn Caption="Tác vụ" MinWidth="96" Width="6rem" AllowSort="false" TextAlignment="GridTextAlignment.Center" ShowInColumnChooser="false">
+            <CellDisplayTemplate>
+                @{ var row = (LeaveHolidayAllowanceRecord)context.DataItem; }
+                <div class="leave-holiday-allowance-row-menu-host" @onclick:stopPropagation="true" @onmousedown:stopPropagation="true">
+                    <DxDropDownButton CssClass="leave-holiday-allowance-row-menu-btn" IconCssClass="icon more-icon medium-icon" RenderStyle="ButtonRenderStyle.Link" DropDownToggleVisible="false" Enabled="@CanOperateOnCurrentDataset" Tooltip="Tác vụ dòng phụ cấp Phép - Lễ">
+                        <Items>
+                            <DxDropDownButtonItem Text="Điều chỉnh" IconUrl="@VntaDevExpressIcons.Edit" Click="@(() => ManualEditRequested.InvokeAsync(row))" Enabled="@CanEdit(row)" />
+                            <DxDropDownButtonItem Text="Làm mới" IconUrl="@VntaDevExpressIcons.Refresh" Click="@(() => RefreshRequested.InvokeAsync(row))" Enabled="@CanRefresh(row)" />
+                            <DxDropDownButtonItem Text="@row.LockActionText" IconUrl="@(row.IsLocked ? VntaDevExpressIcons.Unlock : VntaDevExpressIcons.Lock)" Click="@(() => LockToggleRequested.InvokeAsync(row))" Enabled="@CanToggleLock(row)" BeginGroup="true" />
+                            <DxDropDownButtonItem Text="Bảng công tháng" IconUrl="@VntaDevExpressIcons.TaskList" Click="@(() => MonthlyWorkRequested.InvokeAsync(row))" Enabled="@CanViewMonthlyWork(row)" />
+                        </Items>
+                    </DxDropDownButton>
+                </div>
+            </CellDisplayTemplate>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="EmployeeDisplay" Caption="Nhân viên" MinWidth="240"><CellDisplayTemplate>@{ var row = (LeaveHolidayAllowanceRecord)context.DataItem; }<span class="leave-holiday-allowance-employee-text" title="@row.EmployeeDisplay">@HighlightText(row.EmployeeDisplay)</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="DepartmentDisplay" Caption="Bộ phận" MinWidth="180"><CellDisplayTemplate>@{ var row = (LeaveHolidayAllowanceRecord)context.DataItem; }<span class="leave-holiday-allowance-grid-text" title="@row.DepartmentDisplay">@HighlightText(row.DepartmentDisplay)</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="PositionDisplay" Caption="Chức vụ" MinWidth="160"><CellDisplayTemplate>@{ var row = (LeaveHolidayAllowanceRecord)context.DataItem; }<span class="leave-holiday-allowance-grid-text" title="@row.PositionDisplay">@HighlightText(row.PositionDisplay)</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="PayrollPeriodDisplay" Caption="Kỳ lương" MinWidth="110" />
+        <DxGridDataColumn FieldName="DailyWageAmount" Caption="Lương ngày" MinWidth="135"><CellDisplayTemplate>@{ var row = (LeaveHolidayAllowanceRecord)context.DataItem; }<span>@FormatMoney(row.DailyWageAmount)</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="LeaveDayCount" Caption="Ngày phép" MinWidth="115"><CellDisplayTemplate>@{ var row = (LeaveHolidayAllowanceRecord)context.DataItem; }<span>@FormatQuantity(row.LeaveDayCount)</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="HolidayDayCount" Caption="Ngày lễ" MinWidth="115"><CellDisplayTemplate>@{ var row = (LeaveHolidayAllowanceRecord)context.DataItem; }<span>@FormatQuantity(row.HolidayDayCount)</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="LeaveHolidayAllowanceAmount" Caption="Tổng Phép/Lễ" MinWidth="150"><CellDisplayTemplate>@{ var row = (LeaveHolidayAllowanceRecord)context.DataItem; }<span class="hrm-grid-amount hrm-grid-amount--total">@FormatMoney(row.LeaveHolidayAllowanceAmount)</span></CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="Note" Caption="Ghi chú" MinWidth="240"><CellDisplayTemplate>@{ var row = (LeaveHolidayAllowanceRecord)context.DataItem; }@if (!string.IsNullOrWhiteSpace(row.Note)) { <span class="@GetNoteCssClass(row.Note)" title="@row.Note">@HighlightText(GetNotePreview(row.Note))</span> }</CellDisplayTemplate></DxGridDataColumn>
+        <DxGridDataColumn FieldName="IsLocked" Caption="Trạng thái" MinWidth="120"><CellDisplayTemplate>@{ var row = (LeaveHolidayAllowanceRecord)context.DataItem; }<span class="@GetLockStatusCssClass(row.IsLocked)">@row.LockStatusText</span></CellDisplayTemplate></DxGridDataColumn>
+    </Columns>
+    <EmptyDataAreaTemplate>
+        <div class="empty-state">
+            <div class="state-title">@EmptyStateTitle</div>
+            <div class="state-message">@EmptyStateMessage</div>
+            <DxButton Text="@EmptyStateActionText" Click="EmptyStateActionRequested" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ButtonRenderStyleMode.Contained" />
+        </div>
+    </EmptyDataAreaTemplate>
+</DxGrid>

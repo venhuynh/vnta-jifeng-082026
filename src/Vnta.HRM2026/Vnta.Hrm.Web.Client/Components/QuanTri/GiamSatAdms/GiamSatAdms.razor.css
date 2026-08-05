@@ -1,0 +1,189 @@
+/* Khung gốc phải giữ chiều cao đầy đủ để splitter và loading panel không bị co ngắn
+   khi màn hình ADMS được nhúng trong layout tổng của ứng dụng. */
+.adms-monitor-page {
+    height: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.adms-toolbar-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.adms-toolbar-status__label {
+    font-weight: 600;
+}
+
+.adms-alert {
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    background-color: color-mix(in srgb, var(--dxbl-grid-selection-bg, #0d6efd) 10%, white);
+    color: var(--dxds-color-content-neutral-default-rest);
+}
+
+.adms-monitor-surface {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    overflow: hidden;
+}
+
+.adms-monitor-loading-panel {
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+}
+
+/* Mỗi panel dùng flex-column để header luôn cố định phía trên,
+   phần body còn lại mới là vùng co giãn theo splitter. */
+.adms-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    padding: 0.75rem;
+    gap: 0.75rem;
+}
+
+.adms-panel__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.adms-panel__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.adms-panel__subtitle {
+    margin: 0.25rem 0 0;
+    color: var(--dxbs-secondary-color, #6c757d);
+    font-size: 0.875rem;
+}
+
+.adms-panel__body {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.adms-panel__body--raw {
+    position: relative;
+    display: flex;
+}
+
+/* Cell thiết bị gom tên máy và serial thành hai tầng để tiết kiệm chiều ngang dock trái
+   nhưng vẫn giữ đủ ngữ cảnh nhận diện cho người vận hành. */
+.adms-device-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.adms-device-cell__name {
+    font-weight: 500;
+}
+
+.adms-device-cell__meta {
+    color: var(--dxbs-secondary-color, #6c757d);
+    font-size: 0.8125rem;
+}
+
+.adms-empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    color: var(--dxbs-secondary-color, #6c757d);
+    text-align: center;
+    pointer-events: none;
+}
+
+.adms-grid-empty-state {
+    display: grid;
+    min-height: 10rem;
+    place-items: center;
+    padding: 1.5rem;
+    color: var(--dxds-color-content-neutral-subtle-rest);
+    text-align: center;
+}
+
+/* Gateway và thiết bị dùng cùng hệ chip trạng thái để người dùng đọc màu theo một quy ước duy nhất:
+   xanh là đang sống, vàng là đang chuyển tiếp, đỏ là mất kết nối. */
+.adms-status-chip,
+.adms-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 6.5rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.adms-status-chip--running,
+.adms-status-badge--online {
+    background-color: #e7f8ef;
+    color: #18794e;
+}
+
+.adms-status-chip--reconnecting {
+    background-color: #fff3db;
+    color: #9a6700;
+}
+
+.adms-status-chip--disconnected,
+.adms-status-badge--offline {
+    background-color: #fdecec;
+    color: #b42318;
+}
+
+.adms-status-chip--unknown {
+    background-color: #eef2f6;
+    color: #475467;
+}
+
+/* DevExpress chỉ vận hành splitter ổn định khi toàn bộ chuỗi container đều có height:100%.
+   Nếu thiếu một mắt xích, grid hoặc memo sẽ co lại và mất thanh cuộn mong muốn. */
+::deep .adms-root-splitter,
+::deep .adms-content-splitter,
+::deep .adms-pane,
+::deep .adms-monitor-loading-panel,
+::deep .adms-device-grid,
+::deep .adms-activity-grid,
+::deep .adms-raw-memo {
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+}
+
+::deep .adms-raw-memo__textarea {
+    height: 100%;
+    font-family: Consolas, "Courier New", monospace;
+    white-space: pre-wrap;
+}
+
+::deep .adms-activity-grid td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    vertical-align: top;
+}

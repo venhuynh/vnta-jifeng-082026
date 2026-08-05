@@ -1,0 +1,17 @@
+.timesheet-dashboard-root { padding-top: 1rem; }
+.timesheet-dashboard-content-card { min-height: 18rem; }
+.timesheet-dashboard-content { padding: 1.25rem; }
+.timesheet-dashboard-kpi-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+::deep .dashboard-metric { padding: 1rem; border: 1px solid var(--dxbl-border-color, #dfe3e8); border-radius: .5rem; background: var(--dxbl-card-bg, #fff); }
+::deep .dashboard-metric-title, ::deep .dashboard-subtitle { color: var(--dxbl-text-secondary-color, #667085); font-size: .875rem; }
+::deep .dashboard-metric-value { margin-top: .4rem; font-size: 1.4rem; font-weight: 600; }
+::deep .dashboard-metric-detail { margin-top: .4rem; color: var(--dxbl-text-secondary-color, #667085); font-size: .8125rem; }
+::deep .dashboard-section { min-width: 0; }
+::deep .dashboard-report { padding: 1.1rem; border: 1px solid var(--dxbl-border-color, #dfe3e8); border-radius: .5rem; background: var(--dxbl-card-bg, #fff); }
+::deep .dashboard-section-header { margin-bottom: 1rem; }
+::deep .dashboard-section-title { font-size: 1rem; font-weight: 600; }
+::deep .dashboard-report-message { min-height: 14rem; display: grid; place-items: center; color: var(--dxbl-text-secondary-color, #667085); }
+::deep .timesheet-dashboard-chart { height: 19rem; }
+::deep .timesheet-dashboard-table { max-height: 26rem; }
+@media (max-width: 1000px) { .timesheet-dashboard-kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .timesheet-dashboard-kpi-strip { grid-template-columns: 1fr; } }

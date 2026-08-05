@@ -1,0 +1,118 @@
+@page "/payroll/meal-allowance"
+
+@using Microsoft.AspNetCore.Authorization
+@using Vnta.Hrm.Web.Client.Components.Shared.Models
+@using Vnta.Hrm.Web.Client.Components.ChamCong.MonthlyWork
+
+@attribute [Authorize(Policy = InternalAccountPolicies.PayrollAdministration)]
+@rendermode InteractiveServer
+
+<PageTitle>VNTA - Phụ cấp cơm</PageTitle>
+
+<div class="content-root">
+    <div class="card toolbar">
+        <PhuCapComToolbar 
+            Month="@ToolbarMonth" 
+            Year="@ToolbarYear" 
+            MinimumYear="@MinimumSupportedYear" 
+            MaximumYear="@MaximumSupportedYear" 
+            MonthOptions="@AvailableMonthOptions" 
+            CanChangeFilters="@CanChangeFilters" 
+            CanReload="@CanReload" 
+            CanOperate="@CanOperateOnCurrentDataset" 
+            CanRecalculate="@CanRecalculate" 
+            CanLock="@CanOpenLockAction" 
+            CanUnlock="@CanOpenUnlockAction" 
+            CanOpenRules="@CanOpenRules" 
+            CanExport="@CanExport" 
+            CanInteract="@CanInteract" 
+            MonthChanged="OnSelectedMonthChangedAsync"
+             YearChanged="OnSelectedYearChangedAsync" 
+             ApplyRequested="OnApplyPeriodFilterClick" 
+             RecalculateRequested="OnRecalculateClickAsync" 
+             LockRequested="OnLockSelectedAsync" 
+             UnlockRequested="OnUnlockSelectedAsync" 
+             RulesRequested="OnRulesClick" 
+             ExportExcelRequested="ExportPeriodToExcelAsync" 
+             ExportPdfRequested="ExportPeriodToPdfAsync" 
+             ColumnChooserRequested="OnColumnChooserRequested" />
+    </div>
+
+    <div class="meal-allowance-root">
+        @if(HasLoadError)
+        {
+            <PhuCapComLoadError Message="@LoadErrorMessage" RetryRequested="OnRetryAsync" />
+        }
+        else
+        {
+            <div class="card meal-allowance-grid-card">
+                <HrmLoadingPanel 
+                    Visible="@ShowLoadingPanel" 
+                    IsContentBlocked="true" 
+                    IsContentVisible="true" 
+                    IndicatorVisible="true" 
+                    IndicatorAreaVisible="true" 
+                    Text="@LoadingText" 
+                    CssClass="meal-allowance-loading-panel">
+                        <div class="meal-allowance-grid-content">
+                            <PhuCapComSummary 
+                                Summary="@CurrentSummary" 
+                                SelectedKey="@SelectedAllowanceSummaryKey" 
+                                AllKey="@SummaryAllKey" 
+                                WithAllowanceKey="@SummaryWithAllowanceKey" 
+                                WithoutAllowanceKey="@SummaryWithoutAllowanceKey" 
+                                SearchText="@SearchText" 
+                                CanInteract="@CanInteract" 
+                                FormatMoney="FormatMoney" 
+                                SummarySelected="SelectAllowanceSummaryAsync" 
+                                SearchTextChanged="OnSearchTextChanged" />
+                            <PhuCapComGrid 
+                                @ref="Grid" 
+                                Records="@VisibleRecords" 
+                                SelectedDataItems="@SelectedDataItems" 
+                                CurrentPageIndex="@CurrentPageIndex" 
+                                PageSize="@PageSize" 
+                                CanOperate="@CanOperateOnCurrentDataset" 
+                                CanEditRow="CanEditRow" 
+                                CanRefreshRow="CanRefreshRow" 
+                                CanToggleLock="CanToggleLock" 
+                                CanViewMonthlyWork="CanViewMonthlyWork" 
+                                Highlight="HighlightSearchText" 
+                                FormatMoney="FormatNonZeroMoney" 
+                                FormatValue="FormatNonZeroValue" 
+                                EmptyStateTitle="@EmptyStateTitle" 
+                                EmptyStateMessage="@EmptyStateMessage" 
+                                EmptyStateActionText="@EmptyStateActionText" 
+                                EmptyStateActionIcon="@EmptyStateActionIcon" 
+                                SelectedDataItemsChanged="OnSelectedDataItemsChanged" 
+                                FilterCriteriaChanged="OnGridFilterCriteriaChangedAsync" 
+                                EditRequested="OpenEditPopup" 
+                                RefreshRequested="RefreshRowAsync" 
+                                ToggleLockRequested="ToggleLockStateAsync" 
+                                MonthlyWorkRequested="OpenMonthlyWorkPopupAsync" 
+                                EmptyStateActionRequested="OnEmptyStateActionClick" />
+                            <PhuCapComPager 
+                                SummaryText="@PagerSummaryText" 
+                                CanBrowsePages="@CanBrowsePages" 
+                                TotalPageCount="@TotalPageCount" 
+                                CurrentPageIndex="@CurrentPageIndex" 
+                                PageChanged="OnActivePageIndexChangedAsync" 
+                                PageSizeOptions="@AvailablePageSizeOptions"
+                                PageSize="@PageSize"
+                                PageSizeChanged="OnPageSizeChanged"
+                                CanChangeFilters="@CanChangeFilters"
+                                PageSizeDescription="@PageSizeDescription" />
+                        </div>
+                </HrmLoadingPanel>
+            </div>
+        }
+    </div>
+
+    <PhuCapComExportGrid @ref="ExportGrid" Records="@ExportRecords" />
+</div>
+
+<PhuCapComEditPopup Visible="@IsEditPopupVisible" VisibleChanged="@(_ => CloseEditPopup())" IsSaving="@IsSavingEdit" Title="@EditPopupTitle" Model="@EditModel" ValidationMessage="@EditValidationMessage" CanEditFields="@(!IsSavingEdit && !EditModel.IsLocked && !HasPendingPeriodChange)" CanSave="@CanSaveEdit" QualifiedMealDaysChanged="OnEditQualifiedMealDaysChangedAsync" SaveRequested="SaveEditAsync" />
+<PhuCapComRecalculatePopup Visible="@IsRecalculateConfirmPopupVisible" VisibleChanged="OnRecalculatePopupVisibleChanged" IsRefreshing="@IsRefreshing" PeriodLabel="@AppliedPayrollPeriodDisplay" ConfirmRequested="ConfirmRecalculateAsync" />
+<PhuCapComLockActionPopup Visible="@IsLockActionPopupVisible" VisibleChanged="OnLockActionPopupVisibleChanged" IsRefreshing="@IsRefreshing" Title="@LockActionPopupTitle" PromptText="@LockActionPromptText" ContextText="@LockActionScopeContextText" SelectedScope="@SelectedLockActionScope" SelectedRowsScope="@LockScopeSelectedRows" WholePeriodScope="@LockScopeWholePeriod" SelectedRowsDescription="@SelectedRowsScopeDescription" WholePeriodDescription="@WholePeriodScopeDescription" WholePeriodLabel="@AppliedPayrollPeriodDisplay" CanChooseSelectedRowsScope="@CanChooseSelectedRowsScope" CanConfirm="@CanConfirmLockAction" ShouldLock="@PendingLockActionState" ScopeSelected="SelectLockActionScope" ConfirmRequested="ConfirmLockActionAsync" />
+<PhuCapComRulesPopup @bind-Visible="IsRulesPopupVisible" />
+<ChamCongMonthlyWorkPopup Visible="@IsMonthlyWorkPopupVisible" VisibleChanged="@(_ => CloseMonthlyWorkPopup())" IsLoading="@IsMonthlyWorkPopupLoading" Title="@MonthlyWorkPopupTitle" Context="@MonthlyWorkPopupContext" ErrorMessage="@MonthlyWorkPopupErrorMessage" Rows="@MonthlyWorkRows" RefreshRequested="RefreshMonthlyWorkPopupAsync" />

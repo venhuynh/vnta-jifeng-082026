@@ -3,7 +3,7 @@
     "Vnta.Hrm.Web": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "payroll/other-allowance",
+      "launchUrl": "implementation/progress",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
@@ -12,7 +12,7 @@
     "Vnta.Hrm.Web (LAN Debug)": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "payroll/other-allowance",
+      "launchUrl": "implementation/progress",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
@@ -21,7 +21,7 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "payroll/other-allowance",
+      "launchUrl": "implementation/progress",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

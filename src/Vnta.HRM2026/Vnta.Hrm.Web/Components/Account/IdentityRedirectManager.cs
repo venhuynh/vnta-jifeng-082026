@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace Vnta.Hrm.Web.Components.Account {
     internal sealed class IdentityRedirectManager(NavigationManager navigationManager) {
         public const string StatusCookieName = "Identity.StatusMessage";
-        public const string DefaultPostLoginPath = "/payroll/other-allowance";
+        public const string DefaultPostLoginPath = "/implementation/progress";
 
         private static readonly CookieBuilder StatusCookieBuilder = new() {
             SameSite = SameSiteMode.Strict,

@@ -433,3 +433,6 @@ doc/templates/Refactor-UI-Theo-SOLID/
 
 # Local generated artifacts
 .tools/
+
+# Local source data from Jifeng
+Data_from_JIFENG/

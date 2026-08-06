@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Vnta.Hrm.Application.NhanSu.NhanVien;
 using Vnta.Hrm.Application.QuanTri.AuditTrail;
@@ -20,6 +21,7 @@ public static class NhanVienEndpoints
         group.MapPost("/search-page", SearchPageAsync);
         group.MapPost("/summary", GetSummaryAsync);
         group.MapPost("/nhansu-workbook-preview", PreviewNhanSuWorkbookAsync);
+        group.MapPost("/nhansu-workbook-import", ImportNhanSuWorkbookAsync);
         group.MapPost("", CreateAsync);
         group.MapPut("/{id:guid}", UpdateAsync);
         group.MapPost("/delete", DeleteAsync);
@@ -82,6 +84,74 @@ public static class NhanVienEndpoints
         catch (InvalidOperationException ex)
         {
             return Results.BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Nhận raw body là tệp .xlsx và tạo mới nhân viên từ sheet NhanSu. Import là create-only:
+    /// mã nhân viên đang hoạt động đã có sẽ được bỏ qua, không bị ghi đè. Toàn bộ workbook phải
+    /// qua preflight trước khi bất kỳ nhân viên nào được ghi.
+    /// </summary>
+    private static async Task<IResult> ImportNhanSuWorkbookAsync(
+        HttpContext httpContext,
+        HttpRequest request,
+        [FromQuery] DateTime? missingHireDateFallback,
+        [FromQuery] int? activeStatusFallback,
+        [FromServices] INhanSuWorkbookImportService service,
+        [FromServices] IAuditScope auditScope,
+        [FromServices] IAuditCorrelationAccessor correlationAccessor,
+        CancellationToken cancellationToken)
+    {
+        if (request.ContentLength is 0)
+        {
+            return Results.BadRequest(new { message = "Thiếu tệp Excel để import nhân viên." });
+        }
+
+        if (request.ContentLength is { } contentLength
+            && contentLength > NhanSuWorkbookPreviewLimits.MaxWorkbookBytes)
+        {
+            return Results.BadRequest(new
+            {
+                message = $"Tệp Excel không được vượt quá {NhanSuWorkbookPreviewLimits.MaxWorkbookBytes / (1024 * 1024)} MB."
+            });
+        }
+
+        try
+        {
+            var result = await ExecuteAuditedAsync(
+                httpContext,
+                auditScope,
+                correlationAccessor,
+                AuditActions.NhanVien.ImportFromNhanSuWorkbook,
+                token => service.ImportAsync(
+                    request.Body,
+                    missingHireDateFallback,
+                    activeStatusFallback,
+                    token),
+                cancellationToken,
+                AuditCaptureMode.OperationOnly);
+            return Results.Ok(result);
+        }
+        catch (NhanSuWorkbookImportValidationException exception)
+        {
+            return Results.BadRequest(new
+            {
+                message = exception.Message,
+                issues = exception.Issues
+            });
+        }
+        catch (DbUpdateException)
+        {
+            // A concurrent writer may have inserted an employee code after preflight. The
+            // transaction is rolled back by IAuditedMutation, and the caller can preview/retry.
+            return Results.Conflict(new
+            {
+                message = "Dữ liệu nhân viên đã thay đổi trong lúc import. Vui lòng đối soát và thử lại."
+            });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Results.BadRequest(new { message = exception.Message });
         }
     }
 
@@ -227,14 +297,15 @@ public static class NhanVienEndpoints
         IAuditCorrelationAccessor correlationAccessor,
         string actionIntent,
         Func<CancellationToken, Task<T>> action,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        AuditCaptureMode captureMode = AuditCaptureMode.EntityChanges)
     {
         using var scope = auditScope.Begin(new AuditCommand(
             Guid.NewGuid(),
             actionIntent,
             CreateActor(httpContext.User),
             correlationAccessor.Current ?? httpContext.TraceIdentifier,
-            AuditCaptureMode.EntityChanges));
+            captureMode));
         return await action(cancellationToken);
     }
 

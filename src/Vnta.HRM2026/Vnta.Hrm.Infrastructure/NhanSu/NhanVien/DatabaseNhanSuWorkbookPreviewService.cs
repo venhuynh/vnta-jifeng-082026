@@ -9,8 +9,8 @@ using Vnta.Hrm.Infrastructure.Data;
 namespace Vnta.Hrm.Infrastructure.NhanSu.NhanVien;
 
 /// <summary>
-/// Reader hẹp cho template Jifeng. Reader chỉ lấy các cột cần dùng để đối soát và chỉ truy vấn
-/// <see cref="ApplicationDbContext.Employees"/> bằng <c>AsNoTracking</c>.
+/// Reader hẹp cho template Jifeng. Parser nguồn được dùng chung bởi preview và import; preview
+/// chỉ truy vấn <see cref="ApplicationDbContext.Employees"/> bằng <c>AsNoTracking</c>.
 /// </summary>
 public sealed class DatabaseNhanSuWorkbookPreviewService(ApplicationDbContext dbContext)
     : INhanSuWorkbookPreviewService
@@ -186,7 +186,7 @@ public sealed class DatabaseNhanSuWorkbookPreviewService(ApplicationDbContext db
             previewRows);
     }
 
-    private static async Task<IReadOnlyList<SourceEmployeeRow>> ReadSourceRowsAsync(
+    internal static async Task<IReadOnlyList<SourceEmployeeRow>> ReadSourceRowsAsync(
         Stream workbookStream,
         CancellationToken cancellationToken)
     {
@@ -555,6 +555,12 @@ public sealed class DatabaseNhanSuWorkbookPreviewService(ApplicationDbContext db
         var workStatus = GetCellValue(cells, headers, "WorkStatus");
         var startWorkDate = GetCellValue(cells, headers, "StartWorkDate");
         var attendanceCode = GetCellValue(cells, headers, "AttendanceCode");
+        var companyEmail = GetCellValue(cells, headers, "CompanyEmail");
+        var phone = GetCellValue(cells, headers, "Phone");
+        var probationDate = GetCellValue(cells, headers, "ProbationDate");
+        var officialStartDate = GetCellValue(cells, headers, "OfficialStartDate");
+        var leaveJobDate = GetCellValue(cells, headers, "LeaveJobDate");
+        var contractEffectiveDate = GetCellValue(cells, headers, "ContractEffectiveDate");
         var hasSourceContent =
             !string.IsNullOrWhiteSpace(employeeCode)
             || !string.IsNullOrWhiteSpace(fullName)
@@ -577,6 +583,12 @@ public sealed class DatabaseNhanSuWorkbookPreviewService(ApplicationDbContext db
             workStatus,
             startWorkDate,
             attendanceCode,
+            companyEmail,
+            phone,
+            probationDate,
+            officialStartDate,
+            leaveJobDate,
+            contractEffectiveDate,
             hasSourceContent,
             cells.Values.Count(cell => cell.HasFormulaError));
     }
@@ -611,7 +623,7 @@ public sealed class DatabaseNhanSuWorkbookPreviewService(ApplicationDbContext db
 
     private sealed record WorkbookCell(string? Value, bool HasFormulaError);
 
-    private sealed record SourceEmployeeRow(
+    internal sealed record SourceEmployeeRow(
         int SourceRowNumber,
         string? EmployeeCode,
         string? FullName,
@@ -622,6 +634,12 @@ public sealed class DatabaseNhanSuWorkbookPreviewService(ApplicationDbContext db
         string? WorkStatus,
         string? StartWorkDate,
         string? AttendanceCode,
+        string? CompanyEmail,
+        string? Phone,
+        string? ProbationDate,
+        string? OfficialStartDate,
+        string? LeaveJobDate,
+        string? ContractEffectiveDate,
         bool HasSourceContent,
         int FormulaErrorCount);
 

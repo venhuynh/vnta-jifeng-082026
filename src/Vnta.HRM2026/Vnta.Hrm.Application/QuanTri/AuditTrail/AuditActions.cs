@@ -52,6 +52,7 @@ public static class AuditActions
         public const string Delete = "NhanVien.Delete";
         public const string ChangeStatus = "NhanVien.ChangeStatus";
         public const string RefreshFromAttendance = "NhanVien.RefreshFromAttendance";
+        public const string ImportFromNhanSuWorkbook = "NhanVien.ImportFromNhanSuWorkbook";
     }
 
     public static class ResponsibilityPositionAssignment

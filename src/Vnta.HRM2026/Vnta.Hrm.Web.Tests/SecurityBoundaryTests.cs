@@ -132,6 +132,29 @@ public sealed class SecurityBoundaryTests : IClassFixture<WebApplicationFactory<
     }
 
     [Theory]
+    [InlineData(null, HttpStatusCode.Unauthorized)]
+    [InlineData("AttendanceAdmin", HttpStatusCode.Forbidden)]
+    public async Task Nhan_su_workbook_import_requires_human_resources_administration(
+        string? role,
+        HttpStatusCode expectedStatusCode)
+    {
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+        if (role is not null)
+        {
+            client.DefaultRequestHeaders.Add(TestHeaderAuthenticationHandler.RoleHeaderName, role);
+        }
+
+        using var response = await client.PostAsync(
+            "/api/nhan-su/nhan-vien/nhansu-workbook-import",
+            new ByteArrayContent([0x50, 0x4B]));
+
+        Assert.Equal(expectedStatusCode, response.StatusCode);
+    }
+
+    [Theory]
     [InlineData("GET", "/api/nhan-su/chi-tiet-nhan-vien/11111111-1111-1111-1111-111111111111/contact-profile")]
     [InlineData("PUT", "/api/nhan-su/chi-tiet-nhan-vien/11111111-1111-1111-1111-111111111111/contact-profile")]
     [InlineData("GET", "/api/nhan-su/chi-tiet-nhan-vien/11111111-1111-1111-1111-111111111111/citizen-identity")]
@@ -189,6 +212,14 @@ public sealed class SecurityBoundaryTests : IClassFixture<WebApplicationFactory<
         using var scope = factory.Services.CreateScope();
 
         Assert.NotNull(scope.ServiceProvider.GetRequiredService<INhanSuWorkbookPreviewService>());
+    }
+
+    [Fact]
+    public void Nhan_su_workbook_import_service_is_registered()
+    {
+        using var scope = factory.Services.CreateScope();
+
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<INhanSuWorkbookImportService>());
     }
 
     [Fact]

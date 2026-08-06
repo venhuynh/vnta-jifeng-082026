@@ -20,4 +20,5 @@ public static class AuditEntityTypes
     public const string AllowanceSummary = "AllowanceSummary";
     public const string AttendanceAllowance = "AttendanceAllowance";
     public const string DeductionSummary = "DeductionSummary";
+    public const string EmployeeWorkbookImport = "EmployeeWorkbookImport";
 }

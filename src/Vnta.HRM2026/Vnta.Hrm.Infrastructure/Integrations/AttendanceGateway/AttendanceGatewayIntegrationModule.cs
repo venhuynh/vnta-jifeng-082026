@@ -26,6 +26,7 @@ public static class AttendanceGatewayIntegrationModule
         services.AddScoped<INhanVienStatusService>(serviceProvider => serviceProvider.GetRequiredService<DatabaseEmployeeService>());
         services.AddScoped<INhanVienExportReadService>(serviceProvider => serviceProvider.GetRequiredService<DatabaseEmployeeService>());
         services.AddScoped<INhanSuWorkbookPreviewService, DatabaseNhanSuWorkbookPreviewService>();
+        services.AddScoped<INhanSuWorkbookImportService, DatabaseNhanSuWorkbookImportService>();
         services.AddScoped<IChiTietNhanVienService, DatabaseChiTietNhanVienService>();
         services.AddScoped<DatabaseEmployeeRefreshService>();
         services.AddScoped<IEmployeeRefreshService>(serviceProvider => serviceProvider.GetRequiredService<DatabaseEmployeeRefreshService>());

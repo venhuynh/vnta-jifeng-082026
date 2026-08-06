@@ -1,0 +1,112 @@
+Bạn đang làm việc trên một máy khác trong repo Vnta-Blazor-2026.
+
+Mục tiêu:
+Thiết lập VS Code để chạy debug dự án HRM bằng F5, hỗ trợ breakpoint và C# Hot Reload khi lưu file. Đồng thời tạo task `dotnet watch` để có vòng lặp Hot Reload nhanh cho Razor/CSS/static assets khi cần.
+
+Phạm vi dự án:
+- Workspace root là thư mục Git root hiện tại; không hard-code đường dẫn người dùng hoặc đường dẫn của máy nguồn.
+- Solution: `src/Vnta.HRM2026/Vnta.Hrm.slnx`
+- Web project: `src/Vnta.HRM2026/Vnta.Hrm.Web/Vnta.Hrm.Web.csproj`
+- Launch settings: `src/Vnta.HRM2026/Vnta.Hrm.Web/Properties/launchSettings.json`
+- Profile mặc định cần dùng: `Vnta.Hrm.Web`
+- Target framework hiện tại: `net10.0`; phải đọc `global.json` và project để xác nhận trước khi cấu hình.
+
+Nguyên tắc bắt buộc:
+1. Đọc `global.json`, solution, web `.csproj`, `launchSettings.json` và cấu hình `.vscode` hiện có trước khi sửa.
+2. Kiểm tra `git status --short`; tuyệt đối không dùng `git reset --hard`, `git checkout --`, `git restore` để xóa thay đổi có sẵn.
+3. Nếu `.vscode/settings.json`, `.vscode/launch.json` hoặc `.vscode/tasks.json` đã tồn tại, phải giữ nguyên cấu hình không liên quan và merge tối thiểu. Không ghi đè toàn bộ file.
+4. Không sửa source code, project file, package version hoặc launch settings của ứng dụng nếu không cần cho mục tiêu này.
+5. Không tự dừng hoặc kill tiến trình Visual Studio, IIS Express, dotnet hoặc ứng dụng đang chạy. Nếu chúng khóa file `bin`, chỉ báo rõ để người dùng dừng đúng phiên chạy trước khi kiểm tra build.
+6. Không commit hoặc push thay đổi.
+
+Yêu cầu môi trường:
+- Kiểm tra `dotnet --info` và SDK phù hợp với `global.json`.
+- Kiểm tra VS Code có C# Dev Kit (`ms-dotnettools.csdevkit`) và C# extension cần thiết. Nếu thiếu extension, báo tên extension và hướng dẫn cài; không tự thay đổi ngoài phạm vi nếu môi trường không cho phép.
+- Nếu project chạy HTTPS, kiểm tra dev certificate bằng `dotnet dev-certs https --check`; chỉ tạo/trust certificate khi người dùng cho phép hoặc môi trường đã có chính sách cho việc đó.
+
+Thiết lập cần tạo hoặc cập nhật:
+
+1. `.vscode/settings.json`
+
+Đảm bảo có các setting sau, giữ nguyên các setting khác:
+
+```json
+{
+  "dotnet.defaultSolution": "src/Vnta.HRM2026/Vnta.Hrm.slnx",
+  "csharp.experimental.debug.hotReload": true,
+  "csharp.debug.hotReloadOnSave": true,
+  "csharp.debug.hotReloadVerbosity": "minimal"
+}
+```
+
+2. `.vscode/launch.json`
+
+Tạo một cấu hình debug dùng C# Dev Kit:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Vnta.Hrm.Web (Debug + Hot Reload)",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/src/Vnta.HRM2026/Vnta.Hrm.Web/Vnta.Hrm.Web.csproj",
+      "launchSettingsProfile": "Vnta.Hrm.Web"
+    }
+  ]
+}
+```
+
+Nếu phiên bản C# Dev Kit hiện tại không nhận `launchSettingsProfile` với `type: dotnet`, phải kiểm tra profile đầu tiên trong `launchSettings.json`, sau đó dùng cấu hình tương thích nhưng vẫn giữ đúng project, environment và application URL. Không âm thầm chuyển sang IIS Express.
+
+3. `.vscode/tasks.json`
+
+Tạo task chạy watcher từ workspace root:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Vnta.Hrm.Web: dotnet watch",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "watch",
+        "--project",
+        "${workspaceFolder}/src/Vnta.HRM2026/Vnta.Hrm.Web/Vnta.Hrm.Web.csproj",
+        "run",
+        "--launch-profile",
+        "Vnta.Hrm.Web"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
+```
+
+Quy tắc sử dụng sau khi hoàn tất:
+- Dùng `F5` với `Vnta.Hrm.Web (Debug + Hot Reload)` khi cần breakpoint/debugger.
+- Lưu file bằng `Ctrl+S` để C# Hot Reload tự áp dụng thay đổi.
+- Dùng `Tasks: Run Task` -> `Vnta.Hrm.Web: dotnet watch` khi cần watcher hỗ trợ Razor/CSS/static assets và browser refresh rộng hơn. `dotnet watch` không thay thế debugger breakpoint.
+- Không chạy đồng thời cùng một web project bằng Visual Studio/IIS Express và VS Code vì các process có thể khóa cùng DLL trong thư mục `bin`.
+- Build/debug lần đầu có thể lâu; sau đó Hot Reload không cần full rebuild cho các thay đổi được hỗ trợ.
+- Khi thay đổi không hỗ trợ Hot Reload, chấp nhận restart app theo thông báo của .NET; không tự xóa `bin`/`obj` để chữa lỗi nếu chưa xác định nguyên nhân.
+
+Kiểm tra bắt buộc:
+1. Parse cả ba file JSON bằng parser thực tế, không chỉ đọc bằng mắt.
+2. Chạy `dotnet watch --project src/Vnta.HRM2026/Vnta.Hrm.Web/Vnta.Hrm.Web.csproj --list` để xác nhận watcher nhận đúng project.
+3. Nếu không có process nào đang khóa output, chạy build Debug của web project và báo kết quả. Nếu bị khóa, báo process/file bị khóa thay vì kill process.
+4. Xác nhận C# Dev Kit đã nhận solution và cấu hình debug xuất hiện trong Run and Debug.
+5. Kiểm tra `git diff --check` và `git status --short`.
+
+Tiêu chí hoàn thành:
+- Có cấu hình VS Code chạy đúng `Vnta.Hrm.Web`, đúng profile Development và đúng URL theo `launchSettings.json`.
+- F5 có thể gắn debugger và bật Hot Reload on save.
+- Có task `dotnet watch` chạy được từ workspace root.
+- Không ghi đè thay đổi `.vscode` hoặc source code có sẵn.
+- Báo cáo rõ các file đã tạo/cập nhật, extension/SDK đã kiểm tra, lệnh xác minh đã chạy, và mọi hạn chế còn lại.

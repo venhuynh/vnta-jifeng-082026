@@ -1,0 +1,88 @@
+Bạn đang làm việc trong repo:
+
+`Vnta-Blazor-2026`
+
+## Mục tiêu
+
+Refactor nút hành động **`Xem dữ liệu`** trong empty state của màn hình đích để đồng nhất 1-1 về UI với màn hình **Phụ cấp cơm**.
+
+## Thông tin đầu vào cần thay
+
+```text
+<SCREEN_ROOT> = folder màn hình đích, bắt đầu từ Vnta-Blazor-2026\src\...
+<SCREEN_GRID> = file Razor chứa DxGrid và EmptyDataAreaTemplate của màn hình đích
+<SCREEN_PAGE> = file Razor page truyền parameter cho grid, nếu có
+<SCREEN_CODE_BEHIND> = file code-behind chứa EmptyStateActionText và handler, nếu có
+```
+
+Ví dụ:
+
+```text
+<SCREEN_ROOT>        = Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemGanNhanVien
+<SCREEN_GRID>        = <SCREEN_ROOT>\Sections\PhuCapTrachNhiemGanNhanVienGrid.razor
+<SCREEN_PAGE>        = <SCREEN_ROOT>\PhuCapTrachNhiemGanNhanVien.razor
+<SCREEN_CODE_BEHIND> = <SCREEN_ROOT>\PhuCapTrachNhiemGanNhanVien.razor.cs
+```
+
+## Mẫu tham chiếu bắt buộc
+
+Đọc trước khi sửa:
+
+- `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapCom\Sections\PhuCapComGrid.razor`
+- `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapCom\Sections\PhuCapComGrid.razor.cs`
+- `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapCom\PhuCapCom.razor`
+- `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapCom\PhuCapCom.razor.cs`
+
+Mẫu button hiện hành cần tái sử dụng về hình thức:
+
+```razor
+<DxButton Text="@EmptyStateActionText"
+          Click="EmptyStateActionRequested"
+          RenderStyle="ButtonRenderStyle.Primary"
+          RenderStyleMode="ButtonRenderStyleMode.Contained" />
+```
+
+Tên parameter và handler của màn hình đích có thể khác. Giữ tên hiện có của màn hình đích; chỉ chuẩn hóa UI của button.
+
+## Phạm vi và quy tắc bắt buộc
+
+1. Chỉ áp dụng cho button trong `EmptyDataAreaTemplate` có nhãn hoặc giá trị runtime là `Xem dữ liệu`. Không sửa button toolbar, button popup, button trong cột tác vụ, hoặc action có ý nghĩa nghiệp vụ khác.
+2. Button phải là `DxButton` mặc định, nhỏ như mẫu Phụ cấp cơm. Không đặt `IconUrl`, `CssClass` nhằm phóng to/thu nhỏ, `SizeMode`, `Width`, `Height`, hoặc CSS riêng làm thay đổi kích thước button.
+3. Button dùng `RenderStyle="ButtonRenderStyle.Primary"` và `RenderStyleMode="ButtonRenderStyleMode.Contained"`.
+4. Loại bỏ parameter, property, CSS hoặc icon mapping chỉ còn phục vụ icon của chính button `Xem dữ liệu`. Không xóa icon đang được dùng bởi action khác.
+5. Giữ nguyên `Text`, handler `Click`, điều kiện enable/disable, loading guard, xử lý lỗi, state, quyền, gọi API và hành vi tải dữ liệu hiện có. Không tự tạo handler mới hoặc thay đổi nghiệp vụ chỉ để giống giao diện mẫu.
+6. Nếu empty state dùng chung một action text động, chỉ bỏ icon khi action đó là `Xem dữ liệu` hoặc khi icon parameter chỉ phục vụ duy nhất empty-state action. Nếu icon còn phục vụ `Đặt lại bộ lọc`, `Tải lại` hoặc hành vi khác, dừng lại và báo mapping trước khi sửa.
+7. Giữ CSS isolation và không thêm CSS global.
+8. Toàn bộ text tiếng Việt phải là UTF-8 có dấu. Không tự commit hoặc push.
+
+## Trình tự thực hiện
+
+1. Kiểm tra working tree. Nếu có thay đổi không liên quan đến nhiệm vụ, bảo toàn chúng và chỉ sửa file thuộc phạm vi.
+2. Đọc đầy đủ `<SCREEN_GRID>`, `<SCREEN_PAGE>`, `<SCREEN_CODE_BEHIND>` và các file `.razor.cs`/`.razor.css` liên quan đến empty state.
+3. Tìm toàn bộ tham chiếu đến `Xem dữ liệu`, `EmptyStateActionText`, `EmptyStateActionIcon`, `EmptyDataAreaTemplate`, `IconUrl` và handler tương ứng trong `<SCREEN_ROOT>`.
+4. Lập mapping ngắn: button hiện tại → mẫu Phụ cấp cơm, gồm text, handler, icon, render style, render-style mode, CSS và hành vi.
+5. Refactor tối thiểu để button đạt đúng mẫu tham chiếu. Dọn parameter/property dead code phát sinh, nhưng chỉ khi đã xác minh không còn tham chiếu.
+6. Kiểm tra tĩnh sau sửa:
+   - button `Xem dữ liệu` không còn `IconUrl`;
+   - không còn cấu hình kích thước hoặc CSS riêng làm button khác mẫu;
+   - `RenderStyle.Primary` và `RenderStyleMode.Contained` có mặt;
+   - handler và luồng tải dữ liệu không đổi;
+   - không còn tham chiếu chết tới icon/property đã bỏ.
+7. Chạy build project bị ảnh hưởng:
+
+```powershell
+dotnet build Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Vnta.Hrm.Web.Client.csproj --no-restore --verbosity minimal
+```
+
+8. Chạy `git diff --check` và xem diff của các file đã sửa.
+
+## Báo cáo cuối
+
+Nêu rõ:
+
+- Màn hình và file đã rà soát/thay đổi.
+- Mapping trước/sau của button `Xem dữ liệu`.
+- Xác nhận button không có icon, dùng kích thước mặc định nhỏ, `Primary` và `Contained`.
+- Xác nhận handler và nghiệp vụ tải dữ liệu được giữ nguyên.
+- Kết quả build và `git diff --check`.
+- Nếu không thể bỏ icon an toàn vì dùng chung cho hành vi khác, nêu rõ file, tham chiếu và lý do dừng.

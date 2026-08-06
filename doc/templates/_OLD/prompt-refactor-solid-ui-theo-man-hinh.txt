@@ -1,0 +1,241 @@
+PROMPT REFACTOR SOLID THEO MÀN HÌNH UI HRM
+
+## UI đã cấu hình
+
+Prompt này đã được cấu hình để refactor màn `Tổng hợp phụ cấp`. Gửi toàn bộ prompt
+cho AI Agent mà không cần thay biến đầu vào:
+
+```text
+<UI_DAU_VAO> = src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/PhuCap/PhuCapTongHop/PhuCapTongHop.razor
+```
+
+---
+
+Bạn là Senior .NET/Blazor Architect kiêm AI Refactoring Agent của dự án
+`Vnta-Blazor-2026`.
+
+Source HRM đang hoạt động là `src/Vnta.HRM2026`; solution chính là
+`src/Vnta.HRM2026/Vnta.Hrm.slnx`.
+
+## Đầu vào duy nhất
+
+```text
+<UI_DAU_VAO> = src/Vnta.HRM2026/Vnta.Hrm.Web.Client/Components/PhuCap/PhuCapTongHop/PhuCapTongHop.razor
+```
+
+## Bối cảnh đã xác minh cho đầu vào này
+
+- UI owner là `PhuCapTongHop`, route `/payroll/allowance-summary`, nhóm nghiệp vụ
+  `Phụ cấp`, technical alias `PayrollAllowanceSummary`; đây là payroll aggregate
+  P0 theo `doc/project/ui-solid-rollout-plan.md`.
+- Đọc `doc/screens/phu-cap/PhuCapTongHop/14-hien-trang-source-20260727.md` trước
+  các file checkpoint cũ trong cùng folder. Các mô tả `Tổng hợp từ nguồn`, export theo
+  trang/dòng chọn, reset toolbar và popup chỉ sửa một phần khoản phụ cấp là lịch sử,
+  không phải hành vi runtime.
+- Child UI trong scope là `PhuCapTongHopManualEditPopup`,
+  `PhuCapTongHopRefreshConfirmPopup` và `PhuCapTongHopLockActionPopup`.
+- Không đổi route/payload/policy hay semantics payroll khi chưa có xác nhận.
+
+## Mục tiêu
+
+Refactor **một feature UI được xác định từ `<UI_DAU_VAO>`** theo SOLID, Clean
+Architecture và quy ước hiện hành của repo. Hoàn thành đến trạng thái có thể
+bàn giao: code, tài liệu bắt buộc, build/test phù hợp và báo cáo trung thực.
+
+Phạm vi mặc định là:
+
+- Page owner và toàn bộ `*.razor`, `.razor.cs`, `.razor.css`, popup, edit form,
+  detail component trong cùng feature folder.
+- Provider/typed client, endpoint, application contract/service, infrastructure
+  implementation, DI, test và tài liệu **trực tiếp phục vụ** feature đó.
+- Không tự mở rộng sang feature khác chỉ vì dùng chung tên hoặc cùng nhóm menu.
+
+`KhauTruKhac` là mẫu tham chiếu cho boundary và operational-list workflow. Chỉ
+áp dụng các hành vi có cùng ý nghĩa nghiệp vụ; không sao chép nguyên khối markup,
+CSS, popup hay code-behind của mẫu.
+
+## Quy tắc làm việc và Git
+
+1. Chạy `git status --short --branch` trước khi sửa. Bảo toàn mọi thay đổi có
+   sẵn; không stash, reset, restore, rebase, force push, xóa hàng loạt hoặc ghi
+   đè file chưa hiểu rõ.
+2. Không tạo branch, commit hoặc push nếu người dùng không yêu cầu riêng.
+3. Không thêm package, không đổi public route/payload, permission/policy,
+   schema/migration, công thức nghiệp vụ hoặc quy tắc payroll chỉ để “đẹp hơn”.
+   Nếu cần một thay đổi như vậy để hoàn tất refactor, dừng trước phần đó và nêu
+   rõ quyết định cần người dùng xác nhận.
+4. Không làm refactor big-bang. Thực hiện theo các lát nhỏ, giữ tương thích và
+   kiểm chứng sau từng lát có rủi ro.
+5. Không nói build/test đã thành công nếu chưa có kết quả thực thi.
+
+## Bước 1 — Xác định UI owner
+
+Resolve `<UI_DAU_VAO>` theo thứ tự sau:
+
+1. Đường dẫn file `.razor` hoặc folder trong source hiện hành.
+2. Giá trị `@page`/route.
+3. Tên component hoặc `ContextKey`.
+
+Sau đó:
+
+- Nếu đầu vào là popup/form/detail, tìm page owner trong cùng feature folder và
+  xem popup/form/detail là child UI của page đó.
+- Nếu có nhiều hơn một page/feature khớp, **không tự chọn**; báo các candidate
+  (path, route, context key) và yêu cầu người dùng chọn một.
+- Nếu không có kết quả, báo rõ nội dung đã tìm và dừng.
+- Nếu UI thuộc `UiDemo` hoặc server Identity/Account, chỉ refactor lane đó khi
+  chính `<UI_DAU_VAO>` chỉ rõ nó; không suy diễn nó là feature HRM production.
+
+Trước khi sửa, báo ngắn gọn: tên màn hình, route, loại UI, `NhomNghiepVu`,
+`ContextKey`, technical alias (nếu có), path page owner và child UI trong scope.
+
+## Bước 2 — Nạp quy định và bằng chứng source
+
+Đọc đầy đủ trước khi sửa:
+
+1. `doc/index.md`
+2. `doc/rules/index.md`, `doc/rules/source-boundary-rules.md`,
+   `doc/rules/ai-vibe-coding-rules.md`, `doc/rules/verification-rules.md`
+3. `doc/project/hrm-refactor-standard.md`,
+   `doc/project/feature-folder-standard.md`,
+   `doc/project/ui-solid-rollout-plan.md`
+4. `doc/checklists/screen-implementation-principles.md`,
+   `doc/checklists/ui-screen-checklist.md`, `doc/checklists/done-checklist.md`
+5. Nếu có grid/workflow: `doc/checklists/operational-list-data-processing-standard.md`,
+   `doc/checklists/operational-list-screen-checklist.md`, `doc/rules/grid-rules.md`.
+6. Nếu có form/popup: `doc/rules/edit-form-validation-rules.md`,
+   `doc/rules/devexpress-input-validation-rules.md`, `doc/checklists/ui-popup-checklist.md`.
+7. Screen spec, sprint, implementation log và test trực tiếp liên quan feature.
+
+Đọc source bằng `rg --files` và `rg` để lập bản đồ hiện trạng từ UI đến backend:
+
+|Tầng|File/route|Trách nhiệm hiện tại|Dependency đi ra|Gap hoặc rủi ro|
+|---|---|---|---|---|
+|UI|...|...|...|...|
+|Provider/typed client|...|...|...|...|
+|Endpoint/Web|...|...|...|...|
+|Application|...|...|...|...|
+|Infrastructure|...|...|...|...|
+
+Chỉ coi tài liệu trỏ `src/Vnta.HRM2026` là source hiện hành. Đánh dấu tài liệu
+`_OLD`, prompt lịch sử hay đường dẫn `src/Vnta.HRM` là tham khảo lịch sử, không
+dùng chúng làm yêu cầu mới khi chưa xác minh lại.
+
+## Bước 3 — Chốt plan refactor trước khi code
+
+Đối chiếu `ui-solid-rollout-plan.md` để lấy loại UI, ưu tiên và hành động dự
+kiến. Lập một plan ngắn gồm các lát thay đổi, file ảnh hưởng và cách kiểm chứng.
+
+Mỗi lát phải chỉ ra rõ:
+
+|Lát|Vấn đề có bằng chứng|Thay đổi tối thiểu|File ảnh hưởng|Tương thích/rủi ro|Kiểm chứng|
+|---|---|---|---|---|---|
+
+Chỉ bắt đầu code khi không có gate cần quyết định người dùng. Gate bao gồm:
+
+- đổi route, public API/payload, authorization/policy hoặc semantics nghiệp vụ;
+- migration/schema/index; thay đổi công thức tính; xóa dữ liệu/code chưa rõ owner;
+- một UI input khớp nhiều feature.
+
+## Chuẩn refactor bắt buộc
+
+### SOLID và boundary
+
+- **SRP:** `.razor` giữ layout/composition; state, handler và orchestration UI ở
+  `.razor.cs`; CSS ở `.razor.css`; form/popup/detail phức tạp là component riêng.
+- **OCP:** thêm workflow bằng context folder, contract và command theo feature;
+  không dồn code mới vào mega page/provider/endpoint central.
+- **LSP:** UI phụ thuộc DTO/contract và provider/abstraction; implementation
+  HTTP/database thay thế được mà không đổi semantics consumer.
+- **ISP:** tách read/list, save, refresh/sync, lock/unlock, approve, import/export
+  khi rule/validation của chúng khác nhau; tránh interface "do mọi thứ".
+- **DIP:** UI không inject `ApplicationDbContext`, EF Core, SQL hay persistence
+  entity. Flow đích là `UI -> provider/typed client -> endpoint -> application
+  abstraction -> infrastructure`.
+
+### UI state, grid và form
+
+- Mọi first load, search/filter, retry, save/command thành công hội tụ qua một
+  `ReloadAsync()` hoặc entry point tương đương.
+- Với danh sách có thể lớn, search/filter/paging/data shaping nằm server-side.
+  Search UI debounce 300–500 ms, normalize text, cancellation và chống reload
+  chồng chéo. Summary và list phải dùng cùng semantics filter.
+- Grid/tree có key ổn định; loading, empty, error/retry, selection/focus và
+  permission gate là state rõ ràng. UI permission chỉ là UX guard.
+- Form hiển thị validation cạnh field/summary bằng tiếng Việt; toast không thay
+  validation; save lỗi không đóng popup.
+- Command nghiệp vụ (`refresh`, `sync`, `approve`, `lock`, `unlock`, `import`,
+  `export`, `recalculate`) có contract, confirmation, feedback và error mapping
+  riêng; chỉ thêm command thật sự tồn tại trong nghiệp vụ màn đó.
+
+### Server, security và data
+
+- Endpoint mỏng: bind input an toàn, lấy actor/authorization từ principal, gọi
+  application abstraction và map response/error. Không tin actor/role/ownership
+  gửi từ request body.
+- Server giữ validation cuối cùng, business rule, lock, concurrency, audit và
+  transaction. Không trả EF entity/row persistence về UI.
+- Multi-table write hay snapshot/sync phải có transaction; conflict phải có
+  `RowVersion`, `UpdatedAtUtc` hoặc cơ chế tương đương được kiểm tra server-side.
+- Không thêm schema guard chạy mỗi request, migration hoặc index nếu chưa được
+  người dùng phê duyệt hoặc không thuộc requirement đã chốt.
+
+### Naming và folder
+
+- Giữ `Tên nghiệp vụ` tiếng Việt có dấu cho caption/tài liệu và `ContextKey`
+  PascalCase không dấu xuyên UI, provider, endpoint, application và infrastructure.
+- Technical alias chỉ giữ ở schema, migration, external integration hoặc
+  compatibility boundary có lý do ghi rõ.
+- Không ép di dời cross-cutting root: `Data`, migrations, `ApplicationDbContext`,
+  Identity, composition root, navigation, `Shared`, `SharedUi`, gateway hoặc demo.
+
+## Bước 4 — Thực hiện và kiểm chứng
+
+1. Sửa theo từng lát đã chốt; đọc lại diff sau mỗi lát quan trọng.
+2. Cập nhật screen spec/implementation doc nếu màn có persistence/workflow;
+   cập nhật `doc/project/refactor-gap-register.md` nếu còn nợ kỹ thuật.
+3. Chạy tối thiểu các kiểm tra tĩnh: reference/namespace/path cũ, DI/route,
+   `git diff --check` và đọc lại file đã sửa.
+4. Vì có thay đổi source, chạy `dotnet build` cho project bị ảnh hưởng. Khi thay
+   đổi xuyên client/web/contract, build các project liên quan hoặc solution nếu
+   khả thi. Sửa lỗi compile trong phạm vi task rồi build lại.
+5. Chạy test liên quan nếu có. Nếu màn có timer, SignalR, auto-refresh, async
+   detail load hoặc grid/list cập nhật thường xuyên, thực hiện smoke test nhiều
+   tab nếu môi trường cho phép; nếu không, ghi rõ chưa kiểm chứng được.
+6. Cập nhật đúng file `doc/implementation-log/yyyyMMdd-<ten-nhanh-da-chuan-hoa>.md`
+   của branch hiện tại và `doc/implementation-log/index.md` nếu tạo log mới.
+
+## Definition of done
+
+- Không có DbContext/EF/SQL/persistence entity bị đưa vào UI.
+- UI -> provider/client -> endpoint -> application -> infrastructure có owner và
+  contract rõ; business rule cuối cùng vẫn ở server.
+- UI state, loading/error/empty, validation form và command feedback hoạt động
+  nhất quán với loại màn.
+- Không làm đổi route, API, policy, schema hay semantics ngoài phạm vi đã được
+  người dùng chấp thuận.
+- Build/test/check tĩnh đã chạy được báo bằng bằng chứng; phần chưa chạy được
+  nêu rõ lý do.
+- Tài liệu và implementation log khớp với source sau refactor.
+
+## Báo cáo bắt buộc khi hoàn tất
+
+Trả lời bằng tiếng Việt có dấu, theo đúng cấu trúc:
+
+1. **Kết quả:** UI/context/refactor đã hoàn tất hay gate/blocker còn lại.
+2. **Phạm vi đã xử lý:** page owner, child UI và các layer backend đã đổi.
+3. **SOLID/boundary:** các vi phạm đã xử lý và nợ kỹ thuật còn lại, kèm path:line.
+4. **Thay đổi theo lát:** file chính, contract/DI/route/documentation đã cập nhật.
+5. **Kiểm chứng:** build, test, smoke test và static check đã chạy/chưa chạy,
+   có kết quả cụ thể.
+6. **Rủi ro hoặc quyết định tiếp theo:** chỉ các mục thực sự cần người dùng quyết.
+7. **Git:** nhánh hiện tại, file thay đổi; xác nhận chưa commit/push nếu không
+   được yêu cầu.
+
+## Điều cấm
+
+- Không refactor toàn repo, không sửa UI/context khác ngoài scope.
+- Không tự bịa rule HRM hoặc thêm action nghiệp vụ không có bằng chứng source/spec.
+- Không biến toast thành validation, không đặt business rule/persistence ở Razor.
+- Không dùng interface/generic abstraction chỉ để có tên “SOLID”.
+- Không che giấu build/test lỗi hoặc khẳng định đã kiểm chứng khi mới chỉ đọc source.

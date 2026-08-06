@@ -1,0 +1,219 @@
+PROMPT REFACTOR PHỤ CẤP TRÁCH NHIỆM CẤP BẬC - GIAI ĐOẠN 5
+Build, test, rà soát logic cuối, cập nhật tài liệu và chốt checklist hoàn thành cho màn hình `Phụ cấp > Trách nhiệm > Cấp bậc`
+
+Mục đích
+- Prompt này dùng sau khi đã hoàn tất Giai đoạn 4.
+- Mục tiêu là chốt chất lượng cuối cho `PhuCapTrachNhiemCapBac` trước khi bàn giao hoặc chuẩn bị merge.
+- Giai đoạn này tập trung vào:
+  - build
+  - test
+  - rà soát logic lần cuối
+  - cập nhật tài liệu
+  - hoàn tất checklist
+  - chuẩn bị commit/push nếu đủ điều kiện và nếu phạm vi công việc cho phép
+
+Điều kiện đầu vào bắt buộc
+- Giai đoạn 1 đã hoàn tất.
+- Giai đoạn 2 đã hoàn tất.
+- Giai đoạn 3 đã hoàn tất.
+- Giai đoạn 4 đã hoàn tất.
+- Màn hình đích đã được refactor xong về UI, state, popup, toast, icon, layout và code-behind.
+
+Biến đầu vào cần thay
+- `<TEN_NHANH_DANG_LAM_VIEC>`
+
+PROMPT CHO AI AGENT
+
+Bạn đang thực hiện Giai đoạn 5 cho nhiệm vụ refactor màn hình phụ cấp `Phụ cấp Trách nhiệm > Cấp bậc`.
+
+Mục tiêu
+- Chốt vòng cuối cho màn hình `PhuCapTrachNhiemCapBac`.
+- Kiểm tra lại toàn bộ logic, UI và luồng xử lý sau refactor.
+- Build và test trong phạm vi khả thi.
+- Cập nhật tài liệu triển khai, tài liệu logic, tài liệu kỹ thuật liên quan.
+- Đánh dấu các checklist cần thiết.
+- Chuẩn bị trạng thái mã nguồn sẵn sàng để commit/push nếu mọi thứ đạt yêu cầu.
+
+Thông tin đích cố định
+- Tên màn hình đích: `Phụ cấp Trách nhiệm > Cấp bậc`
+- Tên runtime hiện tại trên UI: `Cấp bậc trách nhiệm`
+- Thư mục màn hình đích: `PhuCapTrachNhiemCapBac`
+- Component đích:
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
+- Tài liệu đích hiện có:
+  `Vnta-Blazor-2026\doc\project\source-map.md`
+  `Vnta-Blazor-2026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
+  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
+- Nhánh đang làm việc:
+  `<TEN_NHANH_DANG_LAM_VIEC>`
+
+Quy ước đường dẫn bắt buộc
+- Mọi đường dẫn phải bắt đầu từ `Vnta-Blazor-2026`.
+- Không được dùng đường dẫn tuyệt đối theo máy.
+
+Checklist và tài liệu bắt buộc phải rà lại
+- `Vnta-Blazor-2026\doc\checklists\ui-screen-checklist.md`
+- `Vnta-Blazor-2026\doc\checklists\ui-popup-checklist.md`
+- `Vnta-Blazor-2026\doc\checklists\confirmation-popup-checklist.md`
+- `Vnta-Blazor-2026\doc\checklists\ui-state-checklist.md`
+- `Vnta-Blazor-2026\doc\checklists\operational-list-screen-checklist.md`
+- `Vnta-Blazor-2026\doc\checklists\operational-list-data-processing-standard.md`
+- `Vnta-Blazor-2026\doc\checklists\screen-implementation-principles.md`
+- `Vnta-Blazor-2026\doc\checklists\documentation-completeness.md`
+- `Vnta-Blazor-2026\doc\checklists\done-checklist.md`
+- `Vnta-Blazor-2026\doc\rules\devexpress-input-validation-rules.md`
+
+Tài liệu màn hình cần cập nhật nếu có liên quan
+- Tài liệu hiện có:
+  `Vnta-Blazor-2026\doc\project\source-map.md`
+  `Vnta-Blazor-2026\doc\project\hrm-ui-layout-refactor-plan.md`
+  `Vnta-Blazor-2026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
+  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\sprint-plan.md`
+  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\implementation-notes.md`
+  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\review-notes.md`
+  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management\tasks.md`
+  `Vnta-Blazor-2026\doc\implementation-log\20260714.md`
+- Tài liệu màn hình dạng folder nếu đã được tạo ở các giai đoạn trước:
+  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac\README.md`
+  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac\trien-khai-mau.md`
+  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapTrachNhiemCapBac\...`
+- Nếu màn hình vẫn chưa có bộ tài liệu dạng folder riêng, phải ghi nhận khoảng trống đó và đề xuất phạm vi tài liệu tối thiểu cần bổ sung.
+
+Nhiệm vụ bắt buộc
+1. Rà soát logic lần cuối
+   - Kiểm tra lại tất cả hành động toolbar.
+   - Kiểm tra lại row action `Sửa`, `Xóa`.
+   - Kiểm tra lại popup editor, popup xác nhận nếu có.
+   - Kiểm tra lại search, filter tháng/năm, selection, paging, loading, empty-state, error-state.
+   - Kiểm tra lại toast thành công, cảnh báo, lỗi.
+   - Kiểm tra lại icon toolbar và tính nhất quán UI.
+   - Kiểm tra lại semantics:
+     - `Xóa` là ngừng dùng
+     - `Lấy từ tháng trước` copy cấu hình từ kỳ trước
+     - `Tính lại` đang làm gì thật sự sau refactor
+
+2. Build trong phạm vi khả thi
+   - Build project liên quan trực tiếp:
+     - `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Vnta.Hrm.Web.Client.csproj`
+     - `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web\Vnta.Hrm.Web.csproj`
+   - Nếu cần, build solution hoặc các project liên quan để bắt lỗi lan sang dependency khác.
+   - Nếu build web bị file lock cục bộ, được phép dùng `OutDir` riêng để xác minh build.
+   - Nếu build lỗi, phải sửa đến khi đạt trạng thái ổn định trong phạm vi nhiệm vụ.
+
+3. Test trong phạm vi khả thi
+   - Thực hiện các kiểm tra tự động hoặc bán tự động nếu repo có hỗ trợ.
+   - Nếu không có test tự động, phải test tay theo các luồng chính:
+     - mở màn lần đầu
+     - đổi tháng/năm và bấm `Xem`
+     - tìm kiếm
+     - đổi page size
+     - mở/lưu/hủy popup tạo mới
+     - mở/lưu/hủy popup sửa
+     - `Xóa` một dòng
+     - `Xóa` nhiều dòng đã chọn
+     - `Lấy từ tháng trước`
+     - `Tính lại`
+     - `Xuất dữ liệu`
+     - `Quy tắc`
+   - Ghi rõ luồng nào đã kiểm tra và luồng nào chưa kiểm tra được.
+
+4. Rà soát logic backend liên quan nếu có tác động
+   - Nếu giai đoạn 3 hoặc 4 có kéo theo thay đổi backend, phải rà lại:
+     - endpoint
+     - DTO/request/response
+     - application service
+     - infrastructure service
+   - Đảm bảo không có thay đổi backend mồ côi hoặc tên hàm không còn khớp với frontend.
+   - Nếu có đổi semantics label/action, phải ghi rõ trạng thái cuối cùng của điểm đó.
+
+5. Cập nhật tài liệu
+   - Cập nhật tài liệu triển khai của `PhuCapTrachNhiemCapBac` theo trạng thái source thực tế.
+   - Cập nhật mô tả logic xử lý nếu đã thay đổi cách tổ chức hoặc luồng thao tác.
+   - Cập nhật mô tả popup editor, toast, icon, layout, state nếu có thay đổi quan trọng.
+   - Đảm bảo tài liệu không mâu thuẫn với source hiện tại.
+
+6. Chốt checklist
+   - Đối chiếu từng checklist bắt buộc.
+   - Ghi rõ mục nào:
+     - đã đạt
+     - chưa đạt
+     - chưa kiểm tra được
+   - Nếu còn gap, phải ghi cụ thể gap nằm ở đâu.
+
+7. Chuẩn bị commit/push
+   - Rà lại `git diff`.
+   - Đảm bảo không vô tình gom thay đổi ngoài phạm vi nhiệm vụ.
+   - Nếu mọi thứ đạt yêu cầu và phạm vi công việc cho phép:
+     - chuẩn bị commit message rõ nghĩa
+     - commit
+     - push lên đúng nhánh làm việc
+   - Nếu user chưa yêu cầu commit/push, phải báo trạng thái sẵn sàng để user quyết định.
+
+Yêu cầu cách làm việc
+- Ưu tiên hoàn tất đầu việc đến trạng thái có thể bàn giao.
+- Không che giấu lỗi build, lỗi test hoặc khoảng trống tài liệu.
+- Nếu một phần chưa thể hoàn tất, phải nêu rõ nguyên nhân và phạm vi ảnh hưởng.
+- Không commit các thay đổi không liên quan.
+- Không được revert thay đổi không do agent tạo ra.
+
+Kiểm tra bắt buộc cuối cùng
+1. Build
+   - thành công hay không
+2. Test
+   - luồng nào đã test
+   - luồng nào chưa test
+3. Tài liệu
+   - file nào đã cập nhật
+   - file nào còn thiếu
+4. Checklist
+   - checklist nào đã đối chiếu
+5. Git
+   - thay đổi nào sẽ được commit
+   - có thay đổi ngoài phạm vi hay không
+
+Đầu ra bắt buộc của Giai đoạn 5
+Agent phải báo cáo rõ ràng các mục sau:
+1. Kết quả build
+   - project nào đã build
+   - thành công/thất bại
+   - lỗi còn lại nếu có
+2. Kết quả test/rà soát
+   - các luồng đã kiểm tra
+   - các lỗi đã sửa ở vòng cuối
+   - các điểm chưa kiểm tra được
+3. Kết quả cập nhật tài liệu
+   - tài liệu nào đã cập nhật
+   - nội dung nào đã bổ sung/chỉnh lại
+   - tài liệu nào còn thiếu
+4. Kết quả đối chiếu checklist
+   - mục đã đạt
+   - mục chưa đạt
+   - mục còn rủi ro
+5. Trạng thái Git cuối
+   - nhánh hiện tại
+   - file thay đổi
+   - đã commit hay chưa
+   - đã push hay chưa
+6. Đề xuất chốt việc
+   - sẵn sàng merge hay chưa
+   - cần user xác nhận gì thêm
+   - còn việc gì nên làm ở vòng sau
+
+Mẫu lệnh sử dụng prompt
+
+Hãy thực hiện Giai đoạn 5 cho nhiệm vụ refactor màn hình phụ cấp sau:
+- Tên màn hình đích: `Phụ cấp Trách nhiệm > Cấp bậc`
+- Thư mục màn hình đích: `PhuCapTrachNhiemCapBac`
+- Component đích:
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
+- Tài liệu đích hiện có:
+  `Vnta-Blazor-2026\doc\project\source-map.md`
+  `Vnta-Blazor-2026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
+  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
+- Nhánh đang làm việc:
+  `codex/refactor-phu-cap-trach-nhiem-cap-bac-20260715`
+
+Lưu ý cuối
+- Giai đoạn 5 là giai đoạn chốt chất lượng và chốt bàn giao cho `PhuCapTrachNhiemCapBac`.
+- Mục tiêu không chỉ là build được, mà còn là logic rõ ràng, tài liệu khớp source, checklist minh bạch và trạng thái Git sạch sẽ trong phạm vi nhiệm vụ.
+- Nếu chưa đủ điều kiện commit/push, agent phải nói rõ vì sao.

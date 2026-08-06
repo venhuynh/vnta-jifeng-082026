@@ -1,0 +1,242 @@
+PROMPT REFACTOR PHỤ CẤP TRÁCH NHIỆM CẤP BẬC - GIAI ĐOẠN 3
+Refactor UI, state, popup, toast, icon, layout của màn hình `Phụ cấp > Trách nhiệm > Cấp bậc` theo pattern `PhuCapChuyenCan`
+
+Mục đích
+- Prompt này dùng sau khi đã hoàn tất Giai đoạn 2.
+- Mục tiêu là triển khai refactor thực tế trên `PhuCapTrachNhiemCapBac` theo pattern chuẩn của `PhuCapChuyenCan`, nhưng vẫn giữ đúng semantics cấu hình cấp bậc của domain `PhuCapTrachNhiem`.
+- Giai đoạn này tập trung vào frontend:
+  - UI
+  - state
+  - popup editor
+  - toast
+  - icon
+  - layout
+- Chỉ được thay đổi backend khi thật sự cần thiết để hỗ trợ đúng UI flow mới, và phải nêu rõ lý do.
+- Không được tự ý thay đổi quy tắc nghiệp vụ nếu chưa có căn cứ từ source, tài liệu hoặc báo cáo Giai đoạn 2.
+
+Điều kiện đầu vào bắt buộc
+- Giai đoạn 1 đã hoàn tất.
+- Giai đoạn 2 đã hoàn tất.
+- Đã có báo cáo rõ:
+  - bản đồ logic hiện tại
+  - các gap so với `PhuCapChuyenCan`
+  - context phải kế thừa từ `PhuCapTrachNhiem`
+  - phạm vi refactor đã đề xuất
+  - rủi ro cần canh chừng
+
+Biến đầu vào cần thay
+- `<TEN_NHANH_DANG_LAM_VIEC>`
+
+PROMPT CHO AI AGENT
+
+Bạn đang thực hiện Giai đoạn 3 cho nhiệm vụ refactor màn hình phụ cấp `Phụ cấp Trách nhiệm > Cấp bậc`.
+
+Mục tiêu
+- Refactor màn hình `PhuCapTrachNhiemCapBac` theo pattern UI/UX của `PhuCapChuyenCan`.
+- Chuẩn hóa layout, toolbar, grid, popup editor, state, toast, icon và trải nghiệm người dùng.
+- Giữ nguyên nghiệp vụ cốt lõi của màn hình đích, chỉ làm rõ và tổ chức lại cách thể hiện, luồng thao tác và cấu trúc code.
+- Hoàn tất refactor đến mức có thể build được và sẵn sàng cho giai đoạn rà soát/tài liệu hóa tiếp theo.
+
+Thông tin đích cố định
+- Tên màn hình đích: `Phụ cấp Trách nhiệm > Cấp bậc`
+- Tên runtime hiện tại trên UI: `Cấp bậc trách nhiệm`
+- Thư mục màn hình đích: `PhuCapTrachNhiemCapBac`
+- Route runtime hiện tại: `/payroll/responsibility-allowances/grades`
+- Component đích:
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
+- Tài liệu đích hiện có:
+  `Vnta-Blazor-2026\doc\project\source-map.md`
+  `Vnta-Blazor-2026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
+  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
+- Nhánh đang làm việc:
+  `<TEN_NHANH_DANG_LAM_VIEC>`
+
+Quy ước đường dẫn bắt buộc
+- Mọi đường dẫn phải bắt đầu từ `Vnta-Blazor-2026`.
+- Không được dùng đường dẫn tuyệt đối theo máy.
+
+Mẫu chuẩn bắt buộc phải học theo
+- Tài liệu mẫu:
+  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapChuyenCan\README.md`
+  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapChuyenCan\phu-cap-chuyen-can.md`
+  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapChuyenCan\trien-khai-mau.md`
+  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapChuyenCan\popup-va-luu-logic.md`
+  `Vnta-Blazor-2026\doc\screens\phu-cap\PhuCapChuyenCan\ky-thuat-va-cong-nghe.md`
+- Source mẫu:
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapChuyenCan\PhuCapChuyenCan.razor`
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapChuyenCan\PhuCapChuyenCan.razor.cs`
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapChuyenCan\PhuCapChuyenCan.razor.css`
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapChuyenCan\PhuCapChuyenCanEditForm.razor`
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapChuyenCan\PhuCapChuyenCanRulesPopup.razor`
+- Source đích:
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac\PhuCapTrachNhiemCapBac.razor`
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac\PhuCapTrachNhiemCapBac.razor.cs`
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac\PhuCapTrachNhiemCapBac.razor.css`
+- Thành phần dùng chung:
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Services\Ui\VntaDevExpressIcons.cs`
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\SharedUi\MasterData\PayrollAllowanceToolbar.razor`
+
+Checklist bắt buộc phải tuân thủ khi refactor
+- `Vnta-Blazor-2026\doc\checklists\ui-screen-checklist.md`
+- `Vnta-Blazor-2026\doc\checklists\ui-popup-checklist.md`
+- `Vnta-Blazor-2026\doc\checklists\confirmation-popup-checklist.md`
+- `Vnta-Blazor-2026\doc\checklists\ui-state-checklist.md`
+- `Vnta-Blazor-2026\doc\checklists\screen-implementation-principles.md`
+- `Vnta-Blazor-2026\doc\checklists\operational-list-screen-checklist.md`
+- `Vnta-Blazor-2026\doc\rules\devexpress-input-validation-rules.md`
+
+Phạm vi refactor bắt buộc
+1. Refactor UI tổng thể
+   - Chuẩn hóa bố cục màn hình theo pattern `PhuCapChuyenCan`.
+   - Chuẩn hóa toolbar theo đúng thứ tự hành động, nhóm hành động và icon ngữ nghĩa.
+   - Chuẩn hóa summary strip, search, selection summary, grid header và empty-state theo hướng nhất quán hơn.
+   - Chuẩn hóa grid theo hướng dễ đọc, giảm nhiễu, làm rõ cột trạng thái và cột nghiệp vụ.
+   - Chuẩn hóa empty-state, error-state, loading-state.
+
+2. Refactor state frontend
+   - Tách rõ state dữ liệu gốc và dữ liệu hiển thị.
+   - Làm rõ state filter, selection, popup, busy/loading, lỗi.
+   - Giảm state dư thừa hoặc state chồng chéo quanh `GradeRows`, `VisibleGradeRows`, `SelectedDataItems`, `SearchText`, `ToolbarMonth/ToolbarYear`, `SelectedMonth/SelectedYear`, `HasRequestedData`, `HasPendingPeriodChange`.
+   - Đặt tên state, method, handler rõ nghĩa và dễ truy vết hơn.
+
+3. Refactor popup editor
+   - Popup editor phải đi theo luồng:
+     - nhận dữ liệu
+     - clone edit model
+     - hiển thị field cần thiết
+     - validate
+     - lưu
+     - hủy
+   - Có thể tách popup editor thành component riêng nếu điều đó giúp mã rõ hơn.
+   - Popup xác nhận cho `Xóa` phải theo checklist chuẩn của ứng dụng.
+
+4. Refactor toast
+   - Tất cả toast phải dùng toast chung của ứng dụng.
+   - Không được tự tạo toast riêng cho UI.
+   - Chuẩn hóa message thành công, cảnh báo, lỗi theo đúng ngữ cảnh của `CapBac`.
+
+5. Refactor icon
+   - Tất cả icon toolbar phải dùng `VntaDevExpressIcons`.
+   - Chọn icon đúng ngữ nghĩa hành động.
+   - Với row action đang dùng icon link button, chỉ thay nếu có lợi UX rõ ràng; nếu giữ nguyên phải ghi lý do.
+
+6. Refactor layout và CSS
+   - Ưu tiên kế thừa pattern layout từ `PhuCapChuyenCan`.
+   - Chỉ giữ lại CSS thật sự cần thiết.
+   - Loại bỏ CSS dư thừa, trùng lặp hoặc không còn được sử dụng.
+   - Không tự ý tạo thêm CSS nếu có thể giải quyết bằng layout/pattern sẵn có.
+   - Nếu bắt buộc phải thêm CSS, phải tối thiểu, rõ mục đích, không phá theme chung.
+
+7. Refactor cấu trúc code-behind ở mức phục vụ UI flow
+   - Tổ chức lại method theo nhóm trách nhiệm rõ ràng.
+   - Đặt tên method tương ứng với hành động UI và nghiệp vụ thật.
+   - Bổ sung comment tiếng Việt rõ nghĩa ở các đoạn xử lý khó hiểu.
+   - Nếu cần tách form hoặc popup thành file riêng, phải cập nhật binding đầy đủ.
+
+8. Refactor tính nhất quán UX
+   - Nút lưu/hủy trong popup phải hoạt động rõ ràng, có loading nếu cần.
+   - Hành động dài như `Xóa`, `Lấy từ tháng trước`, `Tính lại` phải có busy state phù hợp.
+   - Search phải có hành vi rõ ràng trước và sau lần tải dữ liệu đầu tiên.
+   - Empty-state không được mô tả lệch với runtime sau refactor.
+   - Nếu label `Tính lại` không khớp hành vi thật, agent phải:
+     - hoặc giữ nguyên label và ghi rõ lý do
+     - hoặc đổi label/UI nếu đã có căn cứ rõ và không làm sai nghiệp vụ
+
+Giới hạn thay đổi
+- Không được thay đổi logic nghiệp vụ cốt lõi nếu chưa có căn cứ rõ từ source và tài liệu.
+- Không được tự ý đổi route `/payroll/responsibility-allowances/grades`.
+- Không được tự ý đổi boundary dữ liệu hiện tại:
+  - bảng chính `payroll_monthly_responsibility_allowance_grades`
+  - workflow service `IPayrollResponsibilityAllowanceWorkflowService`
+  - semantics `Xóa` = deactivate (`IsActive = false`)
+- Không được tự ý biến action `Tính lại` thành một phép tính nghiệp vụ mới nếu backend hiện không hỗ trợ.
+- Không được refactor lan sang các màn hình khác ngoài phạm vi cần thiết, trừ các thành phần dùng chung bắt buộc phải chỉnh để hỗ trợ chuẩn hóa.
+- Nếu phát hiện một thay đổi UI bắt buộc kéo theo thay đổi backend, agent phải:
+  - nêu rõ lý do
+  - giới hạn thay đổi backend ở mức tối thiểu
+  - báo cáo rõ ảnh hưởng
+
+Yêu cầu cách làm việc
+- Thực hiện refactor trực tiếp trên code, không chỉ dừng ở phân tích.
+- Sau mỗi cụm chỉnh sửa lớn, phải tự rà soát lại luồng xử lý liên quan.
+- Ưu tiên thay đổi nhỏ, an toàn, có thể kiểm soát.
+- Không revert thay đổi không do agent tạo ra.
+- Nếu gặp mâu thuẫn giữa source hiện tại và pattern mẫu, phải ưu tiên:
+  - giữ đúng nghiệp vụ của `PhuCapTrachNhiemCapBac`
+  - học theo cách tổ chức UI/UX từ `PhuCapChuyenCan`
+- Nếu một quyết định có tác động không hiển nhiên, phải dừng lại và nêu trade-off.
+
+Kiểm tra bắt buộc sau refactor
+1. Rà soát lại toàn bộ toolbar
+   - text
+   - icon
+   - enable/disable
+   - thứ tự nút
+2. Rà soát lại row action
+   - `Sửa`
+   - `Xóa`
+   - enable/disable theo trạng thái active và kỳ đã tải
+3. Rà soát lại popup editor
+   - mở đúng
+   - nhận dữ liệu đúng
+   - lưu đúng
+   - hủy đúng
+   - validate đúng
+4. Rà soát lại toast
+   - chỉ dùng toast chung
+   - không còn toast tự tạo
+5. Rà soát lại state
+   - không còn state mồ côi
+   - không còn logic chồng chéo rõ ràng
+6. Rà soát lại CSS
+   - không giữ CSS chết nếu có thể loại bỏ an toàn
+7. Build project liên quan nếu khả thi
+
+Đầu ra bắt buộc của Giai đoạn 3
+Agent phải báo cáo rõ ràng các mục sau:
+1. Những gì đã refactor
+   - UI
+   - state
+   - popup editor
+   - toast
+   - icon
+   - layout
+2. Danh sách file đã thay đổi
+   - frontend
+   - thành phần dùng chung
+   - backend nếu có
+3. Các quyết định quan trọng
+   - phần nào học theo `PhuCapChuyenCan`
+   - phần nào giữ nguyên vì khác nghiệp vụ `CapBac`
+   - phần nào chỉ chỉnh UX mà không động đến nghiệp vụ
+   - phần nào giữ nguyên do rủi ro semantics hoặc do backend hiện chưa hỗ trợ
+4. Kết quả kiểm tra
+   - build có thành công hay không
+   - luồng nào đã tự rà soát
+   - điểm nào chưa kiểm tra được
+5. Rủi ro còn lại
+   - logic nào cần test tay thêm
+   - popup nào cần user xác nhận thêm
+   - backend nào có thể cần refactor sâu hơn ở giai đoạn sau
+6. Đề xuất tiếp theo
+   - Giai đoạn 4: chuẩn hóa logic code-behind
+   - Giai đoạn 5: build, test, hoàn thiện tài liệu, checklist done
+
+Mẫu lệnh sử dụng prompt
+
+Hãy thực hiện Giai đoạn 3 cho nhiệm vụ refactor màn hình phụ cấp sau:
+- Tên màn hình đích: `Phụ cấp Trách nhiệm > Cấp bậc`
+- Thư mục màn hình đích: `PhuCapTrachNhiemCapBac`
+- Component đích:
+  `Vnta-Blazor-2026\src\Vnta.HRM2026\Vnta.Hrm.Web.Client\Components\PhuCap\PhuCapTrachNhiemCapBac`
+- Tài liệu đích hiện có:
+  `Vnta-Blazor-2026\doc\project\source-map.md`
+  `Vnta-Blazor-2026\doc\screens\phu-cap\phu-cap-trach-nhiem.md`
+  `Vnta-Blazor-2026\doc\sprints\_OLD\sprint-014-employee-responsibility-allowance-management`
+- Nhánh đang làm việc:
+  `codex/refactor-phu-cap-trach-nhiem-cap-bac-20260715`
+
+Lưu ý cuối
+- Giai đoạn 3 là giai đoạn được phép sửa code.
+- Tuy nhiên trọng tâm là refactor cách tổ chức UI/UX và cấu trúc state của `PhuCapTrachNhiemCapBac`, không phải tự ý đổi nghiệp vụ.
+- Nếu phát hiện cần đổi nghiệp vụ thật sự, agent phải nêu rõ căn cứ trước khi đi tiếp.

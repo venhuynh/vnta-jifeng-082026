@@ -19,6 +19,7 @@ public static class NhanVienEndpoints
 
         group.MapPost("/search-page", SearchPageAsync);
         group.MapPost("/summary", GetSummaryAsync);
+        group.MapPost("/nhansu-workbook-preview", PreviewNhanSuWorkbookAsync);
         group.MapPost("", CreateAsync);
         group.MapPut("/{id:guid}", UpdateAsync);
         group.MapPost("/delete", DeleteAsync);
@@ -48,6 +49,40 @@ public static class NhanVienEndpoints
             filter ?? new EmployeeFilter(null),
             cancellationToken);
         return Results.Ok(result);
+    }
+
+    /// <summary>
+    /// Nhận raw body là tệp .xlsx để preview/đối soát sheet NhanSu. Endpoint không ghi dữ liệu
+    /// và không tạo audit command vì chỉ thực hiện đọc.
+    /// </summary>
+    private static async Task<IResult> PreviewNhanSuWorkbookAsync(
+        HttpRequest request,
+        [FromServices] INhanSuWorkbookPreviewService service,
+        CancellationToken cancellationToken)
+    {
+        if (request.ContentLength is 0)
+        {
+            return Results.BadRequest(new { message = "Thiếu tệp Excel để đối soát." });
+        }
+
+        if (request.ContentLength is { } contentLength
+            && contentLength > NhanSuWorkbookPreviewLimits.MaxWorkbookBytes)
+        {
+            return Results.BadRequest(new
+            {
+                message = $"Tệp Excel không được vượt quá {NhanSuWorkbookPreviewLimits.MaxWorkbookBytes / (1024 * 1024)} MB."
+            });
+        }
+
+        try
+        {
+            var result = await service.PreviewAsync(request.Body, cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
     }
 
     private static async Task<IResult> CreateAsync(

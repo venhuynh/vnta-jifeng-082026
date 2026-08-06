@@ -12,6 +12,7 @@ using Vnta.Hrm.Web.Security;
 using Vnta.Hrm.Web.Client.Services.DataProviders.NhanSu.NhanVien;
 using Vnta.Hrm.Web.Client.Services.DataProviders;
 using Vnta.Hrm.Web.Client.Services.DataProviders.PhuCap.PhuCapChuyenCan;
+using Vnta.Hrm.Application.NhanSu.NhanVien;
 using Vnta.Hrm.Infrastructure.NhanSu.ChiTietNhanVien;
 using Vnta.Hrm.Infrastructure.QuanTri.AuditTrail;
 using Xunit;
@@ -108,6 +109,29 @@ public sealed class SecurityBoundaryTests : IClassFixture<WebApplicationFactory<
     }
 
     [Theory]
+    [InlineData(null, HttpStatusCode.Unauthorized)]
+    [InlineData("AttendanceAdmin", HttpStatusCode.Forbidden)]
+    public async Task Nhan_su_workbook_preview_requires_human_resources_administration(
+        string? role,
+        HttpStatusCode expectedStatusCode)
+    {
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+        if (role is not null)
+        {
+            client.DefaultRequestHeaders.Add(TestHeaderAuthenticationHandler.RoleHeaderName, role);
+        }
+
+        using var response = await client.PostAsync(
+            "/api/nhan-su/nhan-vien/nhansu-workbook-preview",
+            new ByteArrayContent([0x50, 0x4B]));
+
+        Assert.Equal(expectedStatusCode, response.StatusCode);
+    }
+
+    [Theory]
     [InlineData("GET", "/api/nhan-su/chi-tiet-nhan-vien/11111111-1111-1111-1111-111111111111/contact-profile")]
     [InlineData("PUT", "/api/nhan-su/chi-tiet-nhan-vien/11111111-1111-1111-1111-111111111111/contact-profile")]
     [InlineData("GET", "/api/nhan-su/chi-tiet-nhan-vien/11111111-1111-1111-1111-111111111111/citizen-identity")]
@@ -157,6 +181,14 @@ public sealed class SecurityBoundaryTests : IClassFixture<WebApplicationFactory<
         var provider = scope.ServiceProvider.GetRequiredService<NhanVienDataProvider>();
 
         Assert.NotNull(provider);
+    }
+
+    [Fact]
+    public void Nhan_su_workbook_preview_service_is_registered()
+    {
+        using var scope = factory.Services.CreateScope();
+
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<INhanSuWorkbookPreviewService>());
     }
 
     [Fact]
